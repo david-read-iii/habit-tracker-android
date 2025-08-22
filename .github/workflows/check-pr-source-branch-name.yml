@@ -1,0 +1,42 @@
+name: "Check PR Source Branch Name"
+
+on:
+  pull_request:
+    branches:
+      - main
+      - release/*
+
+jobs:
+  check-branch:
+    name: Check PR Source Branch Name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch prefix
+        run: |
+          echo "Target branch (base): ${{ github.base_ref }}"
+          echo "Source branch (head): ${{ github.head_ref }}"
+
+          # Set allowed prefixes based on target branch
+          if [[ "${{ github.base_ref }}" == "main" ]]; then
+            ALLOWED_PREFIXES="release/"
+          elif [[ "${{ github.base_ref }}" == release/* ]]; then
+            ALLOWED_PREFIXES="feature/ bugfix/ chore/"
+          else
+            echo "ℹ️ No restrictions for this target branch. Skipping check."
+            exit 0
+          fi
+
+          matched=false
+          for prefix in $ALLOWED_PREFIXES; do
+            if [[ "${{ github.head_ref }}" == "$prefix"* ]]; then
+              matched=true
+              break
+            fi
+          done
+
+          if [ "$matched" = false ]; then
+            echo "❌ Error: Source branch must start with one of: $ALLOWED_PREFIXES"
+            exit 1
+          else
+            echo "✅ Source branch prefix is valid."
+          fi
