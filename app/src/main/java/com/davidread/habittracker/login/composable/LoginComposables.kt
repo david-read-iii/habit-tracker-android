@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -30,6 +31,9 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -104,7 +108,12 @@ fun LoginCredentialsCard(
                 onValueChange = onEmailValueChange,
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.email)) },
-                isError = viewState.emailTextFieldViewState.isError
+                isError = viewState.emailTextFieldViewState.isError,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Done
+                ),
+                singleLine = true
             )
             if (viewState.emailTextFieldViewState.isError
                 && viewState.emailTextFieldViewState.errorMessage.isNotBlank()
@@ -122,6 +131,12 @@ fun LoginCredentialsCard(
                 onValueChange = onPasswordValueChange,
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.password)) },
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                singleLine = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
