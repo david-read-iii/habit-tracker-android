@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.common.ui.theme.RedError
 import com.davidread.habittracker.login.model.EmailTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.model.PasswordTextFieldViewState
@@ -109,9 +110,10 @@ fun LoginCredentialsCard(
             if (viewState.emailTextFieldViewState.isError
                 && viewState.emailTextFieldViewState.errorMessage.isNotBlank()
             ) {
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = viewState.emailTextFieldViewState.errorMessage,
-                    color = MaterialTheme.colorScheme.error,
+                    color = RedError,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
