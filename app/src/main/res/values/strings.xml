@@ -3,6 +3,7 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
-    <string name="sign_up_text_prefix">Don\'t have an account?</string>
-    <string name="sign_up_text_postfix">Sign up here</string>
+    <string name="sign_up_prompt">Don\'t have an account?</string>
+    <string name="sign_up_whitespace">\u00A0</string>
+    <string name="sign_up_link_text">Sign up here</string>
 </resources>

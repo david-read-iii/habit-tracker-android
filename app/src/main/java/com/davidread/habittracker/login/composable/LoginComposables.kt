@@ -27,19 +27,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.login.model.LoginViewState
+
+private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    viewState: LoginViewState = LoginViewState(),
+    onEmailValueChange: (String) -> Unit = {},
+    onPasswordValueChange: (String) -> Unit = {},
+    onLoginButtonClick: () -> Unit = {},
+    onSignUpLinkClick: () -> Unit = {}
+) {
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier
@@ -57,18 +68,28 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(64.dp))
         LoginCredentialsCard(
-            modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            viewState = viewState,
+            onEmailValueChange = onEmailValueChange,
+            onPasswordValueChange = onPasswordValueChange,
+            onLoginButtonClick = onLoginButtonClick
         )
         Spacer(modifier = Modifier.height(64.dp))
-        SignUpText()
+        SignUpText(onSignUpLinkClick = onSignUpLinkClick)
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Composable
-fun LoginCredentialsCard(modifier: Modifier = Modifier) {
+fun LoginCredentialsCard(
+    modifier: Modifier = Modifier,
+    viewState: LoginViewState = LoginViewState(),
+    onEmailValueChange: (String) -> Unit = {},
+    onPasswordValueChange: (String) -> Unit = {},
+    onLoginButtonClick: () -> Unit = {}
+) {
     Card(
         modifier = modifier,
         border = CardDefaults.outlinedCardBorder(),
@@ -77,24 +98,26 @@ fun LoginCredentialsCard(modifier: Modifier = Modifier) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             TextField(
-                value = TextFieldValue(),
-                onValueChange = {},
+                value = viewState.emailTextFieldViewState.value,
+                onValueChange = onEmailValueChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.email)) }
+                label = { Text(stringResource(R.string.email)) },
+                isError = viewState.emailTextFieldViewState.isError
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextField(
-                value = TextFieldValue(),
-                onValueChange = {},
+                value = viewState.passwordTextFieldViewState.value,
+                onValueChange = onPasswordValueChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.password)) }
+                label = { Text(stringResource(R.string.password)) },
+                isError = viewState.passwordTextFieldViewState.isError
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                Button(onClick = {}) {
+                Button(onClick = onLoginButtonClick) {
                     Text(
                         stringResource(R.string.login),
                         style = MaterialTheme.typography.titleMedium
@@ -106,21 +129,27 @@ fun LoginCredentialsCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SignUpText() {
+fun SignUpText(modifier: Modifier = Modifier, onSignUpLinkClick: () -> Unit = {}) {
     val annotatedText = buildAnnotatedString {
-        append(stringResource(R.string.sign_up_text_prefix) + " ")
-
-        withStyle(
-            style = SpanStyle(
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                textDecoration = TextDecoration.Underline
-            )
+        append(stringResource(R.string.sign_up_prompt))
+        append(stringResource(R.string.sign_up_whitespace))
+        withLink(
+            LinkAnnotation.Clickable(
+                tag = SIGN_UP_LINK_ANNOTATION_TAG,
+                linkInteractionListener = { onSignUpLinkClick() })
         ) {
-            append(stringResource(R.string.sign_up_text_postfix))
+            withStyle(
+                style = SpanStyle(
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold,
+                    textDecoration = TextDecoration.Underline
+                )
+            ) {
+                append(stringResource(R.string.sign_up_link_text))
+            }
         }
     }
-    Text(annotatedText)
+    Text(text = annotatedText, modifier = modifier)
 }
 
 @Preview(showSystemUi = true)
