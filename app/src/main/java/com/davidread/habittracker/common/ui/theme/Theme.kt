@@ -7,18 +7,18 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val LightColorScheme = lightColorScheme(
-    primary = GreenPrimary,
-    onPrimary = White,
-    secondary = AmberSecondary,
-    onSecondary = Black,
-    tertiary = TealTertiary,
-    onTertiary = White,
-    background = LightGrayBackground,
-    onBackground = Black,
-    surface = White,
-    onSurface = Black,
-    error = RedError,
-    onError = White
+    primary = Color.GreenPrimary,
+    onPrimary = Color.White,
+    secondary = Color.AmberSecondary,
+    onSecondary = Color.Black,
+    tertiary = Color.TealTertiary,
+    onTertiary = Color.White,
+    background = Color.LightGrayBackground,
+    onBackground = Color.Black,
+    surface = Color.White,
+    onSurface = Color.Black,
+    error = Color.RedError,
+    onError = Color.White
 )
 
 @Composable
