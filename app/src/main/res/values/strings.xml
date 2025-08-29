@@ -6,4 +6,5 @@
     <string name="sign_up_prompt">Don\'t have an account?</string>
     <string name="sign_up_whitespace">\u00A0</string>
     <string name="sign_up_link_text">Sign up here</string>
+    <string name="email_validation_error_message">Please enter a valid email address (e.g. name@example.com)</string>
 </resources>

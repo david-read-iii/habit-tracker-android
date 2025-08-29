@@ -1,7 +1,9 @@
 package com.davidread.habittracker.login.viewmodel
 
-import android.util.Log
+import android.app.Application
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
+import com.davidread.habittracker.R
 import com.davidread.habittracker.login.model.LoginViewIntent
 import com.davidread.habittracker.login.model.LoginViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,12 +13,12 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel() {
+class LoginViewModel @Inject constructor(private val application: Application) : ViewModel() {
+
     private val _viewState = MutableStateFlow(LoginViewState())
     val viewState: StateFlow<LoginViewState>
         get() = _viewState
 
-    // TODO: Define remaining intents.
     fun processIntent(intent: LoginViewIntent) = when (intent) {
         is LoginViewIntent.ChangeEmailValue -> {
             _viewState.update {
@@ -27,6 +29,7 @@ class LoginViewModel @Inject constructor() : ViewModel() {
                 )
             }
         }
+
         is LoginViewIntent.ChangePasswordValue -> {
             _viewState.update {
                 it.copy(
@@ -36,11 +39,29 @@ class LoginViewModel @Inject constructor() : ViewModel() {
                 )
             }
         }
+
         is LoginViewIntent.ClickLoginButton -> {
-            Log.d("LoginViewModel", "Login button clicked")
+            val emailValue = viewState.value.emailTextFieldViewState.value
+            val isEmailValid = Patterns.EMAIL_ADDRESS.matcher(emailValue).matches()
+            val (isError, errorMessage) = if (isEmailValid) {
+                Pair(false, "")
+            } else {
+                Pair(true, application.getString(R.string.email_validation_error_message))
+            }
+            _viewState.update {
+                it.copy(
+                    emailTextFieldViewState = it.emailTextFieldViewState.copy(
+                        isError = isError,
+                        errorMessage = errorMessage
+                    )
+                )
+            }
+
+            // TODO: Attempt login if email is valid.
         }
+
         is LoginViewIntent.ClickSignUpLink -> {
-            Log.d("LoginViewModel", "Sign up link clicked")
+            // TODO: Navigate to sign up screen.
         }
     }
 }

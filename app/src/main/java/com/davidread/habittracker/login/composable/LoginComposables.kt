@@ -104,6 +104,15 @@ fun LoginCredentialsCard(
                 label = { Text(stringResource(R.string.email)) },
                 isError = viewState.emailTextFieldViewState.isError
             )
+            if (viewState.emailTextFieldViewState.isError
+                && viewState.emailTextFieldViewState.errorMessage.isNotBlank()
+            ) {
+                Text(
+                    text = viewState.emailTextFieldViewState.errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             TextField(
                 value = viewState.passwordTextFieldViewState.value,
