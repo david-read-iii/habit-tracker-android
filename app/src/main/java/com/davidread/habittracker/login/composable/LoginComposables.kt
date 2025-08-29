@@ -119,7 +119,6 @@ fun LoginCredentialsCard(
                 onValueChange = onPasswordValueChange,
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(stringResource(R.string.password)) },
-                isError = viewState.passwordTextFieldViewState.isError
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(

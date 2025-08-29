@@ -1,12 +1,14 @@
 package com.davidread.habittracker.login.model
 
 data class LoginViewState(
-    val emailTextFieldViewState: LoginTextFieldViewState = LoginTextFieldViewState(),
-    val passwordTextFieldViewState: LoginTextFieldViewState = LoginTextFieldViewState()
+    val emailTextFieldViewState: EmailTextFieldViewState = EmailTextFieldViewState(),
+    val passwordTextFieldViewState: PasswordTextFieldViewState = PasswordTextFieldViewState()
 )
 
-data class LoginTextFieldViewState(
+data class EmailTextFieldViewState(
     val value: String = "",
     val isError: Boolean = false,
     val errorMessage: String = ""
 )
+
+data class PasswordTextFieldViewState(val value: String = "")
