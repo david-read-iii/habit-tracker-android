@@ -38,7 +38,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.login.model.EmailTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewState
+import com.davidread.habittracker.login.model.PasswordTextFieldViewState
 
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
@@ -165,5 +167,46 @@ fun SignUpText(modifier: Modifier = Modifier, onSignUpLinkClick: () -> Unit = {}
 private fun LoginScreenPreview() {
     HabitTrackerTheme {
         LoginScreen()
+    }
+}
+
+@Preview(showBackground = false)
+@Composable
+private fun LoginCredentialsCardPreview_Default() {
+    HabitTrackerTheme {
+        LoginCredentialsCard()
+    }
+}
+
+@Preview
+@Composable
+private fun LoginCredentialsCardPreview_FieldsFilled() {
+    HabitTrackerTheme {
+        LoginCredentialsCard(
+            viewState = LoginViewState(
+                emailTextFieldViewState = EmailTextFieldViewState(
+                    value = "david.read@gmail.com"
+                ),
+                passwordTextFieldViewState = PasswordTextFieldViewState(
+                    value = "password"
+                )
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun LoginCredentialsCardPreview_InvalidEmail() {
+    HabitTrackerTheme {
+        LoginCredentialsCard(
+            viewState = LoginViewState(
+                emailTextFieldViewState = EmailTextFieldViewState(
+                    value = "invalid email",
+                    isError = true,
+                    errorMessage = stringResource(R.string.email_validation_error_message)
+                )
+            )
+        )
     }
 }
