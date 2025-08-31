@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- WARNING: Cleartext traffic is only enabled for debug builds. Ensure it is disabled for
+         production or bad things will happen. -->
     <application
         android:name=".HabitTrackerApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round">
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:usesCleartextTraffic="${CLEAR_TEXT_TRAFFIC}">
 
-        <activity
+    <activity
             android:name=".login.view.LoginActivity"
             android:exported="true">
             <intent-filter>
