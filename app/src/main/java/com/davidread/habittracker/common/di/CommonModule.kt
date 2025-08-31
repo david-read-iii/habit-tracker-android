@@ -17,7 +17,7 @@ class CommonModule {
     @Singleton
     fun providesRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BaseUrl.ANDROID_EMULATOR_DEBUG)
+            .baseUrl(BaseUrl.ANDROID_PHYSICAL_DEVICE_DEBUG)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
