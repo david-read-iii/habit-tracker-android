@@ -15,6 +15,7 @@ import javax.inject.Inject
 
 private const val TAG = "LoginUseCase"
 
+// TODO: Simplify this logic somehow?
 class LoginUseCase @Inject constructor(
     private val application: Application,
     private val validateEmailUseCase: ValidateEmailUseCase,
