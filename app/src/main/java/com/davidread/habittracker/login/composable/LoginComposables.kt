@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -111,40 +112,19 @@ fun LoginCredentialsCard(
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            TextField(
-                value = viewState.emailTextFieldViewState.value,
+            LoginTextField(
+                viewState = viewState.emailTextFieldViewState,
                 onValueChange = onEmailValueChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.email)) },
-                isError = viewState.emailTextFieldViewState.isError,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Done
-                ),
-                singleLine = true
+                labelText = stringResource(R.string.email),
+                keyboardType = KeyboardType.Email,
             )
-            if (viewState.emailTextFieldViewState.isError
-                && viewState.emailTextFieldViewState.errorMessage.isNotBlank()
-            ) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = viewState.emailTextFieldViewState.errorMessage,
-                    color = Color.RedError,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
             Spacer(modifier = Modifier.height(16.dp))
-            TextField(
-                value = viewState.passwordTextFieldViewState.value,
+            LoginTextField(
+                viewState = viewState.passwordTextFieldViewState,
                 onValueChange = onPasswordValueChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.password)) },
+                labelText = stringResource(R.string.password),
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                ),
-                singleLine = true
+                keyboardType = KeyboardType.Password,
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -159,6 +139,38 @@ fun LoginCredentialsCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun LoginTextField(
+    modifier: Modifier = Modifier,
+    viewState: LoginTextFieldViewState,
+    onValueChange: (String) -> Unit = {},
+    labelText: String = "",
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardType: KeyboardType = KeyboardType.Unspecified
+) {
+    TextField(
+        value = viewState.value,
+        onValueChange = onValueChange,
+        modifier = modifier.fillMaxWidth(),
+        label = { Text(labelText) },
+        isError = viewState.isError,
+        visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType,
+            imeAction = ImeAction.Done
+        ),
+        singleLine = true
+    )
+    if (viewState.isError && viewState.errorMessage.isNotBlank()) {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = viewState.errorMessage,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 
@@ -194,7 +206,7 @@ private fun LoginScreenPreview_Default() {
     }
 }
 
-@Preview(showBackground = false)
+@Preview
 @Composable
 private fun LoginCredentialsCardPreview_Default() {
     HabitTrackerTheme {
