@@ -43,10 +43,8 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.AlertDialog
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
-import com.davidread.habittracker.login.model.DialogViewState
-import com.davidread.habittracker.login.model.EmailTextFieldViewState
+import com.davidread.habittracker.login.model.LoginTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewState
-import com.davidread.habittracker.login.model.PasswordTextFieldViewState
 
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
@@ -210,10 +208,10 @@ private fun LoginCredentialsCardPreview_FieldsFilled() {
     HabitTrackerTheme {
         LoginCredentialsCard(
             viewState = LoginViewState(
-                emailTextFieldViewState = EmailTextFieldViewState(
+                emailTextFieldViewState = LoginTextFieldViewState(
                     value = "david.read@gmail.com"
                 ),
-                passwordTextFieldViewState = PasswordTextFieldViewState(
+                passwordTextFieldViewState = LoginTextFieldViewState(
                     value = "password"
                 )
             )
@@ -227,7 +225,7 @@ private fun LoginCredentialsCardPreview_InvalidEmail() {
     HabitTrackerTheme {
         LoginCredentialsCard(
             viewState = LoginViewState(
-                emailTextFieldViewState = EmailTextFieldViewState(
+                emailTextFieldViewState = LoginTextFieldViewState(
                     value = "invalid email",
                     isError = true,
                     errorMessage = stringResource(R.string.email_validation_error_message)

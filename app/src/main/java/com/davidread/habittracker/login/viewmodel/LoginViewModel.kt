@@ -61,7 +61,7 @@ class LoginViewModel @Inject constructor(
                 validateEmailUseCase(_viewState.value.emailTextFieldViewState)
             _viewState.update {
                 it.copy(
-                    emailTextFieldViewState = emailValidationResult.emailTextFieldViewState
+                    emailTextFieldViewState = emailValidationResult.loginTextFieldViewState
                 )
             }
 

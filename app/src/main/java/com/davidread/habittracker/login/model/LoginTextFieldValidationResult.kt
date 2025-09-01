@@ -1,8 +1,8 @@
 package com.davidread.habittracker.login.model
 
-data class EmailValidationResult(
+data class LoginTextFieldValidationResult(
     val status: Status,
-    val emailTextFieldViewState: EmailTextFieldViewState,
+    val loginTextFieldViewState: LoginTextFieldViewState,
 ) {
     enum class Status { VALID, INVALID }
 }
