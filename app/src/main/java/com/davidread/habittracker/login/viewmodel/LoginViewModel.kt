@@ -2,6 +2,7 @@ package com.davidread.habittracker.login.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.davidread.habittracker.login.model.DialogViewState
 import com.davidread.habittracker.login.model.LoginViewEffect
 import com.davidread.habittracker.login.model.LoginViewIntent
 import com.davidread.habittracker.login.model.LoginViewState
@@ -63,6 +64,12 @@ class LoginViewModel @Inject constructor(private val loginUseCase: LoginUseCase)
         is LoginViewIntent.ClickSignUpLink -> {
             viewModelScope.launch {
                 _viewEffect.emit(LoginViewEffect.NavigateToSignUpScreen)
+            }
+        }
+
+        is LoginViewIntent.ClickAlertDialogButton -> {
+            _viewState.update {
+                it.copy(dialogViewState = DialogViewState(showDialog = false))
             }
         }
     }

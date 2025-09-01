@@ -62,6 +62,9 @@ class LoginActivity : ComponentActivity() {
                     },
                     onSignUpLinkClick = {
                         viewModel.processIntent(intent = LoginViewIntent.ClickSignUpLink)
+                    },
+                    onAlertDialogButtonClick = {
+                        viewModel.processIntent(intent = LoginViewIntent.ClickAlertDialogButton)
                     }
                 )
             }

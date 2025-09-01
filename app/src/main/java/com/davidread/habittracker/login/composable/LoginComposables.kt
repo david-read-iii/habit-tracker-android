@@ -57,7 +57,7 @@ fun LoginScreen(
     onPasswordValueChange: (String) -> Unit = {},
     onLoginButtonClick: () -> Unit = {},
     onSignUpLinkClick: () -> Unit = {},
-    onErrorDialogButtonClick: () -> Unit = {}
+    onAlertDialogButtonClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -92,7 +92,7 @@ fun LoginScreen(
     if (viewState.dialogViewState.showDialog) {
         AlertDialog(
             message = viewState.dialogViewState.message,
-            onButtonClick = onErrorDialogButtonClick
+            onButtonClick = onAlertDialogButtonClick
         )
     }
 }

@@ -5,4 +5,5 @@ sealed class LoginViewIntent {
     class ChangePasswordValue(val newValue: String) : LoginViewIntent()
     object ClickLoginButton : LoginViewIntent()
     object ClickSignUpLink : LoginViewIntent()
+    object ClickAlertDialogButton : LoginViewIntent()
 }
