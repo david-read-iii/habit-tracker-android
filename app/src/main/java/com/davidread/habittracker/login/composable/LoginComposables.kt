@@ -40,8 +40,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.AlertDialog
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.login.model.DialogViewState
 import com.davidread.habittracker.login.model.EmailTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.model.PasswordTextFieldViewState
@@ -55,7 +57,8 @@ fun LoginScreen(
     onEmailValueChange: (String) -> Unit = {},
     onPasswordValueChange: (String) -> Unit = {},
     onLoginButtonClick: () -> Unit = {},
-    onSignUpLinkClick: () -> Unit = {}
+    onSignUpLinkClick: () -> Unit = {},
+    onErrorDialogButtonClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -85,6 +88,13 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(64.dp))
         SignUpText(onSignUpLinkClick = onSignUpLinkClick)
         Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (viewState.dialogViewState.showDialog) {
+        AlertDialog(
+            message = viewState.dialogViewState.message,
+            onButtonClick = onErrorDialogButtonClick
+        )
     }
 }
 
@@ -180,7 +190,7 @@ fun SignUpText(modifier: Modifier = Modifier, onSignUpLinkClick: () -> Unit = {}
 
 @Preview(showSystemUi = true)
 @Composable
-private fun LoginScreenPreview() {
+private fun LoginScreenPreview_Default() {
     HabitTrackerTheme {
         LoginScreen()
     }

@@ -1,7 +1,10 @@
 package com.davidread.habittracker.login.viewmodel
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.davidread.habittracker.R
+import com.davidread.habittracker.login.model.DialogViewState
 import com.davidread.habittracker.login.model.LoginRequest
 import com.davidread.habittracker.login.model.LoginViewEffect
 import com.davidread.habittracker.login.model.LoginViewIntent
@@ -20,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val validateEmailUseCase: ValidateEmailUseCase,
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val application: Application
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(LoginViewState())
@@ -72,7 +76,14 @@ class LoginViewModel @Inject constructor(
                 if (loginResult.navigateToListScreen) {
                     _viewEffect.emit(LoginViewEffect.NavigateToListScreen)
                 } else if (loginResult.showErrorDialog) {
-                    // TODO: Show error dialog on UI.
+                    _viewState.update {
+                        it.copy(
+                            dialogViewState = DialogViewState(
+                                showDialog = true,
+                                message = application.getString(R.string.login_credentials_incorrect_error_message)
+                            )
+                        )
+                    }
                 }
             }
         }
