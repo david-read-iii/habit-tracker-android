@@ -16,5 +16,5 @@ data class PasswordTextFieldViewState(val value: String = "")
 
 data class DialogViewState(
     val showDialog: Boolean = false,
-    val message: String = ""
+    val message: String? = null
 )
