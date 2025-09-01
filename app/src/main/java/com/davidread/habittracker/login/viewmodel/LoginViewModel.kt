@@ -6,11 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.davidread.habittracker.R
 import com.davidread.habittracker.login.model.DialogViewState
 import com.davidread.habittracker.login.model.LoginRequest
+import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
 import com.davidread.habittracker.login.model.LoginViewEffect
 import com.davidread.habittracker.login.model.LoginViewIntent
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.usecase.LoginUseCase
 import com.davidread.habittracker.login.usecase.ValidateEmailUseCase
+import com.davidread.habittracker.login.usecase.ValidatePasswordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val validateEmailUseCase: ValidateEmailUseCase,
+    private val validatePasswordUseCase: ValidatePasswordUseCase,
     private val loginUseCase: LoginUseCase,
     private val application: Application
 ) : ViewModel() {
@@ -59,32 +62,38 @@ class LoginViewModel @Inject constructor(
         is LoginViewIntent.ClickLoginButton -> {
             val emailValidationResult =
                 validateEmailUseCase(_viewState.value.emailTextFieldViewState)
+            val passwordValidationResult =
+                validatePasswordUseCase(_viewState.value.passwordTextFieldViewState)
             _viewState.update {
                 it.copy(
-                    emailTextFieldViewState = emailValidationResult.loginTextFieldViewState
+                    emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
+                    passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState
                 )
             }
 
-            viewModelScope.launch {
-                val loginResult = loginUseCase(
-                    loginRequest = LoginRequest(
-                        email = _viewState.value.emailTextFieldViewState.value,
-                        password = _viewState.value.passwordTextFieldViewState.value
-                    )
-                )
-
-                if (loginResult.navigateToListScreen) {
-                    _viewEffect.emit(LoginViewEffect.NavigateToListScreen)
-                } else if (loginResult.showErrorDialog) {
-                    _viewState.update {
-                        it.copy(
-                            dialogViewState = DialogViewState(
-                                showDialog = true,
-                                message = application.getString(R.string.login_credentials_incorrect_error_message)
-                            )
+            if (emailValidationResult.status == LoginTextFieldValidationResult.Status.VALID || passwordValidationResult.status == LoginTextFieldValidationResult.Status.VALID) {
+                viewModelScope.launch {
+                    val loginResult = loginUseCase(
+                        loginRequest = LoginRequest(
+                            email = _viewState.value.emailTextFieldViewState.value,
+                            password = _viewState.value.passwordTextFieldViewState.value
                         )
+                    )
+
+                    if (loginResult.navigateToListScreen) {
+                        _viewEffect.emit(LoginViewEffect.NavigateToListScreen)
+                    } else if (loginResult.showErrorDialog) {
+                        _viewState.update {
+                            it.copy(
+                                dialogViewState = DialogViewState(
+                                    showDialog = true,
+                                    message = application.getString(R.string.login_credentials_incorrect_error_message)
+                                )
+                            )
+                        }
                     }
                 }
+            } else {
             }
         }
 

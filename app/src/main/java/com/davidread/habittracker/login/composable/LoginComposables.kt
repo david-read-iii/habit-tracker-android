@@ -221,7 +221,7 @@ private fun LoginCredentialsCardPreview_FieldsFilled() {
 
 @Preview
 @Composable
-private fun LoginCredentialsCardPreview_InvalidEmail() {
+private fun LoginCredentialsCardPreview_FieldsInvalid() {
     HabitTrackerTheme {
         LoginCredentialsCard(
             viewState = LoginViewState(
@@ -229,6 +229,11 @@ private fun LoginCredentialsCardPreview_InvalidEmail() {
                     value = "invalid email",
                     isError = true,
                     errorMessage = stringResource(R.string.email_validation_error_message)
+                ),
+                passwordTextFieldViewState = LoginTextFieldViewState(
+                    value = "1234",
+                    isError = true,
+                    errorMessage = stringResource(R.string.password_validation_error_message)
                 )
             )
         )
