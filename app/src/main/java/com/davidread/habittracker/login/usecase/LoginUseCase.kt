@@ -4,8 +4,10 @@ import android.app.Application
 import android.util.Log
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.model.Result
+import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
 import com.davidread.habittracker.login.model.DialogViewState
 import com.davidread.habittracker.login.model.LoginRequest
+import com.davidread.habittracker.login.model.LoginResponse
 import com.davidread.habittracker.login.model.LoginResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Status
@@ -20,7 +22,8 @@ class LoginUseCase @Inject constructor(
     private val application: Application,
     private val validateEmailUseCase: ValidateEmailUseCase,
     private val validatePasswordUseCase: ValidatePasswordUseCase,
-    private val loginRepository: LoginRepository
+    private val loginRepository: LoginRepository,
+    private val authenticationTokenRepository: AuthenticationTokenRepository
 ) {
 
     suspend operator fun invoke(viewState: LoginViewState): LoginResult {
@@ -53,17 +56,12 @@ class LoginUseCase @Inject constructor(
         )
 
         return when (loginServiceResult) {
-            is Result.Success -> {
-                val token = loginServiceResult.data.token
-                // TODO: Store token somewhere somehow.
-                LoginResult(
-                    viewState = viewState.copy(
-                        emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
-                        passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState
-                    ),
-                    navigateToListScreen = true
-                )
-            }
+            is Result.Success -> handleSaveAuthenticationToken(
+                loginServiceResult,
+                viewState,
+                emailValidationResult,
+                passwordValidationResult
+            )
 
             is Result.Error -> {
                 Log.e(TAG, "Error logging in", loginServiceResult.exception)
@@ -88,5 +86,34 @@ class LoginUseCase @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun handleSaveAuthenticationToken(
+        loginServiceResult: Result.Success<LoginResponse>,
+        viewState: LoginViewState,
+        emailValidationResult: LoginTextFieldValidationResult,
+        passwordValidationResult: LoginTextFieldValidationResult
+    ): LoginResult {
+        loginServiceResult.data.token?.let {
+            val tokenSaveResult = authenticationTokenRepository.saveAuthenticationToken(it)
+            if (tokenSaveResult is Result.Success) {
+                return LoginResult(
+                    viewState = viewState.copy(
+                        emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
+                        passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState
+                    ),
+                    navigateToListScreen = true
+                )
+            }
+        }
+
+        return LoginResult(
+            viewState = viewState.copy(
+                emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
+                passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState,
+                dialogViewState = DialogViewState(showDialog = true, message = null)
+            ),
+            navigateToListScreen = false
+        )
     }
 }

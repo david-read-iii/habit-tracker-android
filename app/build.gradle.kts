@@ -61,6 +61,8 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.tink.android)
+    implementation(libs.security.crypto)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.leakcanary.android)
     debugImplementation(libs.compose.ui.test.manifest)

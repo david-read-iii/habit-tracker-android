@@ -13,6 +13,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class CommonModule {
 
+    // TODO: Add decrypted auth token in all service headers except login and signup.
     @Provides
     @Singleton
     fun providesRetrofit(): Retrofit {
