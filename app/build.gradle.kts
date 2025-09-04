@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.hilt.navigation.compose)
     implementation(libs.tink.android)
     implementation(libs.security.crypto)
     debugImplementation(libs.ui.tooling)

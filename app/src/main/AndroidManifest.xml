@@ -13,7 +13,7 @@
         android:usesCleartextTraffic="${CLEAR_TEXT_TRAFFIC}">
 
     <activity
-            android:name=".login.view.LoginActivity"
+            android:name=".common.ui.activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
