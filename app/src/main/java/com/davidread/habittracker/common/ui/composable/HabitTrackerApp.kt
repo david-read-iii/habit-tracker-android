@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.davidread.habittracker.common.model.Route
 import com.davidread.habittracker.common.model.Screen
 import com.davidread.habittracker.login.composable.LoginScreen
 import com.davidread.habittracker.login.model.LoginViewEffect
@@ -41,11 +42,11 @@ fun HabitTrackerApp() {
                 viewModel.viewEffect.collect { viewEffect ->
                     when (viewEffect) {
                         is LoginViewEffect.NavigateToListScreen -> {
-                            navController.navigate("habit_list")
+                            navController.navigate(Route.HABIT_LIST)
                         }
 
                         is LoginViewEffect.NavigateToSignUpScreen -> {
-                            navController.navigate("signup")
+                            navController.navigate(Route.SIGN_UP)
                         }
                     }
                 }
@@ -81,9 +82,9 @@ fun HabitTrackerApp() {
         }
 
         // TODO: Define actual signup screen composable.
-        composable(route = Screen.Signup.route) {
+        composable(route = Screen.SignUp.route) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Signup Screen")
+                Text("Sign Up Screen")
             }
         }
 
