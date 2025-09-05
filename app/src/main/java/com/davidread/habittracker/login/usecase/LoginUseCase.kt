@@ -7,7 +7,6 @@ import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
 import com.davidread.habittracker.login.model.DialogViewState
 import com.davidread.habittracker.login.model.LoginRequest
-import com.davidread.habittracker.login.model.LoginResponse
 import com.davidread.habittracker.login.model.LoginResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Status
@@ -30,24 +29,15 @@ class LoginUseCase @Inject constructor(
         val emailValidationResult = validateEmailUseCase(viewState.emailTextFieldViewState)
         val passwordValidationResult = validatePasswordUseCase(viewState.passwordTextFieldViewState)
 
-        return if (emailValidationResult.status == Status.VALID && passwordValidationResult.status == Status.VALID) {
-            handleLoginServiceCall(viewState, emailValidationResult, passwordValidationResult)
-        } else {
-            LoginResult(
-                viewState = viewState.copy(
-                    emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
-                    passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState
-                ),
-                navigateToListScreen = false
+        if (emailValidationResult.status == Status.INVALID || passwordValidationResult.status == Status.INVALID) {
+            return getErrorLoginResult(
+                viewState = viewState,
+                emailValidationResult = emailValidationResult,
+                passwordValidationResult = passwordValidationResult,
+                showErrorDialog = false
             )
         }
-    }
 
-    private suspend fun handleLoginServiceCall(
-        viewState: LoginViewState,
-        emailValidationResult: LoginTextFieldValidationResult,
-        passwordValidationResult: LoginTextFieldValidationResult
-    ): LoginResult {
         val loginServiceResult = loginRepository.login(
             loginRequest = LoginRequest(
                 email = viewState.emailTextFieldViewState.value,
@@ -55,65 +45,73 @@ class LoginUseCase @Inject constructor(
             )
         )
 
-        return when (loginServiceResult) {
-            is Result.Success -> handleSaveAuthenticationToken(
-                loginServiceResult,
-                viewState,
-                emailValidationResult,
-                passwordValidationResult
+        if (loginServiceResult is Result.Error) {
+            Log.e(TAG, "Error logging in", loginServiceResult.exception)
+            return getErrorLoginResult(
+                viewState = viewState,
+                emailValidationResult = emailValidationResult,
+                passwordValidationResult = passwordValidationResult,
+                showErrorDialog = true,
+                exception = loginServiceResult.exception
             )
-
-            is Result.Error -> {
-                Log.e(TAG, "Error logging in", loginServiceResult.exception)
-                val message =
-                    if (loginServiceResult.exception is HttpException && loginServiceResult.exception.code() == 400) {
-                        application.getString(
-                            R.string.login_credentials_incorrect_error_message
-                        )
-                    } else {
-                        null
-                    }
-                LoginResult(
-                    viewState = viewState.copy(
-                        emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
-                        passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState,
-                        dialogViewState = DialogViewState(
-                            showDialog = true,
-                            message = message
-                        )
-                    ),
-                    navigateToListScreen = false
-                )
-            }
         }
-    }
 
-    private fun handleSaveAuthenticationToken(
-        loginServiceResult: Result.Success<LoginResponse>,
-        viewState: LoginViewState,
-        emailValidationResult: LoginTextFieldValidationResult,
-        passwordValidationResult: LoginTextFieldValidationResult
-    ): LoginResult {
-        loginServiceResult.data.token?.let {
-            val tokenSaveResult = authenticationTokenRepository.saveAuthenticationToken(it)
-            if (tokenSaveResult is Result.Success) {
-                return LoginResult(
-                    viewState = viewState.copy(
-                        emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
-                        passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState
-                    ),
-                    navigateToListScreen = true
-                )
-            }
+        val token = (loginServiceResult as Result.Success).data.token
+
+        if (token == null) {
+            Log.e(TAG, "Service returned null token")
+            return getErrorLoginResult(
+                viewState = viewState,
+                emailValidationResult = emailValidationResult,
+                passwordValidationResult = passwordValidationResult,
+                showErrorDialog = true
+            )
+        }
+
+        val tokenSaveResult = authenticationTokenRepository.saveAuthenticationToken(token)
+
+        if (tokenSaveResult is Result.Error) {
+            return getErrorLoginResult(
+                viewState = viewState,
+                emailValidationResult = emailValidationResult,
+                passwordValidationResult = passwordValidationResult,
+                showErrorDialog = true,
+                exception = tokenSaveResult.exception
+            )
         }
 
         return LoginResult(
             viewState = viewState.copy(
                 emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
-                passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState,
-                dialogViewState = DialogViewState(showDialog = true, message = null)
+                passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState
             ),
-            navigateToListScreen = false
+            navigateToListScreen = true
         )
     }
+
+    private fun getErrorLoginResult(
+        viewState: LoginViewState,
+        emailValidationResult: LoginTextFieldValidationResult,
+        passwordValidationResult: LoginTextFieldValidationResult,
+        showErrorDialog: Boolean,
+        exception: Exception? = null
+    ) = LoginResult(
+        viewState = viewState.copy(
+            emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
+            passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState,
+            dialogViewState = if (showErrorDialog) {
+                val message = if (exception is HttpException && exception.code() == 400) {
+                    application.getString(
+                        R.string.login_credentials_incorrect_error_message
+                    )
+                } else {
+                    null
+                }
+                DialogViewState(showDialog = true, message = message)
+            } else {
+                DialogViewState(showDialog = false, message = null)
+            }
+        ),
+        navigateToListScreen = false
+    )
 }
