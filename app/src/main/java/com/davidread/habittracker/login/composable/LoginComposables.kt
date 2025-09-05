@@ -23,6 +23,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -40,17 +43,67 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.AlertDialog
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
+import com.davidread.habittracker.login.model.LoginViewEffect
+import com.davidread.habittracker.login.model.LoginViewIntent
 import com.davidread.habittracker.login.model.LoginViewState
+import com.davidread.habittracker.login.viewmodel.LoginViewModel
 
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
 @Composable
 fun LoginScreen(
+    modifier: Modifier = Modifier,
+    viewModel: LoginViewModel = hiltViewModel(),
+    onNavigateToHabitListScreen: () -> Unit = {},
+    onNavigateToSignUpScreen: () -> Unit = {}
+) {
+    LaunchedEffect(Unit) {
+        viewModel.viewEffect.collect { viewEffect ->
+            when (viewEffect) {
+                is LoginViewEffect.NavigateToHabitListScreen -> onNavigateToHabitListScreen()
+                is LoginViewEffect.NavigateToSignUpScreen -> onNavigateToSignUpScreen()
+            }
+        }
+    }
+
+    val viewState by viewModel.viewState.collectAsState()
+    LoginScreenContent(
+        modifier = modifier,
+        viewState = viewState,
+        onEmailValueChange = {
+            viewModel.processIntent(
+                intent = LoginViewIntent.ChangeEmailValue(
+                    newValue = it
+                )
+            )
+        },
+        onPasswordValueChange = {
+            viewModel.processIntent(
+                intent = LoginViewIntent.ChangePasswordValue(
+                    newValue = it
+                )
+            )
+        },
+        onLoginButtonClick = {
+            viewModel.processIntent(intent = LoginViewIntent.ClickLoginButton)
+        },
+        onSignUpLinkClick = {
+            viewModel.processIntent(intent = LoginViewIntent.ClickSignUpLink)
+        },
+        onAlertDialogButtonClick = {
+            viewModel.processIntent(intent = LoginViewIntent.ClickAlertDialogButton)
+        }
+    )
+}
+
+@Composable
+fun LoginScreenContent(
     modifier: Modifier = Modifier,
     viewState: LoginViewState = LoginViewState(),
     onEmailValueChange: (String) -> Unit = {},
@@ -200,9 +253,9 @@ fun SignUpText(modifier: Modifier = Modifier, onSignUpLinkClick: () -> Unit = {}
 
 @Preview(showSystemUi = true)
 @Composable
-private fun LoginScreenPreview_Default() {
+private fun LoginScreenContentPreview_Default() {
     HabitTrackerTheme {
-        LoginScreen()
+        LoginScreenContent()
     }
 }
 

@@ -56,7 +56,7 @@ class LoginViewModel @Inject constructor(private val loginUseCase: LoginUseCase)
                 }
 
                 if (loginResult.navigateToListScreen) {
-                    _viewEffect.emit(LoginViewEffect.NavigateToListScreen)
+                    _viewEffect.emit(LoginViewEffect.NavigateToHabitListScreen)
                 }
             }
         }
