@@ -11,4 +11,5 @@
     <string name="login_credentials_incorrect_error_message">Incorrect email or password. Please try again.</string>
     <string name="generic_error_message">An error occurred. Please try again later.</string>
     <string name="ok">OK</string>
+    <string name="loading">Loading&#8230;</string>
 </resources>

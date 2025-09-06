@@ -50,9 +50,11 @@ class LoginViewModel @Inject constructor(private val loginUseCase: LoginUseCase)
 
         is LoginViewIntent.ClickLoginButton -> {
             viewModelScope.launch {
+                _viewState.update { it.copy(showLoadingDialog = true) }
+
                 val loginResult = loginUseCase(viewState = _viewState.value)
                 _viewState.update {
-                    loginResult.viewState
+                    loginResult.viewState.copy(showLoadingDialog = false)
                 }
 
                 if (loginResult.navigateToListScreen) {

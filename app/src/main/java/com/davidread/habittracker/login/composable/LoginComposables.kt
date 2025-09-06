@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.AlertDialog
+import com.davidread.habittracker.common.ui.composable.LoadingDialog
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
@@ -140,6 +141,10 @@ fun LoginScreenContent(
         Spacer(modifier = Modifier.height(64.dp))
         SignUpText(onSignUpLinkClick = onSignUpLinkClick)
         Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    if (viewState.showLoadingDialog) {
+        LoadingDialog()
     }
 
     if (viewState.alertDialogViewState.showDialog) {

@@ -63,12 +63,12 @@ class LoginViewModelTest {
         turbineScope {
             val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
-            val viewState = mockk<LoginViewState>()
+            val viewState = LoginViewState()
             val navigateToListScreen = true
-            coEvery { loginUseCase.invoke(any()) } returns mockk<LoginResult> {
-                every { this@mockk.viewState } returns viewState
-                every { this@mockk.navigateToListScreen } returns navigateToListScreen
-            }
+            coEvery { loginUseCase.invoke(any()) } returns LoginResult(
+                viewState = viewState,
+                navigateToListScreen = navigateToListScreen
+            )
             viewModel.processIntent(LoginViewIntent.ClickLoginButton)
 
             Assert.assertEquals(viewState, viewStateTurbine.expectMostRecentItem())
@@ -85,7 +85,7 @@ class LoginViewModelTest {
         turbineScope {
             val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
-            val viewState = mockk<LoginViewState>()
+            val viewState = LoginViewState()
             val navigateToListScreen = false
             coEvery { loginUseCase.invoke(any()) } returns mockk<LoginResult> {
                 every { this@mockk.viewState } returns viewState
