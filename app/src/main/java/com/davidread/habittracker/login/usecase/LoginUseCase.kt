@@ -1,10 +1,10 @@
 package com.davidread.habittracker.login.usecase
 
 import android.app.Application
-import android.util.Log
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
+import com.davidread.habittracker.common.util.Logger
 import com.davidread.habittracker.login.model.AlertDialogViewState
 import com.davidread.habittracker.login.model.LoginRequest
 import com.davidread.habittracker.login.model.LoginResult
@@ -19,6 +19,7 @@ private const val TAG = "LoginUseCase"
 
 class LoginUseCase @Inject constructor(
     private val application: Application,
+    private val logger: Logger,
     private val validateEmailUseCase: ValidateEmailUseCase,
     private val validatePasswordUseCase: ValidatePasswordUseCase,
     private val loginRepository: LoginRepository,
@@ -46,7 +47,7 @@ class LoginUseCase @Inject constructor(
         )
 
         if (loginServiceResult is Result.Error) {
-            Log.e(TAG, "Error logging in", loginServiceResult.exception)
+            logger.e(TAG, "Error logging in", loginServiceResult.exception)
             return getErrorLoginResult(
                 viewState = viewState,
                 emailValidationResult = emailValidationResult,
@@ -59,7 +60,7 @@ class LoginUseCase @Inject constructor(
         val token = (loginServiceResult as Result.Success).data.token
 
         if (token == null) {
-            Log.e(TAG, "Service returned null token")
+            logger.e(TAG, "Service returned null token")
             return getErrorLoginResult(
                 viewState = viewState,
                 emailValidationResult = emailValidationResult,
