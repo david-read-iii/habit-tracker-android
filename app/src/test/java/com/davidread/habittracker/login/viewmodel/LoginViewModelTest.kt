@@ -1,4 +1,4 @@
-package com.davidread.habittracker.viewmodel
+package com.davidread.habittracker.login.viewmodel
 
 import app.cash.turbine.turbineScope
 import com.davidread.habittracker.login.model.AlertDialogViewState
