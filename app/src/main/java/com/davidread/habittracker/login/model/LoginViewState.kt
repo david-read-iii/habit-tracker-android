@@ -3,7 +3,7 @@ package com.davidread.habittracker.login.model
 data class LoginViewState(
     val emailTextFieldViewState: LoginTextFieldViewState = LoginTextFieldViewState(),
     val passwordTextFieldViewState: LoginTextFieldViewState = LoginTextFieldViewState(),
-    val dialogViewState: DialogViewState = DialogViewState()
+    val alertDialogViewState: AlertDialogViewState = AlertDialogViewState()
 )
 
 data class LoginTextFieldViewState(
@@ -12,9 +12,7 @@ data class LoginTextFieldViewState(
     val errorMessage: String = ""
 )
 
-data class PasswordTextFieldViewState(val value: String = "")
-
-data class DialogViewState(
+data class AlertDialogViewState(
     val showDialog: Boolean = false,
     val message: String? = null
 )

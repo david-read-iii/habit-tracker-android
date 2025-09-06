@@ -5,7 +5,7 @@ import android.util.Log
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
-import com.davidread.habittracker.login.model.DialogViewState
+import com.davidread.habittracker.login.model.AlertDialogViewState
 import com.davidread.habittracker.login.model.LoginRequest
 import com.davidread.habittracker.login.model.LoginResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
@@ -99,7 +99,7 @@ class LoginUseCase @Inject constructor(
         viewState = viewState.copy(
             emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
             passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState,
-            dialogViewState = if (showErrorDialog) {
+            alertDialogViewState = if (showErrorDialog) {
                 val message = if (exception is HttpException && exception.code() == 400) {
                     application.getString(
                         R.string.login_credentials_incorrect_error_message
@@ -107,9 +107,9 @@ class LoginUseCase @Inject constructor(
                 } else {
                     null
                 }
-                DialogViewState(showDialog = true, message = message)
+                AlertDialogViewState(showDialog = true, message = message)
             } else {
-                DialogViewState(showDialog = false, message = null)
+                AlertDialogViewState(showDialog = false, message = null)
             }
         ),
         navigateToListScreen = false

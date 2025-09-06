@@ -142,9 +142,9 @@ fun LoginScreenContent(
         Spacer(modifier = Modifier.height(16.dp))
     }
 
-    if (viewState.dialogViewState.showDialog) {
+    if (viewState.alertDialogViewState.showDialog) {
         AlertDialog(
-            message = viewState.dialogViewState.message,
+            message = viewState.alertDialogViewState.message,
             onButtonClick = onAlertDialogButtonClick
         )
     }

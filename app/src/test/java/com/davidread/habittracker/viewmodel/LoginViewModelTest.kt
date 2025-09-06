@@ -1,7 +1,7 @@
 package com.davidread.habittracker.viewmodel
 
 import app.cash.turbine.turbineScope
-import com.davidread.habittracker.login.model.DialogViewState
+import com.davidread.habittracker.login.model.AlertDialogViewState
 import com.davidread.habittracker.login.model.LoginResult
 import com.davidread.habittracker.login.model.LoginViewEffect
 import com.davidread.habittracker.login.model.LoginViewIntent
@@ -118,23 +118,23 @@ class LoginViewModelTest {
             val turbine = viewModel.viewState.testIn(backgroundScope)
 
             // Verify dialog shown.
-            val dialogViewState = DialogViewState(
+            val alertDialogViewState = AlertDialogViewState(
                 showDialog = true,
                 message = "Oops. Something went wrong."
             )
             coEvery { loginUseCase.invoke(any()) } returns LoginResult(
                 viewState = LoginViewState(
-                    dialogViewState = dialogViewState
+                    alertDialogViewState = alertDialogViewState
                 )
             )
             viewModel.processIntent(LoginViewIntent.ClickLoginButton)
-            Assert.assertEquals(dialogViewState, turbine.expectMostRecentItem().dialogViewState)
+            Assert.assertEquals(alertDialogViewState, turbine.expectMostRecentItem().alertDialogViewState)
 
             // Verify dialog dismissed.
             viewModel.processIntent(LoginViewIntent.ClickAlertDialogButton)
             Assert.assertEquals(
-                DialogViewState(showDialog = false),
-                turbine.expectMostRecentItem().dialogViewState
+                AlertDialogViewState(showDialog = false),
+                turbine.expectMostRecentItem().alertDialogViewState
             )
         }
     }
