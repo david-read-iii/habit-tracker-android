@@ -5,19 +5,14 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Status
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
-import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert
-import org.junit.Rule
 import org.junit.Test
 
 class ValidatePasswordUseCaseTest {
-
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
 
     private val application = mockk<Application>()
 
