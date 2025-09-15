@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 class Base64 @Inject constructor() {
 
-    fun encodeToString(input: ByteArray, flags: Int) = Base64.encodeToString(input, flags)
+    fun encodeToString(input: ByteArray, flags: Int): String? = Base64.encodeToString(input, flags)
 
-    fun decode(str: String, flags: Int) = Base64.decode(str, flags)
+    fun decode(str: String, flags: Int): ByteArray? = Base64.decode(str, flags)
 }
