@@ -13,14 +13,14 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
-class LoginRepositoryTest {
+class LoginRepositoryImplTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
     private val loginService = mockk<LoginService>()
 
-    private val loginRepository = LoginRepository(loginService)
+    private val loginRepository = LoginRepositoryImpl(loginService)
 
     @After
     fun tearDown() {

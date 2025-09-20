@@ -1,5 +1,7 @@
 package com.davidread.habittracker.login.di
 
+import com.davidread.habittracker.login.repository.LoginRepository
+import com.davidread.habittracker.login.repository.LoginRepositoryImpl
 import com.davidread.habittracker.login.service.LoginService
 import dagger.Module
 import dagger.Provides
@@ -17,4 +19,9 @@ class LoginModule {
     fun providesLoginService(retrofit: Retrofit): LoginService {
         return retrofit.create(LoginService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun providesLoginRepository(service: LoginService): LoginRepository =
+        LoginRepositoryImpl(service)
 }

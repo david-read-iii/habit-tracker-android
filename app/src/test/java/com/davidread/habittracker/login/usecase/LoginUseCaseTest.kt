@@ -12,7 +12,7 @@ import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Status
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewState
-import com.davidread.habittracker.login.repository.LoginRepository
+import com.davidread.habittracker.login.repository.LoginRepositoryImpl
 import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -41,7 +41,7 @@ class LoginUseCaseTest {
 
     private val validatePasswordUseCase = mockk<ValidatePasswordUseCase>()
 
-    private val loginRepository = mockk<LoginRepository>()
+    private val loginRepository = mockk<LoginRepositoryImpl>()
 
     private val authenticationTokenRepository = mockk<AuthenticationTokenRepository>()
 
