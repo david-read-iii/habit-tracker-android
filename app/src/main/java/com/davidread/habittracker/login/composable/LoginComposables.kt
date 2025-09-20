@@ -57,7 +57,6 @@ import com.davidread.habittracker.login.viewmodel.LoginViewModel
 
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
-// TODO: Find out how to unit test these.
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
