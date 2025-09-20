@@ -11,11 +11,11 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.davidread.habittracker.common.ui.activity.MainActivity
 import com.davidread.habittracker.fakes.FakeLoginRepositoryImpl
+import com.davidread.habittracker.login.composable.SIGN_UP_LINK_TEST_TAG
 import com.davidread.habittracker.login.repository.LoginRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -75,11 +75,9 @@ class LoginScreenTest {
         composeRule.onNodeWithText("An error occurred. Please try again later.").assertIsDisplayed()
     }
 
-    // FIXME: Find a way to click sign up link.
     @Test
-    @Ignore("Find a way to click sign up link")
     fun test_signUpScreenIsDisplayed() {
-        composeRule.onNodeWithTag("").performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.onNodeWithTag(SIGN_UP_LINK_TEST_TAG).performSemanticsAction(SemanticsActions.OnClick)
 
         composeRule.onNodeWithText("Sign Up Screen").assertIsDisplayed()
     }

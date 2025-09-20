@@ -28,8 +28,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -55,6 +58,7 @@ import com.davidread.habittracker.login.model.LoginViewIntent
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.viewmodel.LoginViewModel
 
+internal const val SIGN_UP_LINK_TEST_TAG = "sign_up_link"
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
 @Composable
@@ -253,7 +257,17 @@ fun SignUpText(modifier: Modifier = Modifier, onSignUpLinkClick: () -> Unit = {}
             }
         }
     }
-    Text(text = annotatedText, modifier = modifier)
+    Text(
+        text = annotatedText,
+        modifier = modifier
+            .testTag(SIGN_UP_LINK_TEST_TAG)
+            .semantics {
+                onClick {
+                    onSignUpLinkClick()
+                    true
+                }
+            }
+    )
 }
 
 @Preview(showSystemUi = true)
