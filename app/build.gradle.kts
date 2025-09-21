@@ -16,11 +16,15 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.davidread.habittracker.HabitTrackerTestRunner"
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders["CLEAR_TEXT_TRAFFIC"] = "true"
+        }
         release {
+            manifestPlaceholders["CLEAR_TEXT_TRAFFIC"] = "false"
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -45,6 +49,19 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
     }
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE-notice.md"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -57,6 +74,9 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.tink.android)
+    implementation(libs.security.crypto)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.leakcanary.android)
     debugImplementation(libs.compose.ui.test.manifest)
@@ -66,4 +86,6 @@ dependencies {
     testImplementation(libs.turbine)
     androidTestImplementation(libs.compose.ui.test)
     androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.hilt.android.testing)
 }
