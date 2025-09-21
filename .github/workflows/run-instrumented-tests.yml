@@ -22,13 +22,18 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v3
+        with:
+          cache-disabled: false
 
       - name: Run Instrumented Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 33
           target: google_apis
-          arch: armeabi-v7a
+          arch: arm64-v8a
           profile: pixel_5
           force-avd-creation: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          emulator-boot-timeout: 900
           script: ./gradlew connectedDebugAndroidTest
