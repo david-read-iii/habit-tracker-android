@@ -9,7 +9,7 @@ on:
 jobs:
   run-instrumented-tests:
     name: Run Instrumented Tests
-    runs-on: macos-latest
+    runs-on: macos-13
 
     steps:
       - name: Checkout
