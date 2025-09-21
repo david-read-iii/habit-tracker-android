@@ -32,7 +32,7 @@ jobs:
           arch: x86_64
           profile: pixel_5
           force-avd-creation: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu off -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           emulator-boot-timeout: 900
           script: ./gradlew connectedDebugAndroidTest
