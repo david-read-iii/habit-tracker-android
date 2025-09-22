@@ -1,5 +1,7 @@
 package com.davidread.habittracker.signup.di
 
+import com.davidread.habittracker.signup.repository.SignUpRepository
+import com.davidread.habittracker.signup.repository.SignUpRepositoryImpl
 import com.davidread.habittracker.signup.service.SignUpService
 import dagger.Module
 import dagger.Provides
@@ -17,4 +19,9 @@ class SignUpModule {
     fun providesSignUpService(retrofit: Retrofit): SignUpService {
         return retrofit.create(SignUpService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun providesSignUpRepository(service: SignUpService): SignUpRepository =
+        SignUpRepositoryImpl(service)
 }
