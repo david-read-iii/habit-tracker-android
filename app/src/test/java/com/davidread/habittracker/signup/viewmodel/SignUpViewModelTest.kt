@@ -5,16 +5,12 @@ import app.cash.turbine.turbineScope
 import com.davidread.habittracker.R
 import com.davidread.habittracker.signup.model.AlertDialogViewState
 import com.davidread.habittracker.signup.model.SignUpFlowResult
-import com.davidread.habittracker.signup.model.SignUpTextFieldViewState
-import com.davidread.habittracker.signup.model.SignUpViewEffect
 import com.davidread.habittracker.signup.model.SignUpViewIntent
-import com.davidread.habittracker.signup.model.SignUpViewState
 import com.davidread.habittracker.signup.model.ValidationResult
 import com.davidread.habittracker.signup.usecase.SignUpFlowUseCase
 import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -24,7 +20,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-// TODO: Consider using a separate parameterized test for test_processIntent_ClickSignUpButton_xxx scenarios.
 class SignUpViewModelTest {
 
     @get:Rule
@@ -55,10 +50,9 @@ class SignUpViewModelTest {
     fun test_processIntent_ChangeEmailValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
-            val email = "david.read@gmail.com"
-            viewModel.processIntent(SignUpViewIntent.ChangeEmailValue(newValue = email))
+            viewModel.processIntent(SignUpViewIntent.ChangeEmailValue(newValue = EMAIL))
 
-            Assert.assertEquals(email, turbine.expectMostRecentItem().emailTextFieldViewState.value)
+            Assert.assertEquals(EMAIL, turbine.expectMostRecentItem().emailTextFieldViewState.value)
         }
     }
 
@@ -66,11 +60,10 @@ class SignUpViewModelTest {
     fun test_processIntent_ChangePasswordValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
-            val password = "password123"
-            viewModel.processIntent(SignUpViewIntent.ChangePasswordValue(newValue = password))
+            viewModel.processIntent(SignUpViewIntent.ChangePasswordValue(newValue = PASSWORD))
 
             Assert.assertEquals(
-                password,
+                PASSWORD,
                 turbine.expectMostRecentItem().passwordTextFieldViewState.value
             )
         }
@@ -80,155 +73,12 @@ class SignUpViewModelTest {
     fun test_processIntent_ChangeConfirmPasswordValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
-            val confirmPassword = "password123"
-            viewModel.processIntent(SignUpViewIntent.ChangeConfirmPasswordValue(newValue = confirmPassword))
+            viewModel.processIntent(SignUpViewIntent.ChangeConfirmPasswordValue(newValue = PASSWORD))
 
             Assert.assertEquals(
-                confirmPassword,
+                PASSWORD,
                 turbine.expectMostRecentItem().confirmPasswordTextFieldViewState.value
             )
-        }
-    }
-
-    @Test
-    fun test_processIntent_ClickSignUpButton_success() = runTest {
-        turbineScope {
-            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
-            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
-            coEvery {
-                signUpFlowUseCase.invoke(any(), any(), any())
-            } returns SignUpFlowResult.Success(
-                emailValidationResult = ValidationResult.Valid,
-                passwordValidationResult = ValidationResult.Valid,
-                confirmPasswordValidationResult = ValidationResult.Valid
-            )
-            viewModel.processIntent(SignUpViewIntent.ChangeEmailValue(newValue = EMAIL))
-            viewModel.processIntent(SignUpViewIntent.ChangePasswordValue(newValue = PASSWORD))
-            viewModel.processIntent(SignUpViewIntent.ChangeConfirmPasswordValue(newValue = PASSWORD))
-            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
-
-            coVerify(exactly = 1) {
-                signUpFlowUseCase.invoke(
-                    email = EMAIL,
-                    password = PASSWORD,
-                    confirmPassword = PASSWORD
-                )
-            }
-            val expectedViewState = SignUpViewState(
-                emailTextFieldViewState = SignUpTextFieldViewState(
-                    value = EMAIL,
-                    isError = false,
-                    errorMessage = ""
-                ),
-                passwordTextFieldViewState = SignUpTextFieldViewState(
-                    value = PASSWORD,
-                    isError = false,
-                    errorMessage = ""
-                ),
-                confirmPasswordTextFieldViewState = SignUpTextFieldViewState(
-                    value = PASSWORD,
-                    isError = false,
-                    errorMessage = ""
-                ),
-                showLoadingDialog = false,
-                alertDialogViewState = AlertDialogViewState(
-                    showDialog = false,
-                    message = null
-                )
-            )
-            val actualViewState = viewStateTurbine.expectMostRecentItem()
-            Assert.assertEquals(expectedViewState, actualViewState)
-            Assert.assertEquals(
-                SignUpViewEffect.NavigateToHabitListScreen,
-                viewEffectTurbine.expectMostRecentItem()
-            )
-            viewEffectTurbine.expectNoEvents()
-        }
-    }
-
-    @Test
-    fun test_processIntent_ClickSignUpButton_validationError() = runTest {
-        turbineScope {
-            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
-            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
-            coEvery {
-                signUpFlowUseCase.invoke(any(), any(), any())
-            } returns SignUpFlowResult.ValidationError(
-                emailValidationResult = ValidationResult.Invalid,
-                passwordValidationResult = ValidationResult.Invalid,
-                confirmPasswordValidationResult = ValidationResult.Invalid
-            )
-            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
-
-            val actualViewState = viewStateTurbine.expectMostRecentItem()
-            Assert.assertTrue(actualViewState.emailTextFieldViewState.isError)
-            Assert.assertEquals(EMAIL_ERROR_MESSAGE, actualViewState.emailTextFieldViewState.errorMessage)
-            Assert.assertTrue(actualViewState.passwordTextFieldViewState.isError)
-            Assert.assertEquals(PASSWORD_ERROR_MESSAGE, actualViewState.passwordTextFieldViewState.errorMessage)
-            Assert.assertTrue(actualViewState.confirmPasswordTextFieldViewState.isError)
-            Assert.assertEquals(CONFIRM_PASSWORD_ERROR_MESSAGE, actualViewState.confirmPasswordTextFieldViewState.errorMessage)
-            Assert.assertFalse(actualViewState.showLoadingDialog)
-            Assert.assertEquals(AlertDialogViewState(), actualViewState.alertDialogViewState)
-            viewEffectTurbine.expectNoEvents()
-        }
-    }
-
-    @Test
-    fun test_processIntent_ClickSignUpButton_anyErrorToShowGenericAlertDialog() = runTest {
-        turbineScope {
-            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
-            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
-            coEvery {
-                signUpFlowUseCase.invoke(any(), any(), any())
-            } returns SignUpFlowResult.SignUpServiceGenericError(
-                emailValidationResult = ValidationResult.Valid,
-                passwordValidationResult = ValidationResult.Valid,
-                confirmPasswordValidationResult = ValidationResult.Valid
-            )
-            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
-
-            val actualViewState = viewStateTurbine.expectMostRecentItem()
-            Assert.assertFalse(actualViewState.emailTextFieldViewState.isError)
-            Assert.assertEquals("", actualViewState.emailTextFieldViewState.errorMessage)
-            Assert.assertFalse(actualViewState.passwordTextFieldViewState.isError)
-            Assert.assertEquals("", actualViewState.passwordTextFieldViewState.errorMessage)
-            Assert.assertFalse(actualViewState.confirmPasswordTextFieldViewState.isError)
-            Assert.assertEquals("", actualViewState.confirmPasswordTextFieldViewState.errorMessage)
-            Assert.assertFalse(actualViewState.showLoadingDialog)
-            Assert.assertEquals(AlertDialogViewState(showDialog = true), actualViewState.alertDialogViewState)
-            viewEffectTurbine.expectNoEvents()
-        }
-    }
-
-    @Test
-    fun test_processIntent_ClickSignUpButton_emailAlreadyUsedError() = runTest {
-        turbineScope {
-            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
-            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
-            coEvery {
-                signUpFlowUseCase.invoke(any(), any(), any())
-            } returns SignUpFlowResult.EmailAlreadyUsedError(
-                emailValidationResult = ValidationResult.Valid,
-                passwordValidationResult = ValidationResult.Valid,
-                confirmPasswordValidationResult = ValidationResult.Valid
-            )
-            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
-
-            val actualViewState = viewStateTurbine.expectMostRecentItem()
-            Assert.assertFalse(actualViewState.emailTextFieldViewState.isError)
-            Assert.assertEquals("", actualViewState.emailTextFieldViewState.errorMessage)
-            Assert.assertFalse(actualViewState.passwordTextFieldViewState.isError)
-            Assert.assertEquals("", actualViewState.passwordTextFieldViewState.errorMessage)
-            Assert.assertFalse(actualViewState.confirmPasswordTextFieldViewState.isError)
-            Assert.assertEquals("", actualViewState.confirmPasswordTextFieldViewState.errorMessage)
-            Assert.assertFalse(actualViewState.showLoadingDialog)
-            Assert.assertEquals(
-                AlertDialogViewState(
-                    showDialog = true,
-                    message = EMAIL_ALREADY_USED_ERROR_MESSAGE
-                ), actualViewState.alertDialogViewState
-            )
-            viewEffectTurbine.expectNoEvents()
         }
     }
 
