@@ -14,7 +14,6 @@ class GetTimezoneUseCase @Inject constructor(
     private val logger: Logger
 ) {
 
-    // TODO: Verify contract between android and server are equivalent on actual timezone value.
     operator fun invoke() = try {
         val timezone = timezoneProvider.getSystemDefaultZoneId().id
         GetTimezoneResult.Success(timezone)
