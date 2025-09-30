@@ -7,6 +7,7 @@ import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
 import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Status
 import javax.inject.Inject
 
+@Deprecated("Use common ValidatePasswordUseCase")
 class ValidatePasswordUseCase @Inject constructor(private val application: Application) {
 
     operator fun invoke(viewState: LoginTextFieldViewState): LoginTextFieldValidationResult {

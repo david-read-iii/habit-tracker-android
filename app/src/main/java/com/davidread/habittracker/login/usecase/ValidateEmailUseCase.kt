@@ -7,6 +7,7 @@ import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Sta
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
 import javax.inject.Inject
 
+@Deprecated("Use common ValidateEmailUseCase")
 class ValidateEmailUseCase @Inject constructor(private val application: Application) {
 
     private val emailRegex = Regex(

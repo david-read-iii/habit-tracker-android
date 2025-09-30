@@ -17,6 +17,7 @@ import javax.inject.Inject
 
 private const val TAG = "LoginUseCase"
 
+// TODO: Use SaveAuthenticationTokenUseCase here instead of interacting with repo directly.
 class LoginUseCase @Inject constructor(
     private val application: Application,
     private val logger: Logger,
