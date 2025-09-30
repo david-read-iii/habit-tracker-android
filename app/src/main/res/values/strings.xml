@@ -14,4 +14,6 @@
     <string name="loading">Loading&#8230;</string>
     <string name="confirm_password_validation_error_message">Please make sure your passwords match</string>
     <string name="email_already_used_error_message">This email address is already in use. Please try another one.</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="sign_up">Sign up</string>
 </resources>

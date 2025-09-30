@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.davidread.habittracker.common.model.Route
 import com.davidread.habittracker.common.model.Screen
 import com.davidread.habittracker.login.composable.LoginScreen
+import com.davidread.habittracker.signup.composable.SignUpScreen
 
 @Composable
 fun HabitTrackerApp() {
@@ -36,11 +37,8 @@ fun HabitTrackerApp() {
             )
         }
 
-        // TODO: Define actual signup screen composable.
         composable(route = Screen.SignUp.route) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Sign Up Screen")
-            }
+            SignUpScreen(onNavigateToHabitListScreen = { navController.navigate(Route.HABIT_LIST) })
         }
 
         // TODO: Define actual habit list screen composable.
