@@ -6,7 +6,7 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.signup.model.AlertDialogViewState
 import com.davidread.habittracker.signup.model.SignUpFlowResult
 import com.davidread.habittracker.signup.model.SignUpViewIntent
-import com.davidread.habittracker.signup.model.ValidationResult
+import com.davidread.habittracker.common.model.ValidationResult
 import com.davidread.habittracker.signup.usecase.SignUpFlowUseCase
 import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks

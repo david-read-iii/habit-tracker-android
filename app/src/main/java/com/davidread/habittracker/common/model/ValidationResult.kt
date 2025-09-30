@@ -1,6 +1,6 @@
-package com.davidread.habittracker.signup.model
+package com.davidread.habittracker.common.model
 
-// TODO: Move to common and use on Login screen too!
+// TODO: Use on Login screen too!
 sealed class ValidationResult {
     object Valid : ValidationResult()
     object Invalid : ValidationResult()

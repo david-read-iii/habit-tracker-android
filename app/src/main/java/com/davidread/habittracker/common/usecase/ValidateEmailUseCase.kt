@@ -1,9 +1,9 @@
-package com.davidread.habittracker.signup.usecase
+package com.davidread.habittracker.common.usecase
 
-import com.davidread.habittracker.signup.model.ValidationResult
+import com.davidread.habittracker.common.model.ValidationResult
 import javax.inject.Inject
 
-// TODO: Move to common and use on Login screen too!
+// TODO: Use on Login screen too!
 class ValidateEmailUseCase @Inject constructor() {
 
     private val emailRegex = Regex(

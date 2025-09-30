@@ -1,6 +1,6 @@
 package com.davidread.habittracker.signup.usecase
 
-import com.davidread.habittracker.signup.model.ValidationResult
+import com.davidread.habittracker.common.model.ValidationResult
 import org.junit.Assert
 import org.junit.Test
 

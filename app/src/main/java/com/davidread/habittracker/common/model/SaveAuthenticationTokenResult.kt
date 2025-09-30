@@ -1,4 +1,4 @@
-package com.davidread.habittracker.signup.model
+package com.davidread.habittracker.common.model
 
 sealed class SaveAuthenticationTokenResult {
     object Success : SaveAuthenticationTokenResult()

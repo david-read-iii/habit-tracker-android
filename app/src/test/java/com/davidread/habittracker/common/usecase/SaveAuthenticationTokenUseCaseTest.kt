@@ -1,9 +1,9 @@
-package com.davidread.habittracker.signup.usecase
+package com.davidread.habittracker.common.usecase
 
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
 import com.davidread.habittracker.common.util.Logger
-import com.davidread.habittracker.signup.model.SaveAuthenticationTokenResult
+import com.davidread.habittracker.common.model.SaveAuthenticationTokenResult
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.just

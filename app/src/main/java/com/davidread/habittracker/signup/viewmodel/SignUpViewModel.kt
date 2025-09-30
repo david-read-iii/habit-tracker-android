@@ -10,7 +10,7 @@ import com.davidread.habittracker.signup.model.SignUpTextFieldViewState
 import com.davidread.habittracker.signup.model.SignUpViewEffect
 import com.davidread.habittracker.signup.model.SignUpViewIntent
 import com.davidread.habittracker.signup.model.SignUpViewState
-import com.davidread.habittracker.signup.model.ValidationResult
+import com.davidread.habittracker.common.model.ValidationResult
 import com.davidread.habittracker.signup.usecase.SignUpFlowUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow

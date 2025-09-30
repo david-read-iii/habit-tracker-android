@@ -1,5 +1,7 @@
 package com.davidread.habittracker.signup.model
 
+import com.davidread.habittracker.common.model.ValidationResult
+
 sealed class SignUpFlowResult(
     open val emailValidationResult: ValidationResult,
     open val passwordValidationResult: ValidationResult,

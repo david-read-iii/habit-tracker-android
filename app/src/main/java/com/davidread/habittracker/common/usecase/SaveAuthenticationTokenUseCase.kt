@@ -1,14 +1,14 @@
-package com.davidread.habittracker.signup.usecase
+package com.davidread.habittracker.common.usecase
 
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
 import com.davidread.habittracker.common.util.Logger
-import com.davidread.habittracker.signup.model.SaveAuthenticationTokenResult
+import com.davidread.habittracker.common.model.SaveAuthenticationTokenResult
 import javax.inject.Inject
 
 private const val TAG = "SaveTokenUseCase"
 
-// TODO: Move to common and use on Login screen too!
+// TODO: Use on Login screen too!
 class SaveAuthenticationTokenUseCase @Inject constructor(
     private val authenticationTokenRepository: AuthenticationTokenRepository,
     private val logger: Logger

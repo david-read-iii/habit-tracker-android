@@ -1,10 +1,13 @@
 package com.davidread.habittracker.signup.usecase
 
 import com.davidread.habittracker.signup.model.GetTimezoneResult
-import com.davidread.habittracker.signup.model.SaveAuthenticationTokenResult
+import com.davidread.habittracker.common.model.SaveAuthenticationTokenResult
 import com.davidread.habittracker.signup.model.SignUpFlowResult
 import com.davidread.habittracker.signup.model.SignUpUserResult
-import com.davidread.habittracker.signup.model.ValidationResult
+import com.davidread.habittracker.common.model.ValidationResult
+import com.davidread.habittracker.common.usecase.SaveAuthenticationTokenUseCase
+import com.davidread.habittracker.common.usecase.ValidateEmailUseCase
+import com.davidread.habittracker.common.usecase.ValidatePasswordUseCase
 import javax.inject.Inject
 
 class SignUpFlowUseCase @Inject constructor(
