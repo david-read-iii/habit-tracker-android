@@ -112,6 +112,7 @@ fun SignUpScreenContent(
             onConfirmPasswordValueChange = onConfirmPasswordValueChange,
             onSignUpButtonClick = onSignUpButtonClick
         )
+        Spacer(modifier = Modifier.height(16.dp))
     }
 
     if (viewState.showLoadingDialog) {
@@ -224,7 +225,7 @@ private fun SignUpCredentialsCardPreview_FieldsInvalid() {
                     errorMessage = stringResource(R.string.password_validation_error_message)
                 ),
                 confirmPasswordTextFieldViewState = SignUpTextFieldViewState(
-                    value = "1234",
+                    value = "123",
                     isError = true,
                     errorMessage = stringResource(R.string.confirm_password_validation_error_message)
                 )
