@@ -3,13 +3,14 @@ package com.davidread.habittracker.login.usecase
 import android.app.Application
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.model.Result
+import com.davidread.habittracker.common.model.ValidationResult
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
+import com.davidread.habittracker.common.usecase.ValidateEmailUseCase
+import com.davidread.habittracker.common.usecase.ValidatePasswordUseCase
 import com.davidread.habittracker.common.util.Logger
 import com.davidread.habittracker.login.model.AlertDialogViewState
 import com.davidread.habittracker.login.model.LoginResponse
 import com.davidread.habittracker.login.model.LoginResult
-import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
-import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Status
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.repository.LoginRepositoryImpl
@@ -56,6 +57,10 @@ class LoginUseCaseTest {
 
     @Before
     fun setUp() {
+        application.apply {
+            every { getString(R.string.email_validation_error_message) } returns EMAIL_ERROR_MESSAGE
+            every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
+        }
         every { logger.e(any(), any(), any()) } just runs
     }
 
@@ -66,26 +71,12 @@ class LoginUseCaseTest {
 
     @Test
     fun test_invoke_success() = runTest {
-        val emailLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validateEmailUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = emailLoginTextFieldValidationResult
-        )
-        val passwordLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validatePasswordUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = passwordLoginTextFieldValidationResult
-        )
+        mockExternalUseCases()
         coEvery { loginRepository.login(any()) } returns Result.Success(LoginResponse(token = "12345"))
-        every { authenticationTokenRepository.saveAuthenticationToken(any()) } returns Result.Success(
-            Unit
-        )
+        every { authenticationTokenRepository.saveAuthenticationToken(any()) } returns Result.Success(Unit)
 
         val expected = LoginResult(
-            viewState = LoginViewState(
-                emailTextFieldViewState = emailLoginTextFieldValidationResult,
-                passwordTextFieldViewState = passwordLoginTextFieldValidationResult
-            ),
+            viewState = LoginViewState(),
             navigateToListScreen = true
         )
         val actual = loginUseCase.invoke(LoginViewState())
@@ -94,21 +85,21 @@ class LoginUseCaseTest {
 
     @Test
     fun test_invoke_textFieldValidationError() = runTest {
-        val emailLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validateEmailUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.INVALID,
-            loginTextFieldViewState = emailLoginTextFieldValidationResult
-        )
-        val passwordLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validatePasswordUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.INVALID,
-            loginTextFieldViewState = passwordLoginTextFieldValidationResult
+        mockExternalUseCases(
+            emailValidationResult = ValidationResult.Invalid,
+            passwordValidationResult = ValidationResult.Invalid
         )
 
         val expected = LoginResult(
             viewState = LoginViewState(
-                emailTextFieldViewState = emailLoginTextFieldValidationResult,
-                passwordTextFieldViewState = passwordLoginTextFieldValidationResult,
+                emailTextFieldViewState = LoginTextFieldViewState(
+                    isError = true,
+                    errorMessage = EMAIL_ERROR_MESSAGE
+                ),
+                passwordTextFieldViewState = LoginTextFieldViewState(
+                    isError = true,
+                    errorMessage = PASSWORD_ERROR_MESSAGE
+                ),
                 alertDialogViewState = AlertDialogViewState(showDialog = false, message = null)
             ),
             navigateToListScreen = false
@@ -119,16 +110,7 @@ class LoginUseCaseTest {
 
     @Test
     fun test_invoke_loginServiceCall400Error() = runTest {
-        val emailLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validateEmailUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = emailLoginTextFieldValidationResult
-        )
-        val passwordLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validatePasswordUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = passwordLoginTextFieldValidationResult
-        )
+        mockExternalUseCases()
         coEvery { loginRepository.login(any()) } returns Result.Error(
             mockk<HttpException> {
                 every { code() } returns 400
@@ -139,8 +121,6 @@ class LoginUseCaseTest {
 
         val expected = LoginResult(
             viewState = LoginViewState(
-                emailTextFieldViewState = emailLoginTextFieldValidationResult,
-                passwordTextFieldViewState = passwordLoginTextFieldValidationResult,
                 alertDialogViewState = AlertDialogViewState(
                     showDialog = true,
                     message = errorMessage
@@ -154,22 +134,11 @@ class LoginUseCaseTest {
 
     @Test
     fun test_invoke_loginServiceCallGenericError() = runTest {
-        val emailLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validateEmailUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = emailLoginTextFieldValidationResult
-        )
-        val passwordLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validatePasswordUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = passwordLoginTextFieldValidationResult
-        )
+        mockExternalUseCases()
         coEvery { loginRepository.login(any()) } returns Result.Error(Exception())
 
         val expected = LoginResult(
             viewState = LoginViewState(
-                emailTextFieldViewState = emailLoginTextFieldValidationResult,
-                passwordTextFieldViewState = passwordLoginTextFieldValidationResult,
                 alertDialogViewState = AlertDialogViewState(
                     showDialog = true,
                     message = null
@@ -183,22 +152,11 @@ class LoginUseCaseTest {
 
     @Test
     fun test_invoke_loginServiceCallNullToken() = runTest {
-        val emailLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validateEmailUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = emailLoginTextFieldValidationResult
-        )
-        val passwordLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validatePasswordUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = passwordLoginTextFieldValidationResult
-        )
+        mockExternalUseCases()
         coEvery { loginRepository.login(any()) } returns Result.Success(LoginResponse(token = null))
 
         val expected = LoginResult(
             viewState = LoginViewState(
-                emailTextFieldViewState = emailLoginTextFieldValidationResult,
-                passwordTextFieldViewState = passwordLoginTextFieldValidationResult,
                 alertDialogViewState = AlertDialogViewState(
                     showDialog = true,
                     message = null
@@ -212,23 +170,12 @@ class LoginUseCaseTest {
 
     @Test
     fun test_invoke_tokenSaveResultError() = runTest {
-        val emailLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validateEmailUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = emailLoginTextFieldValidationResult
-        )
-        val passwordLoginTextFieldValidationResult = mockk<LoginTextFieldViewState>()
-        every { validatePasswordUseCase.invoke(any()) } returns LoginTextFieldValidationResult(
-            status = Status.VALID,
-            loginTextFieldViewState = passwordLoginTextFieldValidationResult
-        )
+        mockExternalUseCases()
         coEvery { loginRepository.login(any()) } returns Result.Success(LoginResponse(token = "12345"))
         every { authenticationTokenRepository.saveAuthenticationToken(any()) } returns Result.Error(mockk())
 
         val expected = LoginResult(
             viewState = LoginViewState(
-                emailTextFieldViewState = emailLoginTextFieldValidationResult,
-                passwordTextFieldViewState = passwordLoginTextFieldValidationResult,
                 alertDialogViewState = AlertDialogViewState(
                     showDialog = true,
                     message = null
@@ -238,5 +185,18 @@ class LoginUseCaseTest {
         )
         val actual = loginUseCase.invoke(LoginViewState())
         Assert.assertEquals(expected, actual)
+    }
+
+    private fun mockExternalUseCases(
+        emailValidationResult: ValidationResult = ValidationResult.Valid,
+        passwordValidationResult: ValidationResult = ValidationResult.Valid
+    ) {
+        every { validateEmailUseCase.invoke(any()) } returns emailValidationResult
+        every { validatePasswordUseCase.invoke(any()) } returns passwordValidationResult
+    }
+
+    companion object {
+        private const val EMAIL_ERROR_MESSAGE = "Please enter a valid email address (e.g. name@example.com)"
+        private const val PASSWORD_ERROR_MESSAGE = "Please enter a password with at least 8 characters"
     }
 }

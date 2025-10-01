@@ -3,13 +3,15 @@ package com.davidread.habittracker.login.usecase
 import android.app.Application
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.model.Result
+import com.davidread.habittracker.common.model.ValidationResult
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
+import com.davidread.habittracker.common.usecase.ValidateEmailUseCase
+import com.davidread.habittracker.common.usecase.ValidatePasswordUseCase
 import com.davidread.habittracker.common.util.Logger
 import com.davidread.habittracker.login.model.AlertDialogViewState
 import com.davidread.habittracker.login.model.LoginRequest
 import com.davidread.habittracker.login.model.LoginResult
-import com.davidread.habittracker.login.model.LoginTextFieldValidationResult
-import com.davidread.habittracker.login.model.LoginTextFieldValidationResult.Status
+import com.davidread.habittracker.login.model.LoginTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.repository.LoginRepository
 import retrofit2.HttpException
@@ -28,10 +30,10 @@ class LoginUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(viewState: LoginViewState): LoginResult {
-        val emailValidationResult = validateEmailUseCase(viewState.emailTextFieldViewState)
-        val passwordValidationResult = validatePasswordUseCase(viewState.passwordTextFieldViewState)
+        val emailValidationResult = validateEmailUseCase(viewState.emailTextFieldViewState.value)
+        val passwordValidationResult = validatePasswordUseCase(viewState.passwordTextFieldViewState.value)
 
-        if (emailValidationResult.status == Status.INVALID || passwordValidationResult.status == Status.INVALID) {
+        if (emailValidationResult == ValidationResult.Invalid || passwordValidationResult == ValidationResult.Invalid) {
             return getErrorLoginResult(
                 viewState = viewState,
                 emailValidationResult = emailValidationResult,
@@ -84,8 +86,10 @@ class LoginUseCase @Inject constructor(
 
         return LoginResult(
             viewState = viewState.copy(
-                emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
-                passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState
+                emailTextFieldViewState = emailValidationResult.toEmailTextFieldViewState(viewState.emailTextFieldViewState),
+                passwordTextFieldViewState = passwordValidationResult.toPasswordTextFieldViewState(
+                    viewState.passwordTextFieldViewState
+                ),
             ),
             navigateToListScreen = true
         )
@@ -93,14 +97,16 @@ class LoginUseCase @Inject constructor(
 
     private fun getErrorLoginResult(
         viewState: LoginViewState,
-        emailValidationResult: LoginTextFieldValidationResult,
-        passwordValidationResult: LoginTextFieldValidationResult,
+        emailValidationResult: ValidationResult,
+        passwordValidationResult: ValidationResult,
         showErrorDialog: Boolean,
         exception: Exception? = null
     ) = LoginResult(
         viewState = viewState.copy(
-            emailTextFieldViewState = emailValidationResult.loginTextFieldViewState,
-            passwordTextFieldViewState = passwordValidationResult.loginTextFieldViewState,
+            emailTextFieldViewState = emailValidationResult.toEmailTextFieldViewState(viewState.emailTextFieldViewState),
+            passwordTextFieldViewState = passwordValidationResult.toPasswordTextFieldViewState(
+                viewState.passwordTextFieldViewState
+            ),
             alertDialogViewState = if (showErrorDialog) {
                 val message = if (exception is HttpException && exception.code() == 400) {
                     application.getString(
@@ -116,4 +122,30 @@ class LoginUseCase @Inject constructor(
         ),
         navigateToListScreen = false
     )
+
+    private fun ValidationResult.toEmailTextFieldViewState(oldState: LoginTextFieldViewState) =
+        when (this) {
+            ValidationResult.Valid -> oldState.copy(
+                isError = false,
+                errorMessage = ""
+            )
+
+            ValidationResult.Invalid -> oldState.copy(
+                isError = true,
+                errorMessage = application.getString(R.string.email_validation_error_message)
+            )
+        }
+
+    private fun ValidationResult.toPasswordTextFieldViewState(oldState: LoginTextFieldViewState) =
+        when (this) {
+            ValidationResult.Valid -> oldState.copy(
+                isError = false,
+                errorMessage = ""
+            )
+
+            ValidationResult.Invalid -> oldState.copy(
+                isError = true,
+                errorMessage = application.getString(R.string.password_validation_error_message)
+            )
+        }
 }
