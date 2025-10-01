@@ -8,7 +8,6 @@ import javax.inject.Inject
 
 private const val TAG = "SaveTokenUseCase"
 
-// TODO: Use on Login screen too!
 class SaveAuthenticationTokenUseCase @Inject constructor(
     private val authenticationTokenRepository: AuthenticationTokenRepository,
     private val logger: Logger

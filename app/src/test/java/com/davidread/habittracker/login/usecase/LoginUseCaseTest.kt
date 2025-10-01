@@ -3,8 +3,9 @@ package com.davidread.habittracker.login.usecase
 import android.app.Application
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.model.Result
+import com.davidread.habittracker.common.model.SaveAuthenticationTokenResult
 import com.davidread.habittracker.common.model.ValidationResult
-import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
+import com.davidread.habittracker.common.usecase.SaveAuthenticationTokenUseCase
 import com.davidread.habittracker.common.usecase.ValidateEmailUseCase
 import com.davidread.habittracker.common.usecase.ValidatePasswordUseCase
 import com.davidread.habittracker.common.util.Logger
@@ -44,7 +45,7 @@ class LoginUseCaseTest {
 
     private val loginRepository = mockk<LoginRepositoryImpl>()
 
-    private val authenticationTokenRepository = mockk<AuthenticationTokenRepository>()
+    private val saveAuthenticationTokenUseCase = mockk<SaveAuthenticationTokenUseCase>()
 
     private val loginUseCase = LoginUseCase(
         application = application,
@@ -52,7 +53,7 @@ class LoginUseCaseTest {
         validateEmailUseCase = validateEmailUseCase,
         validatePasswordUseCase = validatePasswordUseCase,
         loginRepository = loginRepository,
-        authenticationTokenRepository = authenticationTokenRepository
+        saveAuthenticationTokenUseCase = saveAuthenticationTokenUseCase
     )
 
     @Before
@@ -73,7 +74,6 @@ class LoginUseCaseTest {
     fun test_invoke_success() = runTest {
         mockExternalUseCases()
         coEvery { loginRepository.login(any()) } returns Result.Success(LoginResponse(token = "12345"))
-        every { authenticationTokenRepository.saveAuthenticationToken(any()) } returns Result.Success(Unit)
 
         val expected = LoginResult(
             viewState = LoginViewState(),
@@ -170,9 +170,8 @@ class LoginUseCaseTest {
 
     @Test
     fun test_invoke_tokenSaveResultError() = runTest {
-        mockExternalUseCases()
+        mockExternalUseCases(saveAuthenticationTokenResult = SaveAuthenticationTokenResult.Error)
         coEvery { loginRepository.login(any()) } returns Result.Success(LoginResponse(token = "12345"))
-        every { authenticationTokenRepository.saveAuthenticationToken(any()) } returns Result.Error(mockk())
 
         val expected = LoginResult(
             viewState = LoginViewState(
@@ -189,10 +188,12 @@ class LoginUseCaseTest {
 
     private fun mockExternalUseCases(
         emailValidationResult: ValidationResult = ValidationResult.Valid,
-        passwordValidationResult: ValidationResult = ValidationResult.Valid
+        passwordValidationResult: ValidationResult = ValidationResult.Valid,
+        saveAuthenticationTokenResult: SaveAuthenticationTokenResult = SaveAuthenticationTokenResult.Success
     ) {
         every { validateEmailUseCase.invoke(any()) } returns emailValidationResult
         every { validatePasswordUseCase.invoke(any()) } returns passwordValidationResult
+        every { saveAuthenticationTokenUseCase.invoke(any()) } returns saveAuthenticationTokenResult
     }
 
     companion object {

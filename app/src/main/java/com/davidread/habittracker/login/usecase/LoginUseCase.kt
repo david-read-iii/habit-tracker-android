@@ -3,8 +3,9 @@ package com.davidread.habittracker.login.usecase
 import android.app.Application
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.model.Result
+import com.davidread.habittracker.common.model.SaveAuthenticationTokenResult
 import com.davidread.habittracker.common.model.ValidationResult
-import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
+import com.davidread.habittracker.common.usecase.SaveAuthenticationTokenUseCase
 import com.davidread.habittracker.common.usecase.ValidateEmailUseCase
 import com.davidread.habittracker.common.usecase.ValidatePasswordUseCase
 import com.davidread.habittracker.common.util.Logger
@@ -20,14 +21,13 @@ import javax.inject.Inject
 private const val TAG = "LoginUseCase"
 
 // TODO: Define LoginUseCase in a similar manner to SignUpUseCase to better follow MVI architecture.
-// TODO: Use SaveAuthenticationTokenUseCase here instead of interacting with repo directly.
 class LoginUseCase @Inject constructor(
     private val application: Application,
     private val logger: Logger,
     private val validateEmailUseCase: ValidateEmailUseCase,
     private val validatePasswordUseCase: ValidatePasswordUseCase,
     private val loginRepository: LoginRepository,
-    private val authenticationTokenRepository: AuthenticationTokenRepository
+    private val saveAuthenticationTokenUseCase: SaveAuthenticationTokenUseCase
 ) {
 
     suspend operator fun invoke(viewState: LoginViewState): LoginResult {
@@ -73,15 +73,15 @@ class LoginUseCase @Inject constructor(
             )
         }
 
-        val tokenSaveResult = authenticationTokenRepository.saveAuthenticationToken(token)
+        val tokenSaveResult = saveAuthenticationTokenUseCase(token)
 
-        if (tokenSaveResult is Result.Error) {
+        if (tokenSaveResult is SaveAuthenticationTokenResult.Error) {
             return getErrorLoginResult(
                 viewState = viewState,
                 emailValidationResult = emailValidationResult,
                 passwordValidationResult = passwordValidationResult,
                 showErrorDialog = true,
-                exception = tokenSaveResult.exception
+                exception = IllegalArgumentException("Save authentication token error")
             )
         }
 
