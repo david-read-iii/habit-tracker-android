@@ -19,6 +19,7 @@ import javax.inject.Inject
 
 private const val TAG = "LoginUseCase"
 
+// TODO: Define LoginUseCase in a similar manner to SignUpUseCase to better follow MVI architecture.
 // TODO: Use SaveAuthenticationTokenUseCase here instead of interacting with repo directly.
 class LoginUseCase @Inject constructor(
     private val application: Application,
