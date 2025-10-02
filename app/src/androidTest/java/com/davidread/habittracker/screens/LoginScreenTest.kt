@@ -79,7 +79,9 @@ class LoginScreenTest {
     fun test_signUpScreenIsDisplayed() {
         composeRule.onNodeWithTag(SIGN_UP_LINK_TEST_TAG).performSemanticsAction(SemanticsActions.OnClick)
 
-        composeRule.onNodeWithText("Sign Up Screen").assertIsDisplayed()
+        composeRule.onNodeWithText("Email").assertIsDisplayed()
+        composeRule.onNodeWithText("Password").assertIsDisplayed()
+        composeRule.onNodeWithText("Confirm Password").assertIsDisplayed()
     }
 
     @Test
