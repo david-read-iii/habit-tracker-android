@@ -55,10 +55,7 @@ class ClickLoginButtonTest(
                 ),
                 EMAIL,
                 PASSWORD,
-                LoginViewState(
-                    emailTextFieldViewState = LoginTextFieldViewState(value = EMAIL),
-                    passwordTextFieldViewState = LoginTextFieldViewState(value = PASSWORD)
-                ),
+                LoginViewState(),
                 true
             ),
             arrayOf(

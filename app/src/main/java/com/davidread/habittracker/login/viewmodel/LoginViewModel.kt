@@ -84,11 +84,15 @@ class LoginViewModel @Inject constructor(
 
             _viewState.update {
                 it.copy(
-                    emailTextFieldViewState = loginFlowResult.emailValidationResult.toViewState(
+                    emailTextFieldViewState = toLoginTextFieldViewState(
+                        loginFlowResult = loginFlowResult,
+                        validationResult = loginFlowResult.emailValidationResult,
                         oldState = it.emailTextFieldViewState,
                         errorMessage = application.getString(R.string.email_validation_error_message)
                     ),
-                    passwordTextFieldViewState = loginFlowResult.passwordValidationResult.toViewState(
+                    passwordTextFieldViewState = toLoginTextFieldViewState(
+                        loginFlowResult = loginFlowResult,
+                        validationResult = loginFlowResult.passwordValidationResult,
                         oldState = it.passwordTextFieldViewState,
                         errorMessage = application.getString(R.string.password_validation_error_message)
                     ),
@@ -103,15 +107,21 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun ValidationResult.toViewState(
+    private fun toLoginTextFieldViewState(
+        loginFlowResult: LoginFlowResult,
+        validationResult: ValidationResult,
         oldState: LoginTextFieldViewState,
         errorMessage: String
     ) = oldState.copy(
-        isError = when (this) {
+        value = when (loginFlowResult) {
+            is LoginFlowResult.Success -> ""
+            else -> oldState.value
+        },
+        isError = when (validationResult) {
             ValidationResult.Valid -> false
             ValidationResult.Invalid -> true
         },
-        errorMessage = when (this) {
+        errorMessage = when (validationResult) {
             ValidationResult.Valid -> ""
             ValidationResult.Invalid -> errorMessage
         }
