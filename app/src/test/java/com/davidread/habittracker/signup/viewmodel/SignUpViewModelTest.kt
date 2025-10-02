@@ -1,14 +1,13 @@
-package com.davidread.habittracker.login.viewmodel
+package com.davidread.habittracker.signup.viewmodel
 
 import android.app.Application
 import app.cash.turbine.turbineScope
 import com.davidread.habittracker.R
+import com.davidread.habittracker.signup.model.AlertDialogViewState
+import com.davidread.habittracker.signup.model.SignUpFlowResult
+import com.davidread.habittracker.signup.model.SignUpViewIntent
 import com.davidread.habittracker.common.model.ValidationResult
-import com.davidread.habittracker.login.model.AlertDialogViewState
-import com.davidread.habittracker.login.model.LoginFlowResult
-import com.davidread.habittracker.login.model.LoginViewEffect
-import com.davidread.habittracker.login.model.LoginViewIntent
-import com.davidread.habittracker.login.usecase.LoginFlowUseCase
+import com.davidread.habittracker.signup.usecase.SignUpFlowUseCase
 import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
@@ -21,23 +20,24 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class LoginViewModelTest {
+class SignUpViewModelTest {
 
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val loginFlowUseCase = mockk<LoginFlowUseCase>()
+    private val signUpFlowUseCase = mockk<SignUpFlowUseCase>()
 
     private val application = mockk<Application>()
 
-    private val viewModel = LoginViewModel(loginFlowUseCase, application)
+    private val viewModel = SignUpViewModel(signUpFlowUseCase, application)
 
     @Before
     fun setUp() {
         application.apply {
             every { getString(R.string.email_validation_error_message) } returns EMAIL_ERROR_MESSAGE
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
-            every { getString(R.string.login_credentials_incorrect_error_message) } returns INCORRECT_CREDENTIALS_ERROR_MESSAGE
+            every { getString(R.string.confirm_password_validation_error_message) } returns CONFIRM_PASSWORD_ERROR_MESSAGE
+            every { getString(R.string.email_already_used_error_message) } returns EMAIL_ALREADY_USED_ERROR_MESSAGE
         }
     }
 
@@ -50,7 +50,7 @@ class LoginViewModelTest {
     fun test_processIntent_ChangeEmailValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
-            viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = EMAIL))
+            viewModel.processIntent(SignUpViewIntent.ChangeEmailValue(newValue = EMAIL))
 
             Assert.assertEquals(EMAIL, turbine.expectMostRecentItem().emailTextFieldViewState.value)
         }
@@ -60,7 +60,7 @@ class LoginViewModelTest {
     fun test_processIntent_ChangePasswordValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
-            viewModel.processIntent(LoginViewIntent.ChangePasswordValue(newValue = PASSWORD))
+            viewModel.processIntent(SignUpViewIntent.ChangePasswordValue(newValue = PASSWORD))
 
             Assert.assertEquals(
                 PASSWORD,
@@ -70,16 +70,15 @@ class LoginViewModelTest {
     }
 
     @Test
-    fun test_processIntent_ClickSignUpLink() = runTest {
+    fun test_processIntent_ChangeConfirmPasswordValue() = runTest {
         turbineScope {
-            val turbine = viewModel.viewEffect.testIn(backgroundScope)
-            viewModel.processIntent(LoginViewIntent.ClickSignUpLink)
+            val turbine = viewModel.viewState.testIn(backgroundScope)
+            viewModel.processIntent(SignUpViewIntent.ChangeConfirmPasswordValue(newValue = PASSWORD))
 
             Assert.assertEquals(
-                LoginViewEffect.NavigateToSignUpScreen,
-                turbine.expectMostRecentItem()
+                PASSWORD,
+                turbine.expectMostRecentItem().confirmPasswordTextFieldViewState.value
             )
-            turbine.expectNoEvents()
         }
     }
 
@@ -88,20 +87,19 @@ class LoginViewModelTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
             coEvery {
-                loginFlowUseCase.invoke(any(), any())
-            } returns LoginFlowResult.IncorrectLoginCredentialsError(
+                signUpFlowUseCase.invoke(any(), any(), any())
+            } returns SignUpFlowResult.EmailAlreadyUsedError(
                 emailValidationResult = ValidationResult.Valid,
-                passwordValidationResult = ValidationResult.Valid
+                passwordValidationResult = ValidationResult.Valid,
+                confirmPasswordValidationResult = ValidationResult.Valid
             )
-            viewModel.processIntent(LoginViewIntent.ClickLoginButton) // show alert dialog on UI
+            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton) // show alert dialog on UI
             Assert.assertEquals(
-                AlertDialogViewState(
-                    showDialog = true,
-                    message = INCORRECT_CREDENTIALS_ERROR_MESSAGE
-                ), turbine.expectMostRecentItem().alertDialogViewState
+                AlertDialogViewState(showDialog = true, message = EMAIL_ALREADY_USED_ERROR_MESSAGE),
+                turbine.expectMostRecentItem().alertDialogViewState
             )
 
-            viewModel.processIntent(LoginViewIntent.ClickAlertDialogButton) // hide alert dialog on UI
+            viewModel.processIntent(SignUpViewIntent.ClickAlertDialogButton) // hide alert dialog on UI
             Assert.assertEquals(
                 AlertDialogViewState(),
                 turbine.expectMostRecentItem().alertDialogViewState
@@ -116,7 +114,8 @@ class LoginViewModelTest {
             "Please enter a valid email address (e.g. name@example.com)"
         private const val PASSWORD_ERROR_MESSAGE =
             "Please enter a password with at least 8 characters"
-        private const val INCORRECT_CREDENTIALS_ERROR_MESSAGE =
-            "Incorrect email or password. Please try again."
+        private const val CONFIRM_PASSWORD_ERROR_MESSAGE = "Please make sure your passwords match"
+        private const val EMAIL_ALREADY_USED_ERROR_MESSAGE =
+            "This email address is already in use. Please try another one."
     }
 }
