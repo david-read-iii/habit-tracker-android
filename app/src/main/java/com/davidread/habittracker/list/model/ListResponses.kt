@@ -6,13 +6,13 @@ data class CheckInResponse(
 )
 
 data class HabitListResponse(
-    val habits: List<Habit>?,
+    val habits: List<HabitDto>?,
     val nextPage: Int?
 )
 
 data class CreateHabitResponse(
     val message: String?,
-    val habit: Habit?
+    val habit: HabitDto?
 )
 
 data class DeleteHabitResponse(
@@ -21,10 +21,10 @@ data class DeleteHabitResponse(
 
 data class UpdateHabitResponse(
     val message: String?,
-    val habit: Habit?
+    val habit: HabitDto?
 )
 
-data class Habit(
+data class HabitDto(
     val id: String?,
     val name: String?,
     val streak: Int?,
