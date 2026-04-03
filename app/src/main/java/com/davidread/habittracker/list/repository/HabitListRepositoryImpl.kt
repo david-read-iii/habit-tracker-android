@@ -1,26 +1,43 @@
 package com.davidread.habittracker.list.repository
 
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.common.model.Result
+import com.davidread.habittracker.list.database.HabitEntity
 import com.davidread.habittracker.list.model.CheckInRequest
 import com.davidread.habittracker.list.model.CheckInResponse
 import com.davidread.habittracker.list.model.CreateHabitRequest
 import com.davidread.habittracker.list.model.CreateHabitResponse
 import com.davidread.habittracker.list.model.DeleteHabitResponse
-import com.davidread.habittracker.list.model.HabitListResponse
 import com.davidread.habittracker.list.model.UpdateHabitRequest
 import com.davidread.habittracker.list.model.UpdateHabitResponse
 import com.davidread.habittracker.list.service.HabitListService
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class HabitListRepositoryImpl @Inject constructor(
+    private val database: HabitTrackerDatabase,
     private val habitListService: HabitListService
 ) : HabitListRepository {
 
-    override suspend fun getHabits(page: Int, limit: Int): Result<HabitListResponse> = try {
-        val response = habitListService.getHabits(page, limit)
-        Result.Success(response)
-    } catch (e: Exception) {
-        Result.Error(e)
+    @OptIn(ExperimentalPagingApi::class)
+    override fun getHabits(): Flow<PagingData<HabitEntity>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            ),
+            remoteMediator = HabitRemoteMediator(
+                database = database,
+                service = habitListService
+            ),
+            pagingSourceFactory = {
+                database.habitDao().pagingSource()
+            }
+        ).flow
     }
 
     override suspend fun createHabit(createHabitRequest: CreateHabitRequest): Result<CreateHabitResponse> =
