@@ -19,6 +19,9 @@ interface HabitDao {
     @Query("DELETE FROM ${DatabaseConstants.HABIT_TABLE_NAME}")
     suspend fun clearAll()
 
+    @Query("SELECT * FROM ${DatabaseConstants.HABIT_TABLE_NAME} WHERE id = :id")
+    suspend fun getHabitById(id: String): HabitEntity?
+
     @Query("UPDATE ${DatabaseConstants.HABIT_TABLE_NAME} SET streak = streak + 1 WHERE id = :id")
     suspend fun incrementStreak(id: String)
 }
