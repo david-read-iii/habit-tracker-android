@@ -2,6 +2,7 @@ package com.davidread.habittracker.list.repository
 
 import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.common.model.Result
+import com.davidread.habittracker.list.database.HabitDao
 import com.davidread.habittracker.list.model.CheckInResponse
 import com.davidread.habittracker.list.model.CreateHabitResponse
 import com.davidread.habittracker.list.model.DeleteHabitResponse
@@ -10,6 +11,7 @@ import com.davidread.habittracker.list.service.HabitListService
 import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -25,7 +27,8 @@ class HabitListRepositoryImplTest {
     private val habitTrackerDatabase = mockk<HabitTrackerDatabase>()
     private val habitListService = mockk<HabitListService>()
 
-    private val habitListRepository = HabitListRepositoryImpl(habitTrackerDatabase, habitListService)
+    private val habitListRepository =
+        HabitListRepositoryImpl(habitTrackerDatabase, habitListService)
 
     @After
     fun tearDown() {
@@ -33,11 +36,25 @@ class HabitListRepositoryImplTest {
     }
 
     @Test
+    fun test_getHabits_returnsFlow() {
+        val habitDao = mockk<HabitDao>()
+        every { habitTrackerDatabase.habitDao() } returns habitDao
+        every { habitDao.pagingSource() } returns mockk()
+
+        val result = habitListRepository.getHabits()
+
+        Assert.assertNotNull(result)
+    }
+
+    @Test
     fun test_createHabit_success() = runTest {
         val createHabitResponse = mockk<CreateHabitResponse>()
         coEvery { habitListService.createHabit(any()) } returns createHabitResponse
 
-        Assert.assertEquals(Result.Success(createHabitResponse), habitListRepository.createHabit(mockk()))
+        Assert.assertEquals(
+            Result.Success(createHabitResponse),
+            habitListRepository.createHabit(mockk())
+        )
     }
 
     @Test
@@ -53,7 +70,10 @@ class HabitListRepositoryImplTest {
         val deleteHabitResponse = mockk<DeleteHabitResponse>()
         coEvery { habitListService.deleteHabit(any()) } returns deleteHabitResponse
 
-        Assert.assertEquals(Result.Success(deleteHabitResponse), habitListRepository.deleteHabit("1"))
+        Assert.assertEquals(
+            Result.Success(deleteHabitResponse),
+            habitListRepository.deleteHabit("1")
+        )
     }
 
     @Test
@@ -69,7 +89,10 @@ class HabitListRepositoryImplTest {
         val updateHabitResponse = mockk<UpdateHabitResponse>()
         coEvery { habitListService.updateHabit(any(), any()) } returns updateHabitResponse
 
-        Assert.assertEquals(Result.Success(updateHabitResponse), habitListRepository.updateHabit("1", mockk()))
+        Assert.assertEquals(
+            Result.Success(updateHabitResponse),
+            habitListRepository.updateHabit("1", mockk())
+        )
     }
 
     @Test
