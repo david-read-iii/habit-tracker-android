@@ -1,0 +1,75 @@
+---
+description: Guidelines for writing unit tests in the project
+globs: app/src/test/**/*.kt
+---
+
+# Unit Testing Guidelines
+
+This document outlines the standards and best practices for writing unit tests in this project.
+
+## Frameworks & Libraries
+- **Test Runner:** JUnit 4
+- **Mocking:** MockK
+- **Assertions:** JUnit Assertions or Truth
+
+## Naming Conventions
+- Test classes should be named `[ClassName]Test.kt`.
+- Test methods should be named `test_[functionName]_[detailsOnWhatIsBeingTested]`, e.g., ``test_map_returnsJustNow``. If appropriate, you may also add additional underscores with more context on what is being tested, e.g., `test_map_returnsJustNow_whenDurationIsLessThan1Minute`.
+
+## Structure (Gherkin-style)
+Use the **Given-When-Then** pattern within test methods:
+- **Given:** Set up the necessary state and mocks.
+- **When:** Execute the action being tested.
+- **Then:** Verify the results and interactions.
+
+## Best Practices
+- **Isolation:** Tests should be independent and not rely on the state of other tests.
+- **Mocks:** Use `mockk()` for dependencies. Avoid using `relaxed = true` unless it is absolutely necessary.
+- **Static Mocks:** Use `mockkStatic` sparingly and always clean up in `@After` using `unmockkStatic`.
+- **Coverage:** Focus on testing business logic, edge cases, and error handling.
+- **Avoid Android Dependencies:** Use mocks for Android framework classes (e.g., `Context`, `Resources`) to keep tests running on the JVM.
+
+## Teardown & Cleanup
+- **Mocks:** Use `clearAllMocks()` in an `@After` block to ensure a clean state for the next test and prevent verification leaks.
+- **Static Mocks:** If `mockkStatic` was used, you MUST call `unmockkStatic` or `unmockkAll()` in `@After`.
+
+## Author's Nitpicks
+- Don't use comments in test files unless absolutely necessary.
+- When doing assertions, use `Assert.assertXXX` instead of `assertXXX`.
+- Try to write tests in order of which their functions/code constructs appear in the sourcecode.
+- We do not need to write unit tests for logs. Ignore them.
+
+## Example Template
+```kotlin
+class ExampleTest {
+
+    private val dependency = mockk<Dependency>()
+    private lateinit var systemUnderTest: SystemUnderTest
+
+    @Before
+    fun setUp() {
+        systemUnderTest = SystemUnderTest(dependency)
+    }
+
+    @After
+    fun tearDown() {
+        // Resets call counts and stubs
+        clearAllMocks()
+        // If using static mocks, ensure they are unmocked
+        // unmockkAll()
+    }
+
+    @Test
+    fun test_functionName_shouldPerformActionWhenConditionIsMet() {
+        // Given
+        every { dependency.doSomething() } returns true
+
+        // When
+        val result = systemUnderTest.execute()
+
+        // Then
+        Assert.assertEquals(expectedValue, result)
+        verify { dependency.doSomething() }
+    }
+}
+```
