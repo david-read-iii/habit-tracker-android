@@ -2,12 +2,11 @@ package com.davidread.habittracker.list.model
 
 // TODO: Remove any of these if they remain unused.
 data class HabitListViewState(
-    val habits: List<Habit> = emptyList(),
     val showLoading: Boolean = false,
     val alertDialogViewState: AlertDialogViewState = AlertDialogViewState()
 )
 
-data class Habit(
+data class HabitViewState(
     val id: String,
     val name: String,
     val streak: String,

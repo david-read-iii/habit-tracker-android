@@ -53,9 +53,9 @@ import androidx.paging.compose.itemKey
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
-import com.davidread.habittracker.list.database.HabitEntity
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
+import com.davidread.habittracker.list.model.HabitViewState
 import com.davidread.habittracker.list.viewmodel.HabitListViewModel
 import kotlinx.coroutines.flow.flowOf
 
@@ -87,7 +87,7 @@ fun HabitListScreen(
 @Composable
 fun HabitListContent(
     modifier: Modifier = Modifier,
-    habits: LazyPagingItems<HabitEntity>,
+    habits: LazyPagingItems<HabitViewState>,
     onHabitClick: (String) -> Unit = {}
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -121,7 +121,7 @@ fun HabitListContent(
 @Composable
 fun HabitListItem(
     modifier: Modifier = Modifier,
-    viewState: HabitEntity,
+    viewState: HabitViewState,
     onClick: () -> Unit = {}
 ) {
     Column(
@@ -159,7 +159,7 @@ fun HabitListItem(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = viewState.streak.toString(),
+                    text = viewState.streak,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -276,9 +276,9 @@ private fun HabitListContentPreview() {
     val habits = flowOf(
         PagingData.from(
             listOf(
-                HabitEntity("1", "Drink Water", 5, "2023-10-27"),
-                HabitEntity("2", "Exercise", 3, "2023-10-26"),
-                HabitEntity("3", "Read Book", 10, "2023-10-25")
+                HabitViewState("1", "Drink Water", "5", "2023-10-27"),
+                HabitViewState("2", "Exercise", "3", "2023-10-26"),
+                HabitViewState("3", "Read Book", "10", "2023-10-25")
             ),
             sourceLoadStates = LoadStates(
                 refresh = LoadState.NotLoading(false),
@@ -300,10 +300,10 @@ private fun HabitListContentPreview() {
 private fun HabitListItemPreview() {
     HabitTrackerTheme {
         HabitListItem(
-            viewState = HabitEntity(
+            viewState = HabitViewState(
                 id = "1",
                 name = "Drink Water",
-                streak = 5,
+                streak = "5",
                 createdAt = "2023-10-27"
             )
         )

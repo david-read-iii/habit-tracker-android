@@ -17,4 +17,17 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="sign_up">Sign up</string>
     <string name="habit_list_error_message">An error occurred. Tap to retry.</string>
+    <string name="created_at_just_now">Just now</string>
+    <plurals name="created_at_mins_ago">
+        <item quantity="one">%1$d min ago</item>
+        <item quantity="other">%1$d mins ago</item>
+    </plurals>
+    <plurals name="created_at_hours_ago">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="created_at_days_ago">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
 </resources>
