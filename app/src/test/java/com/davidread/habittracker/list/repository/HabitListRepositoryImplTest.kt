@@ -1,10 +1,10 @@
 package com.davidread.habittracker.list.repository
 
+import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.list.model.CheckInResponse
 import com.davidread.habittracker.list.model.CreateHabitResponse
 import com.davidread.habittracker.list.model.DeleteHabitResponse
-import com.davidread.habittracker.list.model.HabitListResponse
 import com.davidread.habittracker.list.model.UpdateHabitResponse
 import com.davidread.habittracker.list.service.HabitListService
 import com.davidread.habittracker.testutil.MainDispatcherRule
@@ -22,29 +22,14 @@ class HabitListRepositoryImplTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private val habitTrackerDatabase = mockk<HabitTrackerDatabase>()
     private val habitListService = mockk<HabitListService>()
 
-    private val habitListRepository = HabitListRepositoryImpl(habitListService)
+    private val habitListRepository = HabitListRepositoryImpl(habitTrackerDatabase, habitListService)
 
     @After
     fun tearDown() {
         clearAllMocks()
-    }
-
-    @Test
-    fun test_getHabits_success() = runTest {
-        val habitListResponse = mockk<HabitListResponse>()
-        coEvery { habitListService.getHabits(any(), any()) } returns habitListResponse
-
-        Assert.assertEquals(Result.Success(habitListResponse), habitListRepository.getHabits(1, 10))
-    }
-
-    @Test
-    fun test_getHabits_error() = runTest {
-        val exception = mockk<Exception>()
-        coEvery { habitListService.getHabits(any(), any()) } throws exception
-
-        Assert.assertEquals(Result.Error(exception), habitListRepository.getHabits(1, 10))
     }
 
     @Test
