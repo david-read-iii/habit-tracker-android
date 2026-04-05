@@ -10,4 +10,5 @@ object Color {
     val White = Color(0xFFFFFFFF)
     val Black = Color(0xFF000000)
     val RedError = Color(0xFFB00020)
+    val FireRed = Color(0xFFFF5722)
 }

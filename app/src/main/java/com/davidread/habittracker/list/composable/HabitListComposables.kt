@@ -1,25 +1,46 @@
 package com.davidread.habittracker.list.composable
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -29,6 +50,8 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
+import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.list.database.HabitEntity
 import com.davidread.habittracker.list.model.HabitListViewEffect
@@ -69,7 +92,7 @@ fun HabitListContent(
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         if (habits.loadState.refresh is LoadState.Loading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            LoadingListItem()
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(
@@ -77,8 +100,8 @@ fun HabitListContent(
                     key = habits.itemKey { it.id }
                 ) { index ->
                     habits[index]?.let { habit ->
-                        HabitItem(
-                            habit = habit,
+                        HabitListItem(
+                            viewState = habit,
                             onClick = { onHabitClick(habit.id) }
                         )
                         HorizontalDivider()
@@ -87,12 +110,7 @@ fun HabitListContent(
 
                 if (habits.loadState.append is LoadState.Loading) {
                     item {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                                .wrapContentWidth(Alignment.CenterHorizontally)
-                        )
+                        LoadingListItem()
                     }
                 }
             }
@@ -101,25 +119,153 @@ fun HabitListContent(
 }
 
 @Composable
-fun HabitItem(
-    habit: HabitEntity,
+fun HabitListItem(
+    modifier: Modifier = Modifier,
+    viewState: HabitEntity,
     onClick: () -> Unit = {}
 ) {
-    Row(
-        modifier = Modifier
+    Column(
+        modifier = modifier
+            .padding(16.dp)
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
+    ) {
+        Text(
+            text = viewState.name,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(
+            modifier =
+                Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Whatshot,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.FireRed
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = viewState.streak.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            Text(
+                text = viewState.createdAt,
+                modifier = Modifier
+                    .padding(start = 4.dp)
+                    .weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.End
+            )
+        }
+    }
+}
+
+@Composable
+fun LoadingListItem(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition()
+    val shimmerTranslate by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1200,
+                easing = LinearEasing
+            )
+        )
+    )
+    val shimmerColors = listOf(
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    )
+    val brush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(shimmerTranslate, 0f),
+        end = Offset(shimmerTranslate + 300f, 0f)
+    )
+    Column(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.6f)
+                .height(24.dp)
+                .background(brush = brush, shape = RoundedCornerShape(4.dp))
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier
+                        .width(20.dp)
+                        .height(16.dp)
+                        .background(brush = brush, shape = RoundedCornerShape(2.dp))
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .width(40.dp)
+                    .height(16.dp)
+                    .background(brush = brush, shape = RoundedCornerShape(2.dp))
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+    Row(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = habit.name, style = MaterialTheme.typography.headlineSmall)
-            Text(text = "Created at: ${habit.createdAt}", style = MaterialTheme.typography.bodySmall)
-        }
+        Icon(
+            imageVector = Icons.Filled.ErrorOutline,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color.RedError
+        )
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = habit.streak.toString(),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
+            text = stringResource(R.string.habit_list_error_message),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -151,15 +297,31 @@ private fun HabitListContentPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun HabitItemPreview() {
+private fun HabitListItemPreview() {
     HabitTrackerTheme {
-        HabitItem(
-            habit = HabitEntity(
+        HabitListItem(
+            viewState = HabitEntity(
                 id = "1",
                 name = "Drink Water",
                 streak = 5,
                 createdAt = "2023-10-27"
             )
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LoadingListItemPreview() {
+    HabitTrackerTheme {
+        LoadingListItem()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ErrorListItemPreview() {
+    HabitTrackerTheme {
+        ErrorListItem()
     }
 }
