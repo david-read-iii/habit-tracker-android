@@ -1,8 +1,8 @@
 package com.davidread.habittracker.list.mapper
 
 import android.app.Application
-import android.util.Log
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.util.Logger
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -10,7 +10,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
-class CreatedAtMapper @Inject constructor(private val application: Application) {
+class CreatedAtMapper @Inject constructor(
+    private val application: Application,
+    private val logger: Logger
+) {
 
     private val dateTimeFormatter = DateTimeFormatter
         .ofPattern(DATE_PATTERN)
@@ -21,7 +24,7 @@ class CreatedAtMapper @Inject constructor(private val application: Application) 
         val createdAtInstant = try {
             Instant.parse(createdAt)
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing createdAt: $createdAt", e)
+            logger.e(TAG, "Error parsing createdAt: $createdAt", e)
             return createdAt
         }
         val now = Instant.now()
