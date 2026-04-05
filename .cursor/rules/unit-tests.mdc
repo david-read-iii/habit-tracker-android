@@ -14,7 +14,10 @@ This document outlines the standards and best practices for writing unit tests i
 
 ## Naming Conventions
 - Test classes should be named `[ClassName]Test.kt`.
-- Test methods should be named `test_[functionName]_[detailsOnWhatIsBeingTested]`, e.g., ``test_map_returnsJustNow``. If appropriate, you may also add additional underscores with more context on what is being tested, e.g., `test_map_returnsJustNow_whenDurationIsLessThan1Minute`.
+- Test methods should follow these rules:
+  - For simple functions that only require one test case, use the name `test_[functionName]`, e.g., `test_map`, `test_invoke`.
+  - For more complicated functions that require more than one test case, use the name `test_[functionName]_[detailsOnWhatIsBeingTested]`, e.g., `test_map_returnsJustNow`, `test_invoke_valid`.
+  - For complicated functions that require more context, you may also add additional underscores with even more context on what is being tested, e.g., `test_map_returnsJustNow_whenDurationIsLessThan1Minute`, `test_invoke_valid_nameIsEmpty`.
 
 ## Structure (Gherkin-style)
 Use the **Given-When-Then** pattern within test methods:
