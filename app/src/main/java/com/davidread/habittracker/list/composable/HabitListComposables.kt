@@ -196,9 +196,9 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
         )
     )
     val shimmerColors = listOf(
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
     )
     val brush = Brush.linearGradient(
         colors = shimmerColors,
@@ -226,7 +226,7 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Box(
@@ -238,7 +238,7 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
             }
             Box(
                 modifier = Modifier
-                    .width(40.dp)
+                    .width(80.dp)
                     .height(16.dp)
                     .background(brush = brush, shape = RoundedCornerShape(2.dp))
             )
@@ -281,9 +281,9 @@ private fun HabitListContentPreview() {
     val habits = flowOf(
         PagingData.from(
             listOf(
-                HabitViewState("1", "Drink Water", "5", "2023-10-27"),
-                HabitViewState("2", "Exercise", "3", "2023-10-26"),
-                HabitViewState("3", "Read Book", "10", "2023-10-25")
+                HabitViewState("1", "Drink Water", "5", "Just now"),
+                HabitViewState("2", "Exercise", "3", "32 minutes ago"),
+                HabitViewState("3", "Read Book", "10", "14 hours ago")
             ),
             sourceLoadStates = LoadStates(
                 refresh = LoadState.NotLoading(false),
@@ -309,7 +309,7 @@ private fun HabitListItemPreview() {
                 id = "1",
                 name = "Drink Water",
                 streak = "5",
-                createdAt = "2023-10-27"
+                createdAt = "Just now"
             )
         )
     }
