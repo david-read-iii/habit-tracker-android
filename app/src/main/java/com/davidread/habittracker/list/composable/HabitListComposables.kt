@@ -93,29 +93,45 @@ fun HabitListContent(
     habits: LazyPagingItems<HabitViewState>,
     onHabitClick: (String) -> Unit = {}
 ) {
-    Box(modifier = modifier
-        .fillMaxSize()
-        .padding(WindowInsets.systemBars.asPaddingValues())) {
-        if (habits.loadState.refresh is LoadState.Loading) {
-            LoadingListItem()
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(
-                    count = habits.itemCount,
-                    key = habits.itemKey { it.id }
-                ) { index ->
-                    habits[index]?.let { habit ->
-                        HabitListItem(
-                            viewState = habit,
-                            onClick = { onHabitClick(habit.id) }
-                        )
-                        HorizontalDivider()
-                    }
-                }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(WindowInsets.systemBars.asPaddingValues())
+    ) {
+        when (habits.loadState.refresh) {
+            is LoadState.Loading -> {
+                LoadingListItem()
+            }
 
-                if (habits.loadState.append is LoadState.Loading) {
-                    item {
-                        LoadingListItem()
+            is LoadState.Error -> {
+                ErrorListItem()
+            }
+
+            is LoadState.NotLoading -> {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    when (habits.loadState.prepend) {
+                        is LoadState.Loading -> item { LoadingListItem() }
+                        is LoadState.Error -> item { ErrorListItem() }
+                        is LoadState.NotLoading -> Unit
+                    }
+
+                    items(
+                        count = habits.itemCount,
+                        key = habits.itemKey { it.id }
+                    ) { index ->
+                        habits[index]?.let { habit ->
+                            HabitListItem(
+                                viewState = habit,
+                                onClick = { onHabitClick(habit.id) }
+                            )
+                            HorizontalDivider()
+                        }
+                    }
+
+                    when (habits.loadState.append) {
+                        is LoadState.Loading -> item { LoadingListItem() }
+                        is LoadState.Error -> item { ErrorListItem() }
+                        is LoadState.NotLoading -> Unit
                     }
                 }
             }
@@ -275,31 +291,6 @@ fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     }
 }
 
-@Preview(showSystemUi = true)
-@Composable
-private fun HabitListContentPreview() {
-    val habits = flowOf(
-        PagingData.from(
-            listOf(
-                HabitViewState("1", "Drink Water", "5", "Just now"),
-                HabitViewState("2", "Exercise", "3", "32 minutes ago"),
-                HabitViewState("3", "Read Book", "10", "14 hours ago")
-            ),
-            sourceLoadStates = LoadStates(
-                refresh = LoadState.NotLoading(false),
-                prepend = LoadState.NotLoading(false),
-                append = LoadState.NotLoading(false)
-            )
-        )
-    ).collectAsLazyPagingItems()
-
-    HabitTrackerTheme {
-        HabitListContent(
-            habits = habits
-        )
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun HabitListItemPreview() {
@@ -328,5 +319,165 @@ private fun LoadingListItemPreview() {
 private fun ErrorListItemPreview() {
     HabitTrackerTheme {
         ErrorListItem()
+    }
+}
+
+private val habitListPreviewData = listOf(
+    HabitViewState("1", "Drink Water", "5", "Just now"),
+    HabitViewState("2", "Exercise", "3", "32 minutes ago"),
+    HabitViewState("3", "Read Book", "10", "14 hours ago"),
+    HabitViewState("4", "Meditate", "2", "1 day ago"),
+    HabitViewState("5", "Walk Dog", "15", "2 days ago"),
+    HabitViewState("6", "Eat Healthy", "8", "3 days ago"),
+    HabitViewState("7", "Journal", "12", "4 days ago"),
+    HabitViewState("8", "Learn Coding", "20", "5 days ago"),
+    HabitViewState("9", "Sleep 8h", "7", "6 days ago"),
+    HabitViewState("10", "No Sugar", "4", "1 week ago")
+)
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_NotLoading() {
+    val habits = flowOf(
+        PagingData.from(
+            habitListPreviewData,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.NotLoading(false)
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_RefreshLoading() {
+    val habits = flowOf(
+        PagingData.from(
+            listOf<HabitViewState>(),
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.Loading,
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.NotLoading(false)
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_RefreshError() {
+    val habits = flowOf(
+        PagingData.from(
+            listOf<HabitViewState>(),
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.Error(Exception()),
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.NotLoading(false)
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_PrependLoading() {
+    val habits = flowOf(
+        PagingData.from(
+            habitListPreviewData,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.Loading,
+                append = LoadState.NotLoading(false)
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_PrependError() {
+    val habits = flowOf(
+        PagingData.from(
+            habitListPreviewData,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.Error(Exception()),
+                append = LoadState.NotLoading(false)
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_AppendLoading() {
+    val habits = flowOf(
+        PagingData.from(
+            habitListPreviewData,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.Loading
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_AppendError() {
+    val habits = flowOf(
+        PagingData.from(
+            habitListPreviewData,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.Error(Exception())
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
     }
 }
