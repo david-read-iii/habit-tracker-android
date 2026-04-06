@@ -104,14 +104,14 @@ fun HabitListContent(
             }
 
             is LoadState.Error -> {
-                ErrorListItem()
+                ErrorListItem(onClick = { habits.retry() })
             }
 
             is LoadState.NotLoading -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     when (habits.loadState.prepend) {
                         is LoadState.Loading -> item { LoadingListItem() }
-                        is LoadState.Error -> item { ErrorListItem() }
+                        is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
                         is LoadState.NotLoading -> Unit
                     }
 
@@ -130,7 +130,7 @@ fun HabitListContent(
 
                     when (habits.loadState.append) {
                         is LoadState.Loading -> item { LoadingListItem() }
-                        is LoadState.Error -> item { ErrorListItem() }
+                        is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
                         is LoadState.NotLoading -> Unit
                     }
                 }
