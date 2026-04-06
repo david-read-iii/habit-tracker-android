@@ -27,7 +27,7 @@ class HabitListRepositoryImpl @Inject constructor(
     override fun getHabits(): Flow<PagingData<HabitEntity>> {
         return Pager(
             config = PagingConfig(
-                pageSize = 20,
+                pageSize = PAGE_SIZE,
                 enablePlaceholders = false
             ),
             remoteMediator = HabitRemoteMediator(
@@ -70,5 +70,9 @@ class HabitListRepositoryImpl @Inject constructor(
         Result.Success(response)
     } catch (e: Exception) {
         Result.Error(e)
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 20
     }
 }
