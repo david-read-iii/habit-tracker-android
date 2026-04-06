@@ -13,7 +13,7 @@ interface HabitDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(habits: List<HabitEntity>)
 
-    @Query("SELECT * FROM ${DatabaseConstants.HABIT_TABLE_NAME} ORDER BY createdAt DESC")
+    @Query("SELECT * FROM ${DatabaseConstants.HABIT_TABLE_NAME}")
     fun pagingSource(): PagingSource<Int, HabitEntity>
 
     @Query("DELETE FROM ${DatabaseConstants.HABIT_TABLE_NAME}")
