@@ -110,8 +110,14 @@ fun HabitListContent(
             is LoadState.NotLoading -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     when (habits.loadState.prepend) {
-                        is LoadState.Loading -> item { LoadingListItem() }
-                        is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
+                        is LoadState.Loading -> item {
+                            LoadingListItem()
+                            HorizontalDivider()
+                        }
+                        is LoadState.Error -> item {
+                            ErrorListItem(onClick = { habits.retry() })
+                            HorizontalDivider()
+                        }
                         is LoadState.NotLoading -> Unit
                     }
 
