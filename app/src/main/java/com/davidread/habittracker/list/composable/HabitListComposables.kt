@@ -44,6 +44,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -212,8 +213,8 @@ fun HabitListItem(
 fun LoadingListItem(modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition()
     val shimmerTranslate by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
+        initialValue = -600f,
+        targetValue = 2000f,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = 1200,
@@ -229,7 +230,7 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
     val brush = Brush.linearGradient(
         colors = shimmerColors,
         start = Offset(shimmerTranslate, 0f),
-        end = Offset(shimmerTranslate + 300f, 0f)
+        end = Offset(shimmerTranslate + 600f, 0f)
     )
     Column(
         modifier = modifier
