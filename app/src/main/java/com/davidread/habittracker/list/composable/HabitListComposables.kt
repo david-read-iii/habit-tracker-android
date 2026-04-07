@@ -128,10 +128,14 @@ fun HabitListContent(
                         }
                     }
 
-                    when (habits.loadState.append) {
+                    when (val appendState = habits.loadState.append) {
                         is LoadState.Loading -> item { LoadingListItem() }
                         is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
-                        is LoadState.NotLoading -> Unit
+                        is LoadState.NotLoading -> {
+                            if (appendState.endOfPaginationReached && habits.itemCount > 0) {
+                                item { EndOfPaginationListItem() }
+                            }
+                        }
                     }
                 }
             }
@@ -291,6 +295,22 @@ fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     }
 }
 
+@Composable
+fun EndOfPaginationListItem(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = stringResource(R.string.habit_list_end_of_pagination_message),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun HabitListItemPreview() {
@@ -319,6 +339,14 @@ private fun LoadingListItemPreview() {
 private fun ErrorListItemPreview() {
     HabitTrackerTheme {
         ErrorListItem()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EndOfPaginationListItemPreview() {
+    HabitTrackerTheme {
+        EndOfPaginationListItem()
     }
 }
 
@@ -471,6 +499,27 @@ private fun HabitListContentPreview_AppendError() {
                 refresh = LoadState.NotLoading(false),
                 prepend = LoadState.NotLoading(false),
                 append = LoadState.Error(Exception())
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_EndOfPagination() {
+    val habits = flowOf(
+        PagingData.from(
+            habitListPreviewData,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.NotLoading(true)
             )
         )
     ).collectAsLazyPagingItems()
