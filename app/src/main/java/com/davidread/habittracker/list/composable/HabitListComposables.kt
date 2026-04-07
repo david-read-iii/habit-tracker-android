@@ -32,6 +32,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,7 +48,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -70,10 +73,18 @@ fun HabitListScreen(
     viewModel: HabitListViewModel = hiltViewModel(),
     onNavigateToSettingsScreen: () -> Unit = {}
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(Unit) {
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
                 is HabitListViewEffect.NavigateToSettingsScreen -> onNavigateToSettingsScreen()
+                is HabitListViewEffect.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = viewEffect.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
             }
         }
     }
@@ -81,11 +92,16 @@ fun HabitListScreen(
     val habits = viewModel.habitsPagingDataFlow.collectAsLazyPagingItems()
     val viewState by viewModel.viewState.collectAsState()
 
-    HabitListContent(
+    Scaffold(
         modifier = modifier,
-        habits = habits,
-        onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) }
-    )
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        HabitListContent(
+            modifier = Modifier.padding(paddingValues),
+            habits = habits,
+            onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) }
+        )
+    }
 }
 
 @Composable
@@ -97,7 +113,6 @@ fun HabitListContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(WindowInsets.systemBars.asPaddingValues())
     ) {
         when (habits.loadState.refresh) {
             is LoadState.Loading -> {

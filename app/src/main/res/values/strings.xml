@@ -18,6 +18,8 @@
     <string name="sign_up">Sign up</string>
     <string name="habit_list_error_message">An error occurred. Tap to retry.</string>
     <string name="habit_list_end_of_pagination_message">No more habits to show</string>
+    <string name="check_in_already_checked_in">Already checked in today.</string>
+    <string name="check_in_generic_error">Failed to check in. Please try again.</string>
     <string name="created_at_just_now">Just now</string>
     <plurals name="created_at_mins_ago">
         <item quantity="one">%1$d min ago</item>

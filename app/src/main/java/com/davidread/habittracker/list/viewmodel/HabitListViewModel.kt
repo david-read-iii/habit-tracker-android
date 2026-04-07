@@ -1,15 +1,19 @@
 package com.davidread.habittracker.list.viewmodel
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.davidread.habittracker.R
 import com.davidread.habittracker.list.mapper.HabitMapper
+import com.davidread.habittracker.list.model.CheckInResult
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
 import com.davidread.habittracker.list.model.HabitListViewState
 import com.davidread.habittracker.list.model.HabitViewState
+import com.davidread.habittracker.list.usecase.CheckInUseCase
 import com.davidread.habittracker.list.usecase.GetHabitsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +28,9 @@ import javax.inject.Inject
 @HiltViewModel
 class HabitListViewModel @Inject constructor(
     getHabitsUseCase: GetHabitsUseCase,
-    private val habitMapper: HabitMapper
+    private val habitMapper: HabitMapper,
+    private val checkInUseCase: CheckInUseCase,
+    private val application: Application
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(HabitListViewState())
@@ -52,6 +58,33 @@ class HabitListViewModel @Inject constructor(
                 _viewState.value = _viewState.value.copy(
                     alertDialogViewState = _viewState.value.alertDialogViewState.copy(showDialog = false)
                 )
+            }
+
+            is HabitListViewIntent.ClickHabit -> {
+                viewModelScope.launch {
+                    val result = checkInUseCase(intent.habitId)
+                    when (result) {
+                        is CheckInResult.AlreadyCheckedInError -> {
+                            _viewEffect.emit(
+                                HabitListViewEffect.ShowSnackbar(
+                                    application.getString(
+                                        R.string.check_in_already_checked_in
+                                    )
+                                )
+                            )
+                        }
+                        is CheckInResult.GenericError -> {
+                            _viewEffect.emit(
+                                HabitListViewEffect.ShowSnackbar(
+                                    application.getString(
+                                        R.string.check_in_generic_error
+                                    )
+                                )
+                            )
+                        }
+                        else -> Unit
+                    }
+                }
             }
 
             else -> {} // TODO: Handle other intents.

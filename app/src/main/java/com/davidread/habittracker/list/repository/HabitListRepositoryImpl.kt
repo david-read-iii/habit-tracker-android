@@ -67,6 +67,7 @@ class HabitListRepositoryImpl @Inject constructor(
 
     override suspend fun checkIn(checkInRequest: CheckInRequest): Result<CheckInResponse> = try {
         val response = habitListService.checkIn(checkInRequest)
+        database.habitDao().incrementStreak(checkInRequest.habitId)
         Result.Success(response)
     } catch (e: Exception) {
         Result.Error(e)

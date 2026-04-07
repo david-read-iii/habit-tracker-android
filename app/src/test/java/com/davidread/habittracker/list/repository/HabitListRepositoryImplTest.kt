@@ -3,6 +3,7 @@ package com.davidread.habittracker.list.repository
 import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.list.database.HabitDao
+import com.davidread.habittracker.list.model.CheckInRequest
 import com.davidread.habittracker.list.model.CheckInResponse
 import com.davidread.habittracker.list.model.CreateHabitResponse
 import com.davidread.habittracker.list.model.DeleteHabitResponse
@@ -11,8 +12,10 @@ import com.davidread.habittracker.list.service.HabitListService
 import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -105,17 +108,46 @@ class HabitListRepositoryImplTest {
 
     @Test
     fun test_checkIn_success() = runTest {
+        val checkInRequest = CheckInRequest("1")
         val checkInResponse = mockk<CheckInResponse>()
-        coEvery { habitListService.checkIn(any()) } returns checkInResponse
+        val habitDao = mockk<HabitDao>()
+        every { habitTrackerDatabase.habitDao() } returns habitDao
+        coEvery { habitListService.checkIn(checkInRequest) } returns checkInResponse
+        coEvery { habitDao.incrementStreak("1") } returns Unit
 
-        Assert.assertEquals(Result.Success(checkInResponse), habitListRepository.checkIn(mockk()))
+        val result = habitListRepository.checkIn(checkInRequest)
+
+        Assert.assertEquals(Result.Success(checkInResponse), result)
+        coVerify {
+            habitListService.checkIn(checkInRequest)
+            habitDao.incrementStreak("1")
+        }
     }
 
     @Test
-    fun test_checkIn_error() = runTest {
-        val exception = mockk<Exception>()
-        coEvery { habitListService.checkIn(any()) } throws exception
+    fun test_checkIn_serviceError() = runTest {
+        val checkInRequest = CheckInRequest("1")
+        val exception = Exception()
+        coEvery { habitListService.checkIn(checkInRequest) } throws exception
 
-        Assert.assertEquals(Result.Error(exception), habitListRepository.checkIn(mockk()))
+        val result = habitListRepository.checkIn(checkInRequest)
+
+        Assert.assertEquals(Result.Error(exception), result)
+        verify(exactly = 0) { habitTrackerDatabase.habitDao() }
+    }
+
+    @Test
+    fun test_checkIn_databaseError() = runTest {
+        val checkInRequest = CheckInRequest("1")
+        val checkInResponse = mockk<CheckInResponse>()
+        val habitDao = mockk<HabitDao>()
+        val exception = Exception()
+        every { habitTrackerDatabase.habitDao() } returns habitDao
+        coEvery { habitListService.checkIn(checkInRequest) } returns checkInResponse
+        coEvery { habitDao.incrementStreak("1") } throws exception
+
+        val result = habitListRepository.checkIn(checkInRequest)
+
+        Assert.assertEquals(Result.Error(exception), result)
     }
 }
