@@ -3,7 +3,8 @@ package com.davidread.habittracker.list.model
 // TODO: Remove any of these if they remain unused.
 data class HabitListViewState(
     val showLoading: Boolean = false,
-    val alertDialogViewState: AlertDialogViewState = AlertDialogViewState()
+    val alertDialogViewState: AlertDialogViewState = AlertDialogViewState(),
+    val checkingInHabitIds: Set<String> = emptySet()
 )
 
 data class HabitViewState(

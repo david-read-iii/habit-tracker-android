@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -62,7 +63,13 @@ class HabitListViewModel @Inject constructor(
 
             is HabitListViewIntent.ClickHabit -> {
                 viewModelScope.launch {
+                    _viewState.update {
+                        it.copy(checkingInHabitIds = it.checkingInHabitIds + intent.habitId)
+                    }
                     val result = checkInUseCase(intent.habitId)
+                    _viewState.update {
+                        it.copy(checkingInHabitIds = it.checkingInHabitIds - intent.habitId)
+                    }
                     when (result) {
                         is CheckInResult.AlreadyCheckedInError -> {
                             _viewEffect.emit(

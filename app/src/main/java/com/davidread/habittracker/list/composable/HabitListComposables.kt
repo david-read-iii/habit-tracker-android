@@ -13,14 +13,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -92,22 +89,24 @@ fun HabitListScreen(
     val habits = viewModel.habitsPagingDataFlow.collectAsLazyPagingItems()
     val viewState by viewModel.viewState.collectAsState()
 
-    Scaffold(
-        modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
-        HabitListContent(
-            modifier = Modifier.padding(paddingValues),
-            habits = habits,
-            onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) }
-        )
-    }
+     Scaffold(
+         modifier = modifier,
+         snackbarHost = { SnackbarHost(snackbarHostState) }
+     ) { paddingValues ->
+         HabitListContent(
+             modifier = Modifier.padding(paddingValues),
+             habits = habits,
+             checkingInHabitIds = viewState.checkingInHabitIds,
+             onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) }
+         )
+     }
 }
 
 @Composable
 fun HabitListContent(
     modifier: Modifier = Modifier,
     habits: LazyPagingItems<HabitViewState>,
+    checkingInHabitIds: Set<String> = emptySet(),
     onHabitClick: (String) -> Unit = {}
 ) {
     Box(
@@ -144,6 +143,7 @@ fun HabitListContent(
                         habits[index]?.let { habit ->
                             HabitListItem(
                                 viewState = habit,
+                                isCheckingIn = habit.id in checkingInHabitIds,
                                 onClick = { onHabitClick(habit.id) }
                             )
                             HorizontalDivider()
@@ -169,6 +169,7 @@ fun HabitListContent(
 fun HabitListItem(
     modifier: Modifier = Modifier,
     viewState: HabitViewState,
+    isCheckingIn: Boolean = false,
     onClick: () -> Unit = {}
 ) {
     Column(
@@ -179,6 +180,7 @@ fun HabitListItem(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick,
+                enabled = !isCheckingIn
             ),
     ) {
         Text(
@@ -198,12 +200,20 @@ fun HabitListItem(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Whatshot,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = Color.FireRed
-                )
+                if (isCheckingIn) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color = Color.FireRed
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.Whatshot,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.FireRed
+                    )
+                }
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = viewState.streak,
@@ -401,7 +411,8 @@ private fun HabitListContentPreview_NotLoading() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            checkingInHabitIds = emptySet()
         )
     }
 }
