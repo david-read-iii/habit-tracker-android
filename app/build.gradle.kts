@@ -66,6 +66,7 @@ android {
 
 dependencies {
     implementation(platform(libs.compose.bom))
+    implementation(libs.google.material)
     implementation(libs.material3)
     implementation(libs.material.icons.extended)
     implementation(libs.ui.tooling.preview)
