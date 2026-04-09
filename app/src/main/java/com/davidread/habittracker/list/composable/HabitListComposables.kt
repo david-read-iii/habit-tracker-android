@@ -24,18 +24,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,11 +72,11 @@ import com.davidread.habittracker.list.model.HabitViewState
 import com.davidread.habittracker.list.viewmodel.HabitListViewModel
 import kotlinx.coroutines.flow.flowOf
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitListScreen(
     modifier: Modifier = Modifier,
     viewModel: HabitListViewModel = hiltViewModel(),
+    onNavigateToAddHabitScreen: () -> Unit = {},
     onNavigateToSettingsScreen: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -80,6 +84,7 @@ fun HabitListScreen(
     LaunchedEffect(Unit) {
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
+                is HabitListViewEffect.NavigateToAddHabitScreen -> onNavigateToAddHabitScreen()
                 is HabitListViewEffect.NavigateToSettingsScreen -> onNavigateToSettingsScreen()
                 is HabitListViewEffect.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(
@@ -94,17 +99,40 @@ fun HabitListScreen(
     val habits = viewModel.habitsPagingDataFlow.collectAsLazyPagingItems()
     val viewState by viewModel.viewState.collectAsState()
 
-     Scaffold(
-         modifier = modifier,
-         snackbarHost = { SnackbarHost(snackbarHostState) }
-     ) { paddingValues ->
-         HabitListContent(
-             modifier = Modifier.padding(paddingValues),
-             habits = habits,
-             checkingInHabitIds = viewState.checkingInHabitIds,
-             onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) }
-         )
-     }
+    HabitListContent(
+        modifier = modifier,
+        habits = habits,
+        checkingInHabitIds = viewState.checkingInHabitIds,
+        snackbarHostState = snackbarHostState,
+        onClickAddHabit = { viewModel.processIntent(HabitListViewIntent.ClickAddHabitButton) },
+        onClickSettings = { viewModel.processIntent(HabitListViewIntent.ClickSettingsButton) },
+        onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HabitListTopAppBar(
+    onClickAddHabit: () -> Unit,
+    onClickSettings: () -> Unit
+) {
+    TopAppBar(
+        title = { Text(text = stringResource(R.string.habit_list_title)) },
+        actions = {
+            IconButton(onClick = onClickAddHabit) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.habit_list_add_habit)
+                )
+            }
+            IconButton(onClick = onClickSettings) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = stringResource(R.string.habit_list_open_settings)
+                )
+            }
+        }
+    )
 }
 
 @Composable
@@ -112,55 +140,70 @@ fun HabitListContent(
     modifier: Modifier = Modifier,
     habits: LazyPagingItems<HabitViewState>,
     checkingInHabitIds: Set<String> = emptySet(),
+    snackbarHostState: SnackbarHostState,
+    onClickAddHabit: () -> Unit = {},
+    onClickSettings: () -> Unit = {},
     onHabitClick: (String) -> Unit = {}
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        when (habits.loadState.refresh) {
-            is LoadState.Loading -> {
-                LoadingListItem()
-            }
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            HabitListTopAppBar(
+                onClickAddHabit = onClickAddHabit,
+                onClickSettings = onClickSettings
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            when (habits.loadState.refresh) {
+                is LoadState.Loading -> {
+                    LoadingListItem()
+                }
 
-            is LoadState.Error -> {
-                ErrorListItem(onClick = { habits.retry() })
-            }
+                is LoadState.Error -> {
+                    ErrorListItem(onClick = { habits.retry() })
+                }
 
-            is LoadState.NotLoading -> {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    when (habits.loadState.prepend) {
-                        is LoadState.Loading -> item {
-                            LoadingListItem()
-                            HorizontalDivider()
+                is LoadState.NotLoading -> {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        when (habits.loadState.prepend) {
+                            is LoadState.Loading -> item {
+                                LoadingListItem()
+                                HorizontalDivider()
+                            }
+                            is LoadState.Error -> item {
+                                ErrorListItem(onClick = { habits.retry() })
+                                HorizontalDivider()
+                            }
+                            is LoadState.NotLoading -> Unit
                         }
-                        is LoadState.Error -> item {
-                            ErrorListItem(onClick = { habits.retry() })
-                            HorizontalDivider()
-                        }
-                        is LoadState.NotLoading -> Unit
-                    }
 
-                    items(
-                        count = habits.itemCount,
-                        key = habits.itemKey { it.id }
-                    ) { index ->
-                        habits[index]?.let { habit ->
-                            HabitListItem(
-                                viewState = habit,
-                                isCheckingIn = habit.id in checkingInHabitIds,
-                                onClick = { onHabitClick(habit.id) }
-                            )
-                            HorizontalDivider()
+                        items(
+                            count = habits.itemCount,
+                            key = habits.itemKey { it.id }
+                        ) { index ->
+                            habits[index]?.let { habit ->
+                                HabitListItem(
+                                    viewState = habit,
+                                    isCheckingIn = habit.id in checkingInHabitIds,
+                                    onClick = { onHabitClick(habit.id) }
+                                )
+                                HorizontalDivider()
+                            }
                         }
-                    }
 
-                    when (val appendState = habits.loadState.append) {
-                        is LoadState.Loading -> item { LoadingListItem() }
-                        is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
-                        is LoadState.NotLoading -> {
-                            if (appendState.endOfPaginationReached && habits.itemCount > 0) {
-                                item { EndOfPaginationListItem() }
+                        when (val appendState = habits.loadState.append) {
+                            is LoadState.Loading -> item { LoadingListItem() }
+                            is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
+                            is LoadState.NotLoading -> {
+                                if (appendState.endOfPaginationReached && habits.itemCount > 0) {
+                                    item { EndOfPaginationListItem() }
+                                }
                             }
                         }
                     }
@@ -440,6 +483,7 @@ private fun HabitListContentPreview_NotLoading() {
     HabitTrackerTheme {
         HabitListContent(
             habits = habits,
+            snackbarHostState = remember { SnackbarHostState() },
             checkingInHabitIds = emptySet()
         )
     }
@@ -461,7 +505,8 @@ private fun HabitListContentPreview_RefreshLoading() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -482,7 +527,8 @@ private fun HabitListContentPreview_RefreshError() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -503,7 +549,8 @@ private fun HabitListContentPreview_PrependLoading() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -524,7 +571,8 @@ private fun HabitListContentPreview_PrependError() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -545,7 +593,8 @@ private fun HabitListContentPreview_AppendLoading() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -566,7 +615,8 @@ private fun HabitListContentPreview_AppendError() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -587,7 +637,8 @@ private fun HabitListContentPreview_EndOfPagination() {
 
     HabitTrackerTheme {
         HabitListContent(
-            habits = habits
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }

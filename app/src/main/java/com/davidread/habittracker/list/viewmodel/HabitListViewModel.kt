@@ -49,6 +49,12 @@ class HabitListViewModel @Inject constructor(
 
     fun processIntent(intent: HabitListViewIntent) {
         when (intent) {
+            HabitListViewIntent.ClickAddHabitButton -> {
+                viewModelScope.launch {
+                    _viewEffect.emit(HabitListViewEffect.NavigateToAddHabitScreen)
+                }
+            }
+
             HabitListViewIntent.ClickSettingsButton -> {
                 viewModelScope.launch {
                     _viewEffect.emit(HabitListViewEffect.NavigateToSettingsScreen)

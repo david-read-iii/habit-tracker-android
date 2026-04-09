@@ -67,6 +67,16 @@ class HabitListViewModelTest {
     }
 
     @Test
+    fun test_processIntent_ClickAddHabitButton() = runTest {
+        val intent = HabitListViewIntent.ClickAddHabitButton
+
+        viewModel.viewEffect.test {
+            viewModel.processIntent(intent)
+            Assert.assertEquals(HabitListViewEffect.NavigateToAddHabitScreen, awaitItem())
+        }
+    }
+
+    @Test
     fun test_processIntent_ClickSettingsButton() = runTest {
         val intent = HabitListViewIntent.ClickSettingsButton
 
