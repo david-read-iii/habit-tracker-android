@@ -1,5 +1,7 @@
 package com.davidread.habittracker.list.composable
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -38,11 +40,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -172,6 +177,24 @@ fun HabitListItem(
     isCheckingIn: Boolean = false,
     onClick: () -> Unit = {}
 ) {
+    val fireIconScale = remember(viewState.id) { Animatable(1f) }
+    var previousStreak by remember(viewState.id) { mutableStateOf(viewState.streak) }
+
+    LaunchedEffect(viewState.id, viewState.streak) {
+        if (previousStreak != viewState.streak) {
+            fireIconScale.snapTo(1f)
+            fireIconScale.animateTo(
+                targetValue = 1.22f,
+                animationSpec = tween(durationMillis = 120, easing = FastOutSlowInEasing)
+            )
+            fireIconScale.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)
+            )
+        }
+        previousStreak = viewState.streak
+    }
+
     Column(
         modifier = modifier
             .padding(16.dp)
@@ -210,7 +233,12 @@ fun HabitListItem(
                     Icon(
                         imageVector = Icons.Filled.Whatshot,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier
+                            .size(18.dp)
+                            .graphicsLayer {
+                                scaleX = fireIconScale.value
+                                scaleY = fireIconScale.value
+                            },
                         tint = Color.FireRed
                     )
                 }
