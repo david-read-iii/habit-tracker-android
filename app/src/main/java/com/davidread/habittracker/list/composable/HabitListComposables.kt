@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +38,6 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,6 +62,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.list.model.HabitListViewEffect
@@ -110,31 +109,6 @@ fun HabitListScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HabitListTopAppBar(
-    onClickAddHabit: () -> Unit,
-    onClickSettings: () -> Unit
-) {
-    TopAppBar(
-        title = { Text(text = stringResource(R.string.habit_list_title)) },
-        actions = {
-            IconButton(onClick = onClickAddHabit) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.habit_list_add_habit)
-                )
-            }
-            IconButton(onClick = onClickSettings) {
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = stringResource(R.string.habit_list_open_settings)
-                )
-            }
-        }
-    )
-}
-
 @Composable
 fun HabitListContent(
     modifier: Modifier = Modifier,
@@ -148,9 +122,22 @@ fun HabitListContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            HabitListTopAppBar(
-                onClickAddHabit = onClickAddHabit,
-                onClickSettings = onClickSettings
+            HabitTrackerTopAppBar(
+                title = stringResource(R.string.habit_list_title),
+                actions = {
+                    IconButton(onClick = onClickAddHabit) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = stringResource(R.string.habit_list_add_habit)
+                        )
+                    }
+                    IconButton(onClick = onClickSettings) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = stringResource(R.string.habit_list_open_settings)
+                        )
+                    }
+                }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }

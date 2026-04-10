@@ -5,16 +5,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,6 +33,7 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.AlertDialog
 import com.davidread.habittracker.common.ui.composable.Button
 import com.davidread.habittracker.common.ui.composable.Card
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.composable.LoadingDialog
 import com.davidread.habittracker.common.ui.composable.TextField
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
@@ -44,7 +47,8 @@ import com.davidread.habittracker.signup.viewmodel.SignUpViewModel
 fun SignUpScreen(
     modifier: Modifier = Modifier,
     viewModel: SignUpViewModel = hiltViewModel(),
-    onNavigateToHabitListScreen: () -> Unit = {}
+    onNavigateToHabitListScreen: () -> Unit = {},
+    onNavigateBack: () -> Unit = {}
 ) {
     LaunchedEffect(Unit) {
         viewModel.viewEffect.collect { viewEffect ->
@@ -58,6 +62,7 @@ fun SignUpScreen(
     SignUpScreenContent(
         modifier = modifier,
         viewState = viewState,
+        onNavigateBack = onNavigateBack,
         onEmailValueChange = {
             viewModel.processIntent(SignUpViewIntent.ChangeEmailValue(newValue = it))
         },
@@ -80,6 +85,7 @@ fun SignUpScreen(
 fun SignUpScreenContent(
     modifier: Modifier = Modifier,
     viewState: SignUpViewState = SignUpViewState(),
+    onNavigateBack: () -> Unit = {},
     onEmailValueChange: (String) -> Unit = {},
     onPasswordValueChange: (String) -> Unit = {},
     onConfirmPasswordValueChange: (String) -> Unit = {},
@@ -87,32 +93,49 @@ fun SignUpScreenContent(
     onAlertDialogButtonClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(WindowInsets.systemBars.asPaddingValues()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        Image(
-            painter = painterResource(id = R.drawable.undraw_sign_up_qamz),
-            contentDescription = null,
-            modifier = Modifier.size(192.dp)
-        )
-        Spacer(modifier = Modifier.height(64.dp))
-        SignUpCredentialsCard(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            viewState = viewState,
-            onEmailValueChange = onEmailValueChange,
-            onPasswordValueChange = onPasswordValueChange,
-            onConfirmPasswordValueChange = onConfirmPasswordValueChange,
-            onSignUpButtonClick = onSignUpButtonClick
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            HabitTrackerTopAppBar(
+                title = stringResource(R.string.sign_up),
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_back)
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Image(
+                painter = painterResource(id = R.drawable.undraw_sign_up_qamz),
+                contentDescription = null,
+                modifier = Modifier.size(192.dp)
+            )
+            Spacer(modifier = Modifier.height(64.dp))
+            SignUpCredentialsCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                viewState = viewState,
+                onEmailValueChange = onEmailValueChange,
+                onPasswordValueChange = onPasswordValueChange,
+                onConfirmPasswordValueChange = onConfirmPasswordValueChange,
+                onSignUpButtonClick = onSignUpButtonClick
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 
     if (viewState.showLoadingDialog) {

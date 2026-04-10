@@ -38,7 +38,8 @@ fun HabitTrackerApp() {
                     navController.navigate(Screen.HabitList.route) {
                         popUpTo(Screen.SignUp.route) { inclusive = true }
                     }
-                }
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

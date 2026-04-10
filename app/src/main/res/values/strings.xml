@@ -16,6 +16,7 @@
     <string name="email_already_used_error_message">This email address is already in use. Please try another one.</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="sign_up">Sign up</string>
+    <string name="navigate_back">Navigate back</string>
     <string name="habit_list_title">Habits</string>
     <string name="habit_list_add_habit">Add habit</string>
     <string name="habit_list_open_settings">Open settings</string>
