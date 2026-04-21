@@ -119,7 +119,16 @@ fun HabitListScreen(
         snackbarHostState = snackbarHostState,
         onClickAddHabit = { viewModel.processIntent(HabitListViewIntent.ClickAddHabitButton) },
         onClickSettings = { viewModel.processIntent(HabitListViewIntent.ClickSettingsButton) },
-        onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) }
+        onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) },
+        onHabitCheckInClick = {
+            viewModel.processIntent(
+                HabitListViewIntent.ClickCheckInHabitButton(
+                    it
+                )
+            )
+        },
+        onHabitRenameClick = { viewModel.processIntent(HabitListViewIntent.ClickEditHabitButton(it)) },
+        onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it)) }
     )
 }
 
@@ -131,7 +140,10 @@ fun HabitListContent(
     snackbarHostState: SnackbarHostState,
     onClickAddHabit: () -> Unit = {},
     onClickSettings: () -> Unit = {},
-    onHabitClick: (String) -> Unit = {}
+    onHabitClick: (String) -> Unit = {},
+    onHabitCheckInClick: (String) -> Unit = {},
+    onHabitRenameClick: (String) -> Unit = {},
+    onHabitDeleteClick: (String) -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier,
@@ -194,7 +206,10 @@ fun HabitListContent(
                                 HabitListItem(
                                     viewState = habit,
                                     isCheckingIn = habit.id in checkingInHabitIds,
-                                    onClick = { onHabitClick(habit.id) }
+                                    onClick = { onHabitClick(habit.id) },
+                                    onCheckInClick = { onHabitCheckInClick(habit.id) },
+                                    onRenameClick = { onHabitRenameClick(habit.id) },
+                                    onDeleteClick = { onHabitDeleteClick(habit.id) }
                                 )
                                 HorizontalDivider()
                             }
@@ -221,7 +236,10 @@ fun HabitListItem(
     modifier: Modifier = Modifier,
     viewState: HabitViewState,
     isCheckingIn: Boolean = false,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onCheckInClick: () -> Unit = {},
+    onRenameClick: () -> Unit = {},
+    onDeleteClick: () -> Unit = {}
 ) {
     val fireIconScale = remember(viewState.id) { Animatable(1f) }
     var previousStreak by remember(viewState.id) { mutableStateOf(viewState.streak) }
@@ -232,6 +250,13 @@ fun HabitListItem(
     val actionButtonWidth = 60.dp
     val totalActionsWidth = actionButtonWidth * 3
     val totalActionsWidthPx = with(density) { totalActionsWidth.toPx() }
+
+    val closeSwipeAndRun: (() -> Unit) -> Unit = { action ->
+        scope.launch {
+            offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300))
+            action()
+        }
+    }
 
     LaunchedEffect(viewState.id, viewState.streak) {
         if (previousStreak != viewState.streak) {
@@ -253,13 +278,13 @@ fun HabitListItem(
             heightPx = itemHeightPx,
             density = density,
             onDeleteClick = {
-                scope.launch { offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300)) }
+                closeSwipeAndRun(onDeleteClick)
             },
             onRenameClick = {
-                scope.launch { offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300)) }
+                closeSwipeAndRun(onRenameClick)
             },
             onCheckInClick = {
-                scope.launch { offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300)) }
+                closeSwipeAndRun(onCheckInClick)
             }
         )
 
