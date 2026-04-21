@@ -9,15 +9,18 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +28,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
@@ -44,15 +49,21 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
@@ -70,6 +81,9 @@ import com.davidread.habittracker.list.model.HabitListViewIntent
 import com.davidread.habittracker.list.model.HabitViewState
 import com.davidread.habittracker.list.viewmodel.HabitListViewModel
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Composable
 fun HabitListScreen(
@@ -163,10 +177,12 @@ fun HabitListContent(
                                 LoadingListItem()
                                 HorizontalDivider()
                             }
+
                             is LoadState.Error -> item {
                                 ErrorListItem(onClick = { habits.retry() })
                                 HorizontalDivider()
                             }
+
                             is LoadState.NotLoading -> Unit
                         }
 
@@ -209,6 +225,13 @@ fun HabitListItem(
 ) {
     val fireIconScale = remember(viewState.id) { Animatable(1f) }
     var previousStreak by remember(viewState.id) { mutableStateOf(viewState.streak) }
+    val offsetX = remember(viewState.id) { Animatable(0f) }
+    val density = LocalDensity.current
+    var itemHeightPx by remember(viewState.id) { mutableStateOf(0) }
+    val scope = rememberCoroutineScope()
+    val actionButtonWidth = 60.dp
+    val totalActionsWidth = actionButtonWidth * 3
+    val totalActionsWidthPx = with(density) { totalActionsWidth.toPx() }
 
     LaunchedEffect(viewState.id, viewState.streak) {
         if (previousStreak != viewState.streak) {
@@ -225,16 +248,124 @@ fun HabitListItem(
         previousStreak = viewState.streak
     }
 
-    Column(
-        modifier = modifier
-            .padding(16.dp)
+    Box(modifier = modifier.fillMaxWidth()) {
+        HabitListItemSwipeActions(
+            heightPx = itemHeightPx,
+            density = density,
+            onDeleteClick = {
+                scope.launch { offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300)) }
+            },
+            onRenameClick = {
+                scope.launch { offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300)) }
+            },
+            onCheckInClick = {
+                scope.launch { offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300)) }
+            }
+        )
+
+        HabitListItemForeground(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                .background(MaterialTheme.colorScheme.background)
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { _, dragAmount ->
+                            if (!isCheckingIn) {
+                                scope.launch {
+                                    val newValue = (offsetX.value + dragAmount).coerceIn(
+                                        -totalActionsWidthPx,
+                                        0f
+                                    )
+                                    offsetX.snapTo(newValue)
+                                }
+                            }
+                        },
+                        onDragEnd = {
+                            if (!isCheckingIn) {
+                                scope.launch {
+                                    val threshold = totalActionsWidthPx * 0.3f
+                                    val targetValue =
+                                        if (offsetX.value < -threshold) -totalActionsWidthPx else 0f
+                                    offsetX.animateTo(
+                                        targetValue,
+                                        animationSpec = tween(durationMillis = 300)
+                                    )
+                                }
+                            }
+                        }
+                    )
+                }
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick,
+                    enabled = !isCheckingIn && offsetX.value == 0f
+                )
+                .onSizeChanged { itemHeightPx = it.height }
+                .padding(16.dp),
+            viewState = viewState,
+            isCheckingIn = isCheckingIn,
+            fireIconScale = fireIconScale.value
+        )
+    }
+}
+
+@Composable
+private fun HabitListItemSwipeActions(
+    heightPx: Int,
+    density: androidx.compose.ui.unit.Density,
+    onDeleteClick: () -> Unit,
+    onRenameClick: () -> Unit,
+    onCheckInClick: () -> Unit
+) {
+    val rowModifier = if (heightPx > 0) {
+        Modifier
             .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-                enabled = !isCheckingIn
-            ),
+            .height(with(density) { heightPx.toDp() })
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
+    Row(
+        modifier = rowModifier
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        horizontalArrangement = Arrangement.End
+    ) {
+        SwipeActionButton(
+            icon = Icons.Filled.Delete,
+            label = stringResource(R.string.habit_list_delete_action),
+            containerColor = Color.SwipeDeleteContainer,
+            contentColor = Color.SwipeDeleteContent,
+            onClick = onDeleteClick
+        )
+        SwipeActionButton(
+            icon = Icons.Filled.Edit,
+            label = stringResource(R.string.habit_list_rename_action),
+            containerColor = Color.SwipeRenameContainer,
+            contentColor = Color.SwipeRenameContent,
+            onClick = onRenameClick
+        )
+        SwipeActionButton(
+            icon = Icons.Filled.Whatshot,
+            label = stringResource(R.string.habit_list_check_in_action),
+            containerColor = Color.SwipeCheckInContainer,
+            contentColor = Color.SwipeCheckInContent,
+            onClick = onCheckInClick
+        )
+    }
+}
+
+@Composable
+private fun HabitListItemForeground(
+    modifier: Modifier,
+    viewState: HabitViewState,
+    isCheckingIn: Boolean,
+    fireIconScale: Float
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = viewState.name,
@@ -243,50 +374,100 @@ fun HabitListItem(
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(4.dp))
+        HabitListItemMetaRow(
+            streak = viewState.streak,
+            createdAt = viewState.createdAt,
+            isCheckingIn = isCheckingIn,
+            fireIconScale = fireIconScale
+        )
+    }
+}
+
+@Composable
+private fun HabitListItemMetaRow(
+    streak: String,
+    createdAt: String,
+    isCheckingIn: Boolean,
+    fireIconScale: Float
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Row(
-            modifier =
-                Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (isCheckingIn) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                        color = Color.FireRed
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Filled.Whatshot,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .graphicsLayer {
-                                scaleX = fireIconScale.value
-                                scaleY = fireIconScale.value
-                            },
-                        tint = Color.FireRed
-                    )
-                }
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = viewState.streak,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground
+            if (isCheckingIn) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = Color.FireRed
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.Whatshot,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .graphicsLayer {
+                            scaleX = fireIconScale
+                            scaleY = fireIconScale
+                        },
+                    tint = Color.FireRed
                 )
             }
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = viewState.createdAt,
-                modifier = Modifier
-                    .padding(start = 4.dp)
-                    .weight(1f),
+                text = streak,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.End
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+        Text(
+            text = createdAt,
+            modifier = Modifier
+                .padding(start = 4.dp)
+                .weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.End
+        )
+    }
+}
+
+@Composable
+private fun SwipeActionButton(
+    icon: ImageVector,
+    label: String,
+    containerColor: ComposeColor,
+    contentColor: ComposeColor,
+    onClick: () -> Unit = {}
+) {
+    Box(
+        modifier = Modifier
+            .width(60.dp)
+            .fillMaxHeight()
+            .background(color = containerColor)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(4.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(22.dp),
+                tint = contentColor
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = contentColor,
+                maxLines = 1
             )
         }
     }

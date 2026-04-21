@@ -11,4 +11,10 @@ object Color {
     val Black = Color(0xFF000000)
     val RedError = Color(0xFFB00020)
     val FireRed = Color(0xFFFF5722)
+    val SwipeDeleteContainer = Color(0xFFFFDAD6)
+    val SwipeDeleteContent = Color(0xFFB3261E)
+    val SwipeRenameContainer = Color(0xFFDCEBFF)
+    val SwipeRenameContent = Color(0xFF0D47A1)
+    val SwipeCheckInContainer = Color(0xFFFFE0B2)
+    val SwipeCheckInContent = Color(0xFFBF360C)
 }
