@@ -153,6 +153,64 @@ class HabitListViewModelTest {
         }
     }
 
+    @Test
+    fun test_processIntent_ClickCheckInHabitButton_success() = runTest {
+        turbineScope {
+            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
+            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+            val checkInResultDeferred = CompletableDeferred<CheckInResult>()
+            coEvery { checkInUseCase(HABIT_ID) } coAnswers { checkInResultDeferred.await() }
+
+            Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+
+            Assert.assertEquals(setOf(HABIT_ID), viewStateTurbine.expectMostRecentItem().checkingInHabitIds)
+
+            checkInResultDeferred.complete(CheckInResult.Success)
+
+            Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            viewEffectTurbine.expectNoEvents()
+            coVerify { checkInUseCase(HABIT_ID) }
+        }
+    }
+
+    @Test
+    fun test_processIntent_ClickCheckInHabitButton_alreadyCheckedInError() = runTest {
+        turbineScope {
+            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
+            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+            coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.AlreadyCheckedInError
+
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+
+            Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.ShowSnackbar(ALREADY_CHECKED_IN_MESSAGE),
+                viewEffectTurbine.awaitItem()
+            )
+            coVerify { checkInUseCase(HABIT_ID) }
+        }
+    }
+
+    @Test
+    fun test_processIntent_ClickCheckInHabitButton_genericError() = runTest {
+        turbineScope {
+            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
+            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+            coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.GenericError
+
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+
+            Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.ShowSnackbar(GENERIC_ERROR_MESSAGE),
+                viewEffectTurbine.awaitItem()
+            )
+            coVerify { checkInUseCase(HABIT_ID) }
+        }
+    }
+
     companion object {
         private const val HABIT_ID = "habit_id"
         private const val ALREADY_CHECKED_IN_MESSAGE = "You've already checked in for this habit today."

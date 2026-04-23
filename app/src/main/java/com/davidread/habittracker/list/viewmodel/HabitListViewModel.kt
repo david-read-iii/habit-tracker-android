@@ -67,14 +67,19 @@ class HabitListViewModel @Inject constructor(
                 )
             }
 
-            is HabitListViewIntent.ClickHabit -> {
+            is HabitListViewIntent.ClickHabit, is HabitListViewIntent.ClickCheckInHabitButton -> {
                 viewModelScope.launch {
-                    _viewState.update {
-                        it.copy(checkingInHabitIds = it.checkingInHabitIds + intent.habitId)
+                    val habitId = when (intent) {
+                        is HabitListViewIntent.ClickHabit -> intent.habitId
+                        is HabitListViewIntent.ClickCheckInHabitButton -> intent.habitId
+                        else -> ""
                     }
-                    val result = checkInUseCase(intent.habitId)
                     _viewState.update {
-                        it.copy(checkingInHabitIds = it.checkingInHabitIds - intent.habitId)
+                        it.copy(checkingInHabitIds = it.checkingInHabitIds + habitId)
+                    }
+                    val result = checkInUseCase(habitId)
+                    _viewState.update {
+                        it.copy(checkingInHabitIds = it.checkingInHabitIds - habitId)
                     }
                     when (result) {
                         is CheckInResult.AlreadyCheckedInError -> {
