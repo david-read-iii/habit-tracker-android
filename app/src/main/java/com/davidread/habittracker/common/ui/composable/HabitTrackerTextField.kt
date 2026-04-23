@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 
 @Composable
-fun TextField(
+fun HabitTrackerTextField(
     modifier: Modifier = Modifier,
     value: String = "",
     onValueChange: (String) -> Unit = {},
@@ -52,17 +52,17 @@ fun TextField(
 
 @Preview(showBackground = true)
 @Composable
-private fun TextFieldPreview_Default() {
+private fun HabitTrackerTextFieldPreview_Default() {
     HabitTrackerTheme {
-        TextField(value = "Value", labelText = "Label")
+        HabitTrackerTextField(value = "Value", labelText = "Label")
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun TextFieldPreview_Error() {
+private fun HabitTrackerTextFieldPreview_Error() {
     HabitTrackerTheme {
-        TextField(
+        HabitTrackerTextField(
             value = "Invalid value",
             labelText = "Label",
             isError = true,

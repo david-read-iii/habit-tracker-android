@@ -31,11 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.AlertDialog
-import com.davidread.habittracker.common.ui.composable.Button
+import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.Card
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.composable.LoadingDialog
-import com.davidread.habittracker.common.ui.composable.TextField
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.signup.model.SignUpTextFieldViewState
 import com.davidread.habittracker.signup.model.SignUpViewEffect
@@ -161,7 +161,7 @@ fun SignUpCredentialsCard(
 ) {
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
-            TextField(
+            HabitTrackerTextField(
                 value = viewState.emailTextFieldViewState.value,
                 onValueChange = onEmailValueChange,
                 labelText = stringResource(R.string.email),
@@ -170,7 +170,7 @@ fun SignUpCredentialsCard(
                 keyboardType = KeyboardType.Email,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            TextField(
+            HabitTrackerTextField(
                 value = viewState.passwordTextFieldViewState.value,
                 onValueChange = onPasswordValueChange,
                 labelText = stringResource(R.string.password),
@@ -179,7 +179,7 @@ fun SignUpCredentialsCard(
                 keyboardType = KeyboardType.Password,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            TextField(
+            HabitTrackerTextField(
                 value = viewState.confirmPasswordTextFieldViewState.value,
                 onValueChange = onConfirmPasswordValueChange,
                 labelText = stringResource(R.string.confirm_password),
@@ -192,7 +192,7 @@ fun SignUpCredentialsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                Button(
+                HabitTrackerButton(
                     label = stringResource(R.string.sign_up),
                     onClick = { onSignUpButtonClick() }
                 )

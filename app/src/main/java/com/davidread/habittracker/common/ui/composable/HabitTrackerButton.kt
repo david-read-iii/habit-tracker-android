@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 
 @Composable
-fun Button(modifier: Modifier = Modifier, label: String = "", onClick: () -> Unit = {}) {
+fun HabitTrackerButton(modifier: Modifier = Modifier, label: String = "", onClick: () -> Unit = {}) {
     Button(modifier = modifier, onClick = onClick) {
         Text(text = label, style = MaterialTheme.typography.titleMedium)
     }
@@ -17,8 +17,8 @@ fun Button(modifier: Modifier = Modifier, label: String = "", onClick: () -> Uni
 
 @Preview
 @Composable
-private fun ButtonPreview() {
+private fun HabitTrackerButtonPreview() {
     HabitTrackerTheme {
-        Button(label = "Click Me")
+        HabitTrackerButton(label = "Click Me")
     }
 }
