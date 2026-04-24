@@ -214,8 +214,8 @@ class HabitListViewModelTest {
             viewModel.processIntent(HabitListViewIntent.SubmitAddHabit)
 
             val addHabitViewState = viewStateTurbine.expectMostRecentItem().addHabitViewState
-            Assert.assertTrue(addHabitViewState.showBottomSheet)
-            Assert.assertEquals(HABIT_NAME, addHabitViewState.textFieldViewState.value)
+            Assert.assertFalse(addHabitViewState.showBottomSheet)
+            Assert.assertEquals("", addHabitViewState.textFieldViewState.value)
             Assert.assertFalse(addHabitViewState.textFieldViewState.isError)
             Assert.assertEquals("", addHabitViewState.textFieldViewState.errorMessage)
             Assert.assertFalse(addHabitViewState.isCreatingHabit)

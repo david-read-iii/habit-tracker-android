@@ -137,6 +137,8 @@ class HabitListViewModel @Inject constructor(
                             _viewState.update {
                                 it.copy(
                                     addHabitViewState = it.addHabitViewState.copy(
+                                        showBottomSheet = false,
+                                        textFieldViewState = HabitListTextFieldViewState(),
                                         isCreatingHabit = false
                                     )
                                 )
