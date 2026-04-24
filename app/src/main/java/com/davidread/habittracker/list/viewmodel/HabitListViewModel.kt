@@ -117,11 +117,6 @@ class HabitListViewModel @Inject constructor(
                                     )
                                 )
                             }
-                            _viewEffect.emit(
-                                HabitListViewEffect.ShowSnackbar(
-                                    application.getString(R.string.create_habit_success)
-                                )
-                            )
                         }
 
                         is CreateHabitResult.InvalidHabitName -> {

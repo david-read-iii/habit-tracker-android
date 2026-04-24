@@ -176,10 +176,6 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
             Assert.assertFalse(completedState.isCreatingHabit)
-            Assert.assertEquals(
-                HabitListViewEffect.ShowSnackbar(CREATE_HABIT_SUCCESS_MESSAGE),
-                viewEffectTurbine.awaitItem()
-            )
             coVerify { createHabitUseCase(HABIT_NAME) }
         }
     }
