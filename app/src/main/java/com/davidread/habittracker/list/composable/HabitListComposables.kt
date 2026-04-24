@@ -34,15 +34,20 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,9 +55,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
@@ -73,11 +81,15 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.list.model.AddHabitViewState
+import com.davidread.habittracker.list.model.HabitListTextFieldViewState
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
+import com.davidread.habittracker.list.model.HabitListViewState
 import com.davidread.habittracker.list.model.HabitViewState
 import com.davidread.habittracker.list.viewmodel.HabitListViewModel
 import kotlinx.coroutines.flow.flowOf
@@ -115,9 +127,14 @@ fun HabitListScreen(
     HabitListContent(
         modifier = modifier,
         habits = habits,
-        checkingInHabitIds = viewState.checkingInHabitIds,
+        viewState = viewState,
         snackbarHostState = snackbarHostState,
         onClickAddHabit = { viewModel.processIntent(HabitListViewIntent.ClickAddHabitButton) },
+        onDismissAddHabitBottomSheet = {
+            viewModel.processIntent(HabitListViewIntent.DismissAddHabitBottomSheet)
+        },
+        onAddHabitNameChange = { viewModel.processIntent(HabitListViewIntent.ChangeHabitNameValue(it)) },
+        onSubmitAddHabit = { viewModel.processIntent(HabitListViewIntent.SubmitAddHabit) },
         onClickSettings = { viewModel.processIntent(HabitListViewIntent.ClickSettingsButton) },
         onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) },
         onHabitCheckInClick = {
@@ -136,9 +153,12 @@ fun HabitListScreen(
 fun HabitListContent(
     modifier: Modifier = Modifier,
     habits: LazyPagingItems<HabitViewState>,
-    checkingInHabitIds: Set<String> = emptySet(),
+    viewState: HabitListViewState = HabitListViewState(),
     snackbarHostState: SnackbarHostState,
     onClickAddHabit: () -> Unit = {},
+    onDismissAddHabitBottomSheet: () -> Unit = {},
+    onAddHabitNameChange: (String) -> Unit = {},
+    onSubmitAddHabit: () -> Unit = {},
     onClickSettings: () -> Unit = {},
     onHabitClick: (String) -> Unit = {},
     onHabitCheckInClick: (String) -> Unit = {},
@@ -205,7 +225,7 @@ fun HabitListContent(
                             habits[index]?.let { habit ->
                                 HabitListItem(
                                     viewState = habit,
-                                    isCheckingIn = habit.id in checkingInHabitIds,
+                                    isCheckingIn = habit.id in viewState.checkingInHabitIds,
                                     onClick = { onHabitClick(habit.id) },
                                     onCheckInClick = { onHabitCheckInClick(habit.id) },
                                     onRenameClick = { onHabitRenameClick(habit.id) },
@@ -227,6 +247,102 @@ fun HabitListContent(
                     }
                 }
             }
+        }
+    }
+
+    if (viewState.addHabitViewState.showBottomSheet) {
+        AddHabitBottomSheet(
+            addHabitViewState = viewState.addHabitViewState,
+            onNameChange = onAddHabitNameChange,
+            onDismiss = onDismissAddHabitBottomSheet,
+            onSubmit = onSubmitAddHabit
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddHabitBottomSheet(
+    addHabitViewState: AddHabitViewState,
+    onNameChange: (String) -> Unit = {},
+    onDismiss: () -> Unit = {},
+    onSubmit: () -> Unit = {}
+) {
+    val latestIsCreatingHabit by rememberUpdatedState(addHabitViewState.isCreatingHabit)
+    val confirmValueChange = remember {
+        { newValue: SheetValue ->
+            !(latestIsCreatingHabit && newValue == SheetValue.Hidden)
+        }
+    }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = confirmValueChange
+    )
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = {
+            if (!addHabitViewState.isCreatingHabit) {
+                onDismiss()
+            }
+        },
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.habit_list_add_habit_sheet_title),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            HabitTrackerTextField(
+                value = addHabitViewState.textFieldViewState.value,
+                onValueChange = onNameChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
+                enabled = !addHabitViewState.isCreatingHabit,
+                isError = addHabitViewState.textFieldViewState.isError,
+                labelText = stringResource(R.string.habit_list_add_habit_name_label),
+                errorMessage = addHabitViewState.textFieldViewState.errorMessage
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    enabled = !addHabitViewState.isCreatingHabit
+                ) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(
+                    onClick = onSubmit,
+                    enabled = !addHabitViewState.isCreatingHabit
+                ) {
+                    if (addHabitViewState.isCreatingHabit) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(text = stringResource(R.string.habit_list_add_habit_submit))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -677,7 +793,7 @@ private fun HabitListContentPreview_NotLoading() {
         HabitListContent(
             habits = habits,
             snackbarHostState = remember { SnackbarHostState() },
-            checkingInHabitIds = emptySet()
+            viewState = HabitListViewState(checkingInHabitIds = emptySet())
         )
     }
 }
@@ -832,6 +948,52 @@ private fun HabitListContentPreview_EndOfPagination() {
         HabitListContent(
             habits = habits,
             snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AddHabitBottomSheetPreview_Default() {
+    HabitTrackerTheme {
+        AddHabitBottomSheet(
+            addHabitViewState = AddHabitViewState(
+                showBottomSheet = true,
+                textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
+                isCreatingHabit = false
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AddHabitBottomSheetPreview_Loading() {
+    HabitTrackerTheme {
+        AddHabitBottomSheet(
+            addHabitViewState = AddHabitViewState(
+                showBottomSheet = true,
+                textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
+                isCreatingHabit = true
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AddHabitBottomSheetPreview_Error() {
+    HabitTrackerTheme {
+        AddHabitBottomSheet(
+            addHabitViewState = AddHabitViewState(
+                showBottomSheet = true,
+                textFieldViewState = HabitListTextFieldViewState(
+                    value = "",
+                    isError = true,
+                    errorMessage = "Habit name is required"
+                ),
+                isCreatingHabit = false
+            )
         )
     }
 }

@@ -40,4 +40,11 @@
     <string name="habit_list_delete_action">Delete</string>
     <string name="habit_list_rename_action">Rename</string>
     <string name="habit_list_check_in_action">Check In</string>
+    <string name="habit_list_add_habit_sheet_title">Add habit</string>
+    <string name="habit_list_add_habit_name_label">Habit name</string>
+    <string name="habit_list_add_habit_name_error">Please enter a habit name</string>
+    <string name="habit_list_add_habit_submit">Add</string>
+    <string name="create_habit_success">Habit added successfully.</string>
+    <string name="create_habit_error">Failed to add habit. Please try again.</string>
+    <string name="cancel">Cancel</string>
 </resources>

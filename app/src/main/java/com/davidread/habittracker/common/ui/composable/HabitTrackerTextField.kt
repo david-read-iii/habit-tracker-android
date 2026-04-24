@@ -24,6 +24,7 @@ fun HabitTrackerTextField(
     labelText: String = "",
     isError: Boolean = false,
     errorMessage: String = "",
+    enabled: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Unspecified
 ) {
@@ -31,6 +32,7 @@ fun HabitTrackerTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
+        enabled = enabled,
         label = { Text(labelText) },
         isError = isError,
         visualTransformation = visualTransformation,
