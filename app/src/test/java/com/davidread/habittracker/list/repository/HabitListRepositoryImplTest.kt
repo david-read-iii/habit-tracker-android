@@ -3,10 +3,13 @@ package com.davidread.habittracker.list.repository
 import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.list.database.HabitDao
+import com.davidread.habittracker.list.database.HabitEntity
 import com.davidread.habittracker.list.model.CheckInRequest
 import com.davidread.habittracker.list.model.CheckInResponse
+import com.davidread.habittracker.list.model.CreateHabitRequest
 import com.davidread.habittracker.list.model.CreateHabitResponse
 import com.davidread.habittracker.list.model.DeleteHabitResponse
+import com.davidread.habittracker.list.model.HabitDto
 import com.davidread.habittracker.list.model.UpdateHabitResponse
 import com.davidread.habittracker.list.service.HabitListService
 import com.davidread.habittracker.testutil.MainDispatcherRule
@@ -51,13 +54,41 @@ class HabitListRepositoryImplTest {
 
     @Test
     fun test_createHabit_success() = runTest {
-        val createHabitResponse = mockk<CreateHabitResponse>()
-        coEvery { habitListService.createHabit(any()) } returns createHabitResponse
+        val createHabitRequest = CreateHabitRequest("Exercise")
+        val createHabitResponse = CreateHabitResponse(
+            message = "Habit created",
+            habit = HabitDto("1", "Exercise", 0, "2023-10-27T10:00:00Z")
+        )
+        val expectedHabitEntity = HabitEntity("1", "Exercise", 0, "2023-10-27T10:00:00Z")
+        val habitDao = mockk<HabitDao>()
+        every { habitTrackerDatabase.habitDao() } returns habitDao
+        coEvery { habitListService.createHabit(createHabitRequest) } returns createHabitResponse
+        coEvery { habitDao.insertAll(listOf(expectedHabitEntity)) } returns Unit
 
         Assert.assertEquals(
             Result.Success(createHabitResponse),
-            habitListRepository.createHabit(mockk())
+            habitListRepository.createHabit(createHabitRequest)
         )
+        coVerify {
+            habitListService.createHabit(createHabitRequest)
+            habitDao.insertAll(listOf(expectedHabitEntity))
+        }
+    }
+
+    @Test
+    fun test_createHabit_successWithoutHabitPayload_doesNotInsertIntoDatabase() = runTest {
+        val createHabitRequest = CreateHabitRequest("Exercise")
+        val createHabitResponse = CreateHabitResponse(
+            message = "Habit created",
+            habit = null
+        )
+        coEvery { habitListService.createHabit(createHabitRequest) } returns createHabitResponse
+
+        Assert.assertEquals(
+            Result.Success(createHabitResponse),
+            habitListRepository.createHabit(createHabitRequest)
+        )
+        verify(exactly = 0) { habitTrackerDatabase.habitDao() }
     }
 
     @Test
@@ -66,6 +97,7 @@ class HabitListRepositoryImplTest {
         coEvery { habitListService.createHabit(any()) } throws exception
 
         Assert.assertEquals(Result.Error(exception), habitListRepository.createHabit(mockk()))
+        verify(exactly = 0) { habitTrackerDatabase.habitDao() }
     }
 
     @Test

@@ -43,6 +43,9 @@ class HabitListRepositoryImpl @Inject constructor(
     override suspend fun createHabit(createHabitRequest: CreateHabitRequest): Result<CreateHabitResponse> =
         try {
             val response = habitListService.createHabit(createHabitRequest)
+            response.toEntityOrNull()?.let { createdHabit ->
+                database.habitDao().insertAll(listOf(createdHabit))
+            }
             Result.Success(response)
         } catch (e: Exception) {
             Result.Error(e)
@@ -71,6 +74,20 @@ class HabitListRepositoryImpl @Inject constructor(
         Result.Success(response)
     } catch (e: Exception) {
         Result.Error(e)
+    }
+
+    private fun CreateHabitResponse?.toEntityOrNull(): HabitEntity? {
+        val habit = this?.habit ?: return null
+        val id = habit.id ?: return null
+        val name = habit.name ?: return null
+        val streak = habit.streak ?: return null
+        val createdAt = habit.createdAt ?: return null
+        return HabitEntity(
+            id = id,
+            name = name,
+            streak = streak,
+            createdAt = createdAt
+        )
     }
 
     companion object {
