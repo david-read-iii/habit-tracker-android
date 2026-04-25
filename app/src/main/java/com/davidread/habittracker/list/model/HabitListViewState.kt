@@ -5,14 +5,23 @@ data class HabitListViewState(
     val showLoading: Boolean = false,
     val alertDialogViewState: AlertDialogViewState = AlertDialogViewState(),
     val checkingInHabitIds: Set<String> = emptySet(),
-    val addHabitViewState: AddHabitViewState = AddHabitViewState()
+    val habitEditorBottomSheetViewState: HabitEditorBottomSheetViewState = HabitEditorBottomSheetViewState()
 )
 
-data class AddHabitViewState(
+data class HabitEditorBottomSheetViewState(
     val showBottomSheet: Boolean = false,
+    val title: String = "",
     val textFieldViewState: HabitListTextFieldViewState = HabitListTextFieldViewState(),
-    val isCreatingHabit: Boolean = false
+    val positiveButtonText: String = "",
+    val isEditingHabit: Boolean = false,
+    val mode: HabitEditorMode = HabitEditorMode.Add,
+    val editingHabitId: String? = null
 )
+
+enum class HabitEditorMode {
+    Add,
+    Edit
+}
 
 data class HabitViewState(
     val id: String,

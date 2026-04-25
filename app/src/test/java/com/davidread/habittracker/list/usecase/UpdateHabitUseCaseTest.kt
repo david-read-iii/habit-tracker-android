@@ -7,8 +7,10 @@ import com.davidread.habittracker.list.model.UpdateHabitResult
 import com.davidread.habittracker.list.repository.HabitListRepository
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -58,5 +60,17 @@ class UpdateHabitUseCaseTest {
         val result = updateHabitUseCase(id = "1", name = "New Name")
 
         Assert.assertEquals(UpdateHabitResult.Error, result)
+    }
+
+    @Test
+    fun test_invoke_null_id_returnsError_andSkipsValidationAndRepository() = runTest {
+        every { logger.e(any(), any(), any()) } returns Unit
+
+        val result = updateHabitUseCase(id = null, name = "New Name")
+
+        Assert.assertEquals(UpdateHabitResult.Error, result)
+        verify(exactly = 1) { logger.e(any(), any(), any()) }
+        verify(exactly = 0) { validateHabitNameUseCase(any()) }
+        coVerify(exactly = 0) { habitListRepository.updateHabit(any(), any()) }
     }
 }

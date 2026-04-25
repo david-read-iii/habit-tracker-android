@@ -16,7 +16,11 @@ class UpdateHabitUseCase @Inject constructor(
     private val logger: Logger
 ) {
 
-    suspend operator fun invoke(id: String, name: String): UpdateHabitResult {
+    suspend operator fun invoke(id: String?, name: String): UpdateHabitResult {
+        if (id == null) {
+            logger.e(TAG, "Habit id is null", IllegalStateException("Habit id is null"))
+            return UpdateHabitResult.Error
+        }
         val validationResult = validateHabitNameUseCase(name)
         if (validationResult is ValidationResult.Invalid) {
             return UpdateHabitResult.InvalidHabitName

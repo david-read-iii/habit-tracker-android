@@ -85,7 +85,8 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
-import com.davidread.habittracker.list.model.AddHabitViewState
+import com.davidread.habittracker.list.model.HabitEditorBottomSheetViewState
+import com.davidread.habittracker.list.model.HabitEditorMode
 import com.davidread.habittracker.list.model.HabitListTextFieldViewState
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
@@ -130,11 +131,11 @@ fun HabitListScreen(
         viewState = viewState,
         snackbarHostState = snackbarHostState,
         onClickAddHabit = { viewModel.processIntent(HabitListViewIntent.ClickAddHabitButton) },
-        onDismissAddHabitBottomSheet = {
-            viewModel.processIntent(HabitListViewIntent.DismissAddHabitBottomSheet)
+        onDismissHabitEditorBottomSheet = {
+            viewModel.processIntent(HabitListViewIntent.DismissHabitEditorBottomSheet)
         },
-        onAddHabitNameChange = { viewModel.processIntent(HabitListViewIntent.ChangeHabitNameValue(it)) },
-        onSubmitAddHabit = { viewModel.processIntent(HabitListViewIntent.SubmitAddHabit) },
+        onHabitEditorNameChange = { viewModel.processIntent(HabitListViewIntent.ChangeHabitEditorNameValue(it)) },
+        onHabitEditorSubmit = { viewModel.processIntent(HabitListViewIntent.SubmitHabitEditorChanges) },
         onClickSettings = { viewModel.processIntent(HabitListViewIntent.ClickSettingsButton) },
         onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) },
         onHabitCheckInClick = {
@@ -144,7 +145,9 @@ fun HabitListScreen(
                 )
             )
         },
-        onHabitRenameClick = { viewModel.processIntent(HabitListViewIntent.ClickEditHabitButton(it)) },
+        onHabitRenameClick = { id, currentName ->
+            viewModel.processIntent(HabitListViewIntent.ClickEditHabitButton(id, currentName))
+        },
         onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it)) }
     )
 }
@@ -156,13 +159,13 @@ fun HabitListContent(
     viewState: HabitListViewState = HabitListViewState(),
     snackbarHostState: SnackbarHostState,
     onClickAddHabit: () -> Unit = {},
-    onDismissAddHabitBottomSheet: () -> Unit = {},
-    onAddHabitNameChange: (String) -> Unit = {},
-    onSubmitAddHabit: () -> Unit = {},
+    onDismissHabitEditorBottomSheet: () -> Unit = {},
+    onHabitEditorNameChange: (String) -> Unit = {},
+    onHabitEditorSubmit: () -> Unit = {},
     onClickSettings: () -> Unit = {},
     onHabitClick: (String) -> Unit = {},
     onHabitCheckInClick: (String) -> Unit = {},
-    onHabitRenameClick: (String) -> Unit = {},
+    onHabitRenameClick: (String, String) -> Unit = { _, _ -> },
     onHabitDeleteClick: (String) -> Unit = {}
 ) {
     Scaffold(
@@ -228,7 +231,7 @@ fun HabitListContent(
                                     isCheckingIn = habit.id in viewState.checkingInHabitIds,
                                     onClick = { onHabitClick(habit.id) },
                                     onCheckInClick = { onHabitCheckInClick(habit.id) },
-                                    onRenameClick = { onHabitRenameClick(habit.id) },
+                                    onRenameClick = { onHabitRenameClick(habit.id, habit.name) },
                                     onDeleteClick = { onHabitDeleteClick(habit.id) }
                                 )
                                 HorizontalDivider()
@@ -250,28 +253,28 @@ fun HabitListContent(
         }
     }
 
-    if (viewState.addHabitViewState.showBottomSheet) {
-        AddHabitBottomSheet(
-            addHabitViewState = viewState.addHabitViewState,
-            onNameChange = onAddHabitNameChange,
-            onDismiss = onDismissAddHabitBottomSheet,
-            onSubmit = onSubmitAddHabit
+    if (viewState.habitEditorBottomSheetViewState.showBottomSheet) {
+        HabitEditorBottomSheet(
+            viewState = viewState.habitEditorBottomSheetViewState,
+            onNameChange = onHabitEditorNameChange,
+            onDismiss = onDismissHabitEditorBottomSheet,
+            onSubmit = onHabitEditorSubmit
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddHabitBottomSheet(
-    addHabitViewState: AddHabitViewState,
+private fun HabitEditorBottomSheet(
+    viewState: HabitEditorBottomSheetViewState,
     onNameChange: (String) -> Unit = {},
     onDismiss: () -> Unit = {},
     onSubmit: () -> Unit = {}
 ) {
-    val latestIsCreatingHabit by rememberUpdatedState(addHabitViewState.isCreatingHabit)
+    val latestIsEditingHabit by rememberUpdatedState(viewState.isEditingHabit)
     val confirmValueChange = remember {
         { newValue: SheetValue ->
-            !(latestIsCreatingHabit && newValue == SheetValue.Hidden)
+            !(latestIsEditingHabit && newValue == SheetValue.Hidden)
         }
     }
     val sheetState = rememberModalBottomSheetState(
@@ -286,7 +289,7 @@ private fun AddHabitBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = {
-            if (!addHabitViewState.isCreatingHabit) {
+            if (!viewState.isEditingHabit) {
                 onDismiss()
             }
         },
@@ -298,21 +301,21 @@ private fun AddHabitBottomSheet(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = stringResource(R.string.habit_list_add_habit_sheet_title),
+                text = viewState.title,
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(12.dp))
             HabitTrackerTextField(
-                value = addHabitViewState.textFieldViewState.value,
+                value = viewState.textFieldViewState.value,
                 onValueChange = onNameChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
-                enabled = !addHabitViewState.isCreatingHabit,
-                isError = addHabitViewState.textFieldViewState.isError,
+                enabled = !viewState.isEditingHabit,
+                isError = viewState.textFieldViewState.isError,
                 labelText = stringResource(R.string.habit_list_add_habit_name_label),
-                errorMessage = addHabitViewState.textFieldViewState.errorMessage
+                errorMessage = viewState.textFieldViewState.errorMessage
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -322,23 +325,25 @@ private fun AddHabitBottomSheet(
             ) {
                 TextButton(
                     onClick = onDismiss,
-                    enabled = !addHabitViewState.isCreatingHabit
+                    enabled = !viewState.isEditingHabit
                 ) {
                     Text(text = stringResource(R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 TextButton(
                     onClick = onSubmit,
-                    enabled = !addHabitViewState.isCreatingHabit
+                    enabled = !viewState.isEditingHabit
                 ) {
-                    if (addHabitViewState.isCreatingHabit) {
+                    if (viewState.isEditingHabit) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp,
                             color = MaterialTheme.colorScheme.primary
                         )
                     } else {
-                        Text(text = stringResource(R.string.habit_list_add_habit_submit))
+                        Text(
+                            text = viewState.positiveButtonText
+                        )
                     }
                 }
             }
@@ -954,13 +959,16 @@ private fun HabitListContentPreview_EndOfPagination() {
 
 @Preview(showBackground = true)
 @Composable
-private fun AddHabitBottomSheetPreview_Default() {
+private fun HabitEditorBottomSheetPreview_Add_Default() {
     HabitTrackerTheme {
-        AddHabitBottomSheet(
-            addHabitViewState = AddHabitViewState(
+        HabitEditorBottomSheet(
+            viewState = HabitEditorBottomSheetViewState(
                 showBottomSheet = true,
+                title = "Add habit",
                 textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
-                isCreatingHabit = false
+                positiveButtonText = "Add",
+                isEditingHabit = false,
+                mode = HabitEditorMode.Add
             )
         )
     }
@@ -968,13 +976,16 @@ private fun AddHabitBottomSheetPreview_Default() {
 
 @Preview(showBackground = true)
 @Composable
-private fun AddHabitBottomSheetPreview_Loading() {
+private fun HabitEditorBottomSheetPreview_Add_Loading() {
     HabitTrackerTheme {
-        AddHabitBottomSheet(
-            addHabitViewState = AddHabitViewState(
+        HabitEditorBottomSheet(
+            viewState = HabitEditorBottomSheetViewState(
                 showBottomSheet = true,
+                title = "Add habit",
                 textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
-                isCreatingHabit = true
+                positiveButtonText = "Add",
+                isEditingHabit = false,
+                mode = HabitEditorMode.Add
             )
         )
     }
@@ -982,17 +993,20 @@ private fun AddHabitBottomSheetPreview_Loading() {
 
 @Preview(showBackground = true)
 @Composable
-private fun AddHabitBottomSheetPreview_Error() {
+private fun HabitEditorBottomSheetPreview_Add_Error() {
     HabitTrackerTheme {
-        AddHabitBottomSheet(
-            addHabitViewState = AddHabitViewState(
+        HabitEditorBottomSheet(
+            viewState = HabitEditorBottomSheetViewState(
                 showBottomSheet = true,
+                title = "Add habit",
                 textFieldViewState = HabitListTextFieldViewState(
                     value = "",
                     isError = true,
                     errorMessage = "Habit name is required"
                 ),
-                isCreatingHabit = false
+                positiveButtonText = "Add",
+                isEditingHabit = false,
+                mode = HabitEditorMode.Add
             )
         )
     }

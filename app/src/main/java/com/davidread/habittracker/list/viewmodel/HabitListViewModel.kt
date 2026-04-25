@@ -10,14 +10,17 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.list.mapper.HabitMapper
 import com.davidread.habittracker.list.model.CheckInResult
 import com.davidread.habittracker.list.model.CreateHabitResult
+import com.davidread.habittracker.list.model.HabitEditorMode
 import com.davidread.habittracker.list.model.HabitListTextFieldViewState
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
 import com.davidread.habittracker.list.model.HabitListViewState
 import com.davidread.habittracker.list.model.HabitViewState
+import com.davidread.habittracker.list.model.UpdateHabitResult
 import com.davidread.habittracker.list.usecase.CheckInUseCase
 import com.davidread.habittracker.list.usecase.CreateHabitUseCase
 import com.davidread.habittracker.list.usecase.GetHabitsUseCase
+import com.davidread.habittracker.list.usecase.UpdateHabitUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -35,6 +38,7 @@ class HabitListViewModel @Inject constructor(
     private val habitMapper: HabitMapper,
     private val checkInUseCase: CheckInUseCase,
     private val createHabitUseCase: CreateHabitUseCase,
+    private val updateHabitUseCase: UpdateHabitUseCase,
     private val application: Application
 ) : ViewModel() {
 
@@ -53,22 +57,52 @@ class HabitListViewModel @Inject constructor(
 
     fun processIntent(intent: HabitListViewIntent) {
         when (intent) {
-            HabitListViewIntent.ClickAddHabitButton -> {
+            HabitListViewIntent.ClickAddHabitButton, is HabitListViewIntent.ClickEditHabitButton -> {
                 _viewState.update {
                     it.copy(
-                        addHabitViewState = it.addHabitViewState.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             showBottomSheet = true,
-                            textFieldViewState = HabitListTextFieldViewState(),
-                            isCreatingHabit = false
+                            title = when (intent) {
+                                HabitListViewIntent.ClickAddHabitButton -> application.getString(R.string.habit_list_add_habit_sheet_title)
+                                is HabitListViewIntent.ClickEditHabitButton -> application.getString(
+                                    R.string.habit_list_edit_habit_sheet_title
+                                )
+
+                                else -> ""
+                            },
+                            textFieldViewState = HabitListTextFieldViewState(
+                                value = when (intent) {
+                                    is HabitListViewIntent.ClickEditHabitButton -> intent.currentName
+                                    else -> ""
+                                }
+                            ),
+                            positiveButtonText = when (intent) {
+                                HabitListViewIntent.ClickAddHabitButton -> application.getString(R.string.habit_list_add_habit_submit)
+                                is HabitListViewIntent.ClickEditHabitButton -> application.getString(
+                                    R.string.habit_list_edit_habit_submit
+                                )
+
+                                else -> ""
+                            },
+                            isEditingHabit = false,
+                            mode = when (intent) {
+                                HabitListViewIntent.ClickAddHabitButton -> HabitEditorMode.Add
+                                is HabitListViewIntent.ClickEditHabitButton -> HabitEditorMode.Edit
+                                else -> HabitEditorMode.Add
+                            },
+                            editingHabitId = when (intent) {
+                                is HabitListViewIntent.ClickEditHabitButton -> intent.habitId
+                                else -> null
+                            }
                         )
                     )
                 }
             }
 
-            is HabitListViewIntent.ChangeHabitNameValue -> {
+            is HabitListViewIntent.ChangeHabitEditorNameValue -> {
                 _viewState.update {
                     it.copy(
-                        addHabitViewState = it.addHabitViewState.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             textFieldViewState = HabitListTextFieldViewState(
                                 value = intent.value,
                                 errorMessage = "",
@@ -79,76 +113,37 @@ class HabitListViewModel @Inject constructor(
                 }
             }
 
-            HabitListViewIntent.DismissAddHabitBottomSheet -> {
-                if (!_viewState.value.addHabitViewState.isCreatingHabit) {
+            HabitListViewIntent.DismissHabitEditorBottomSheet -> {
+                if (!_viewState.value.habitEditorBottomSheetViewState.isEditingHabit) {
                     _viewState.update {
                         it.copy(
-                            addHabitViewState = it.addHabitViewState.copy(
+                            habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                                 showBottomSheet = false,
                                 textFieldViewState = HabitListTextFieldViewState(),
-                                isCreatingHabit = false
+                                isEditingHabit = false,
+                                editingHabitId = null
                             )
                         )
                     }
                 }
             }
 
-            HabitListViewIntent.SubmitAddHabit -> {
+            HabitListViewIntent.SubmitHabitEditorChanges -> {
                 val currentState = _viewState.value
-                if (currentState.addHabitViewState.isCreatingHabit) return
+                if (currentState.habitEditorBottomSheetViewState.isEditingHabit) return
 
                 viewModelScope.launch {
                     _viewState.update {
                         it.copy(
-                            addHabitViewState = it.addHabitViewState.copy(
-                                isCreatingHabit = true
+                            habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                                isEditingHabit = true
                             )
                         )
                     }
 
-                    when (createHabitUseCase(currentState.addHabitViewState.textFieldViewState.value)) {
-                        is CreateHabitResult.Success -> {
-                            _viewState.update {
-                                it.copy(
-                                    addHabitViewState = it.addHabitViewState.copy(
-                                        showBottomSheet = false,
-                                        textFieldViewState = HabitListTextFieldViewState(),
-                                        isCreatingHabit = false
-                                    )
-                                )
-                            }
-                        }
-
-                        is CreateHabitResult.InvalidHabitName -> {
-                            _viewState.update {
-                                it.copy(
-                                    addHabitViewState = it.addHabitViewState.copy(
-                                        textFieldViewState = HabitListTextFieldViewState(
-                                            isError = true,
-                                            errorMessage = application.getString(R.string.habit_list_add_habit_name_error)
-                                        ),
-                                        isCreatingHabit = false
-                                    )
-                                )
-                            }
-                        }
-
-                        is CreateHabitResult.Error -> {
-                            _viewState.update {
-                                it.copy(
-                                    addHabitViewState = it.addHabitViewState.copy(
-                                        showBottomSheet = false,
-                                        textFieldViewState = HabitListTextFieldViewState(),
-                                        isCreatingHabit = false
-                                    )
-                                )
-                            }
-                            _viewEffect.emit(
-                                HabitListViewEffect.ShowSnackbar(
-                                    application.getString(R.string.create_habit_error)
-                                )
-                            )
-                        }
+                    when (currentState.habitEditorBottomSheetViewState.mode) {
+                        HabitEditorMode.Add -> handleSubmitAddHabit(currentState)
+                        HabitEditorMode.Edit -> handleSubmitEditHabit(currentState)
                     }
                 }
             }
@@ -189,6 +184,7 @@ class HabitListViewModel @Inject constructor(
                                 )
                             )
                         }
+
                         is CheckInResult.GenericError -> {
                             _viewEffect.emit(
                                 HabitListViewEffect.ShowSnackbar(
@@ -198,12 +194,120 @@ class HabitListViewModel @Inject constructor(
                                 )
                             )
                         }
+
                         else -> Unit
                     }
                 }
             }
 
             else -> {} // TODO: Handle other intents.
+        }
+    }
+
+    private suspend fun handleSubmitAddHabit(currentState: HabitListViewState) {
+        when (createHabitUseCase(currentState.habitEditorBottomSheetViewState.textFieldViewState.value)) {
+            is CreateHabitResult.Success -> {
+                _viewState.update {
+                    it.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                            showBottomSheet = false,
+                            textFieldViewState = HabitListTextFieldViewState(),
+                            isEditingHabit = false,
+                            mode = HabitEditorMode.Add,
+                            editingHabitId = null
+                        )
+                    )
+                }
+            }
+
+            is CreateHabitResult.InvalidHabitName -> {
+                _viewState.update {
+                    it.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                            textFieldViewState = HabitListTextFieldViewState(
+                                isError = true,
+                                errorMessage = application.getString(R.string.habit_list_add_habit_name_error)
+                            ),
+                            isEditingHabit = false
+                        )
+                    )
+                }
+            }
+
+            is CreateHabitResult.Error -> {
+                _viewState.update {
+                    it.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                            showBottomSheet = false,
+                            textFieldViewState = HabitListTextFieldViewState(),
+                            isEditingHabit = false,
+                            mode = HabitEditorMode.Add,
+                            editingHabitId = null
+                        )
+                    )
+                }
+                _viewEffect.emit(
+                    HabitListViewEffect.ShowSnackbar(
+                        application.getString(R.string.create_habit_error)
+                    )
+                )
+            }
+        }
+    }
+
+    private suspend fun handleSubmitEditHabit(currentState: HabitListViewState) {
+        when (
+            updateHabitUseCase(
+                id = currentState.habitEditorBottomSheetViewState.editingHabitId,
+                name = currentState.habitEditorBottomSheetViewState.textFieldViewState.value
+            )
+        ) {
+            is UpdateHabitResult.Success -> {
+                _viewState.update {
+                    it.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                            showBottomSheet = false,
+                            textFieldViewState = HabitListTextFieldViewState(),
+                            isEditingHabit = false,
+                            mode = HabitEditorMode.Add,
+                            editingHabitId = null
+                        )
+                    )
+                }
+            }
+
+            is UpdateHabitResult.InvalidHabitName -> {
+                _viewState.update {
+                    it.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                            textFieldViewState = HabitListTextFieldViewState(
+                                isError = true,
+                                errorMessage = application.getString(R.string.habit_list_add_habit_name_error)
+                            ),
+                            isEditingHabit = false
+                        )
+                    )
+                }
+            }
+
+            is UpdateHabitResult.Error -> {
+                _viewState.update {
+                    it.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                            showBottomSheet = false,
+                            textFieldViewState = HabitListTextFieldViewState(),
+                            isEditingHabit = false,
+                            mode = HabitEditorMode.Add,
+                            editingHabitId = null
+                        )
+                    )
+                }
+                _viewEffect.emit(
+                    HabitListViewEffect.ShowSnackbar(
+                        application.getString(R.string.update_habit_error)
+                    )
+                )
+            }
         }
     }
 }
