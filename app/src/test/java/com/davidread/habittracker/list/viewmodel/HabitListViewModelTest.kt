@@ -84,9 +84,6 @@ class HabitListViewModelTest {
     fun test_viewState_initialState() {
         val actual = viewModel.viewState.value
 
-        Assert.assertFalse(actual.showLoading)
-        Assert.assertFalse(actual.alertDialogViewState.showDialog)
-        Assert.assertNull(actual.alertDialogViewState.message)
         Assert.assertTrue(actual.checkingInHabitIds.isEmpty())
     }
 
@@ -407,14 +404,6 @@ class HabitListViewModelTest {
         }
     }
 
-    @Test
-    fun test_processIntent_ClickAlertDialogButton() {
-        val intent = HabitListViewIntent.ClickAlertDialogButton
-
-        viewModel.processIntent(intent)
-
-        Assert.assertFalse(viewModel.viewState.value.alertDialogViewState.showDialog)
-    }
 
     @Test
     fun test_processIntent_ClickHabit_success() = runTest {

@@ -154,12 +154,6 @@ class HabitListViewModel @Inject constructor(
                 }
             }
 
-            HabitListViewIntent.ClickAlertDialogButton -> {
-                _viewState.value = _viewState.value.copy(
-                    alertDialogViewState = _viewState.value.alertDialogViewState.copy(showDialog = false)
-                )
-            }
-
             is HabitListViewIntent.ClickHabit, is HabitListViewIntent.ClickCheckInHabitButton -> {
                 viewModelScope.launch {
                     val habitId = when (intent) {
