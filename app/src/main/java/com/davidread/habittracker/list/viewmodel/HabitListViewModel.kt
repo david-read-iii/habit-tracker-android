@@ -108,6 +108,18 @@ class HabitListViewModel @Inject constructor(
                 }
             }
 
+            HabitListViewIntent.PullToRefresh -> {
+                _viewState.update {
+                    it.copy(isRefreshing = true)
+                }
+            }
+
+            HabitListViewIntent.RefreshComplete -> {
+                _viewState.update {
+                    it.copy(isRefreshing = false)
+                }
+            }
+
             is HabitListViewIntent.ClickHabit, is HabitListViewIntent.ClickCheckInHabitButton -> {
                 viewModelScope.launch {
                     val habitId = when (intent) {

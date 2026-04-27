@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.material3)
     implementation(libs.material.icons.extended)
+    implementation(libs.compose.material)
     implementation(libs.ui.tooling.preview)
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)

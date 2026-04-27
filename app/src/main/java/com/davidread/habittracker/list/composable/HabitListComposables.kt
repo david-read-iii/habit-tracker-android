@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -33,6 +34,9 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -161,10 +165,13 @@ fun HabitListScreen(
         },
         onConfirmDeleteHabit = {
             viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
-        }
+        },
+        onRefresh = { viewModel.processIntent(HabitListViewIntent.PullToRefresh) },
+        onRefreshComplete = { viewModel.processIntent(HabitListViewIntent.RefreshComplete) }
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HabitListContent(
     modifier: Modifier = Modifier,
@@ -181,8 +188,15 @@ fun HabitListContent(
     onHabitRenameClick: (String, String) -> Unit = { _, _ -> },
     onHabitDeleteClick: (String) -> Unit = {},
     onDismissDeleteHabitDialog: () -> Unit = {},
-    onConfirmDeleteHabit: () -> Unit = {}
+    onConfirmDeleteHabit: () -> Unit = {},
+    onRefresh: () -> Unit = {},
+    onRefreshComplete: () -> Unit = {}
 ) {
+    LaunchedEffect(habits.loadState.refresh) {
+        if (habits.loadState.refresh is LoadState.NotLoading && viewState.isRefreshing) {
+            onRefreshComplete()
+        }
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -206,10 +220,19 @@ fun HabitListContent(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
+        val pullRefreshState = rememberPullRefreshState(
+            refreshing = viewState.isRefreshing,
+            onRefresh = {
+                habits.refresh()
+                onRefresh()
+            }
+        )
+
         Box(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .pullRefresh(pullRefreshState)
         ) {
             when (habits.loadState.refresh) {
                 is LoadState.Loading -> {
@@ -265,6 +288,12 @@ fun HabitListContent(
                     }
                 }
             }
+
+            PullRefreshIndicator(
+                refreshing = viewState.isRefreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 

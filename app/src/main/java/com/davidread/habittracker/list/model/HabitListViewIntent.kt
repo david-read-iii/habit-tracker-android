@@ -4,6 +4,7 @@ sealed class HabitListViewIntent {
     object ClickAddHabitButton : HabitListViewIntent()
     object ClickSettingsButton : HabitListViewIntent()
     object PullToRefresh : HabitListViewIntent()
+    object RefreshComplete : HabitListViewIntent()
     class ClickHabit(val habitId: String) : HabitListViewIntent()
     class ClickCheckInHabitButton(val habitId: String) : HabitListViewIntent()
     class ClickEditHabitButton(val habitId: String, val currentName: String = "") : HabitListViewIntent()

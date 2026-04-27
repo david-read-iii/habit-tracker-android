@@ -98,6 +98,29 @@ class HabitListViewModelTest {
     }
 
     @Test
+    fun test_processIntent_PullToRefresh_setsIsRefreshingTrue() {
+        viewModel.processIntent(HabitListViewIntent.PullToRefresh)
+
+        val actual = viewModel.viewState.value
+
+        Assert.assertTrue(actual.isRefreshing)
+        Assert.assertTrue(actual.checkingInHabitIds.isEmpty())
+    }
+
+    @Test
+    fun test_processIntent_RefreshComplete_setsIsRefreshingFalse() {
+        viewModel.processIntent(HabitListViewIntent.PullToRefresh)
+        Assert.assertTrue(viewModel.viewState.value.isRefreshing)
+
+        viewModel.processIntent(HabitListViewIntent.RefreshComplete)
+
+        val actual = viewModel.viewState.value
+
+        Assert.assertFalse(actual.isRefreshing)
+        Assert.assertTrue(actual.checkingInHabitIds.isEmpty())
+    }
+
+    @Test
     fun test_processIntent_ClickAddHabitButton_showsHabitEditorBottomSheet() = runTest {
         viewModel.processIntent(HabitListViewIntent.ClickAddHabitButton)
 

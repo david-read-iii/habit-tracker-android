@@ -2,6 +2,7 @@ package com.davidread.habittracker.list.model
 
 data class HabitListViewState(
     val checkingInHabitIds: Set<String> = emptySet(),
+    val isRefreshing: Boolean = false,
     val habitEditorBottomSheetViewState: HabitEditorBottomSheetViewState = HabitEditorBottomSheetViewState(),
     val deleteHabitDialogViewState: DeleteHabitDialogViewState = DeleteHabitDialogViewState()
 )
