@@ -53,6 +53,7 @@ class HabitListRepositoryImpl @Inject constructor(
 
     override suspend fun deleteHabit(id: String): Result<DeleteHabitResponse> = try {
         val response = habitListService.deleteHabit(id)
+        database.habitDao().deleteHabit(id)
         Result.Success(response)
     } catch (e: Exception) {
         Result.Error(e)

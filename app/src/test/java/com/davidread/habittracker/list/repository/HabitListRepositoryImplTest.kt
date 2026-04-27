@@ -103,21 +103,45 @@ class HabitListRepositoryImplTest {
 
     @Test
     fun test_deleteHabit_success() = runTest {
+        val habitDao = mockk<HabitDao>()
         val deleteHabitResponse = mockk<DeleteHabitResponse>()
-        coEvery { habitListService.deleteHabit(any()) } returns deleteHabitResponse
+        every { habitTrackerDatabase.habitDao() } returns habitDao
+        coEvery { habitListService.deleteHabit("1") } returns deleteHabitResponse
+        coEvery { habitDao.deleteHabit("1") } returns Unit
 
         Assert.assertEquals(
             Result.Success(deleteHabitResponse),
             habitListRepository.deleteHabit("1")
         )
+        coVerify {
+            habitListService.deleteHabit("1")
+            habitDao.deleteHabit("1")
+        }
     }
 
     @Test
     fun test_deleteHabit_error() = runTest {
         val exception = mockk<Exception>()
-        coEvery { habitListService.deleteHabit(any()) } throws exception
+        coEvery { habitListService.deleteHabit("1") } throws exception
 
         Assert.assertEquals(Result.Error(exception), habitListRepository.deleteHabit("1"))
+        verify(exactly = 0) { habitTrackerDatabase.habitDao() }
+    }
+
+    @Test
+    fun test_deleteHabit_databaseError() = runTest {
+        val habitDao = mockk<HabitDao>()
+        val deleteHabitResponse = mockk<DeleteHabitResponse>()
+        val exception = mockk<Exception>()
+        every { habitTrackerDatabase.habitDao() } returns habitDao
+        coEvery { habitListService.deleteHabit("1") } returns deleteHabitResponse
+        coEvery { habitDao.deleteHabit("1") } throws exception
+
+        Assert.assertEquals(Result.Error(exception), habitListRepository.deleteHabit("1"))
+        coVerify {
+            habitListService.deleteHabit("1")
+            habitDao.deleteHabit("1")
+        }
     }
 
     @Test

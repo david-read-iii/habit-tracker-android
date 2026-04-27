@@ -2,7 +2,8 @@ package com.davidread.habittracker.list.model
 
 data class HabitListViewState(
     val checkingInHabitIds: Set<String> = emptySet(),
-    val habitEditorBottomSheetViewState: HabitEditorBottomSheetViewState = HabitEditorBottomSheetViewState()
+    val habitEditorBottomSheetViewState: HabitEditorBottomSheetViewState = HabitEditorBottomSheetViewState(),
+    val deleteHabitDialogViewState: DeleteHabitDialogViewState = DeleteHabitDialogViewState()
 )
 
 data class HabitEditorBottomSheetViewState(
@@ -18,6 +19,12 @@ data class HabitListTextFieldViewState(
     val value: String = "",
     val isError: Boolean = false,
     val errorMessage: String = ""
+)
+
+data class DeleteHabitDialogViewState(
+    val showDialog: Boolean = false,
+    val habitId: String? = null,
+    val isSubmitting: Boolean = false
 )
 
 sealed interface EditorState {

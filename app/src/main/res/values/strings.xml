@@ -50,4 +50,9 @@
     <string name="create_habit_error">Failed to add habit. Please try again.</string>
     <string name="update_habit_error">Failed to update habit. Please try again.</string>
     <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="habit_list_delete_dialog_title">Delete habit?</string>
+    <string name="habit_list_delete_dialog_message">Are you sure you want to delete this habit?</string>
+    <string name="delete_habit_error">Failed to delete habit. Please try again.</string>
 </resources>

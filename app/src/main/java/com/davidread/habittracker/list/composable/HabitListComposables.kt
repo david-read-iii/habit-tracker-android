@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -73,6 +74,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
@@ -85,8 +87,9 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
-import com.davidread.habittracker.list.model.HabitEditorBottomSheetViewState
+import com.davidread.habittracker.list.model.DeleteHabitDialogViewState
 import com.davidread.habittracker.list.model.EditorState
+import com.davidread.habittracker.list.model.HabitEditorBottomSheetViewState
 import com.davidread.habittracker.list.model.HabitListTextFieldViewState
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
@@ -134,7 +137,13 @@ fun HabitListScreen(
         onDismissHabitEditorBottomSheet = {
             viewModel.processIntent(HabitListViewIntent.DismissHabitEditorBottomSheet)
         },
-        onHabitEditorNameChange = { viewModel.processIntent(HabitListViewIntent.ChangeHabitEditorNameValue(it)) },
+        onHabitEditorNameChange = {
+            viewModel.processIntent(
+                HabitListViewIntent.ChangeHabitEditorNameValue(
+                    it
+                )
+            )
+        },
         onHabitEditorSubmit = { viewModel.processIntent(HabitListViewIntent.SubmitHabitEditorChanges) },
         onClickSettings = { viewModel.processIntent(HabitListViewIntent.ClickSettingsButton) },
         onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) },
@@ -148,7 +157,13 @@ fun HabitListScreen(
         onHabitRenameClick = { id, currentName ->
             viewModel.processIntent(HabitListViewIntent.ClickEditHabitButton(id, currentName))
         },
-        onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it)) }
+        onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it)) },
+        onDismissDeleteHabitDialog = {
+            viewModel.processIntent(HabitListViewIntent.DismissDeleteHabitDialog)
+        },
+        onConfirmDeleteHabit = {
+            viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
+        }
     )
 }
 
@@ -166,7 +181,9 @@ fun HabitListContent(
     onHabitClick: (String) -> Unit = {},
     onHabitCheckInClick: (String) -> Unit = {},
     onHabitRenameClick: (String, String) -> Unit = { _, _ -> },
-    onHabitDeleteClick: (String) -> Unit = {}
+    onHabitDeleteClick: (String) -> Unit = {},
+    onDismissDeleteHabitDialog: () -> Unit = {},
+    onConfirmDeleteHabit: () -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier,
@@ -261,94 +278,13 @@ fun HabitListContent(
             onSubmit = onHabitEditorSubmit
         )
     }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HabitEditorBottomSheet(
-    viewState: HabitEditorBottomSheetViewState,
-    onNameChange: (String) -> Unit = {},
-    onDismiss: () -> Unit = {},
-    onSubmit: () -> Unit = {}
-) {
-    val latestIsSubmittingHabit by rememberUpdatedState(viewState.isSubmitting)
-    val confirmValueChange = remember {
-        { newValue: SheetValue ->
-            !(latestIsSubmittingHabit && newValue == SheetValue.Hidden)
-        }
-    }
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true,
-        confirmValueChange = confirmValueChange
-    )
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
-
-    ModalBottomSheet(
-        onDismissRequest = {
-            if (!viewState.isSubmitting) {
-                onDismiss()
-            }
-        },
-        sheetState = sheetState
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Text(
-                text = viewState.title,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            HabitTrackerTextField(
-                value = viewState.textFieldViewState.value,
-                onValueChange = onNameChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester),
-                enabled = !viewState.isSubmitting,
-                isError = viewState.textFieldViewState.isError,
-                labelText = stringResource(R.string.habit_list_add_habit_name_label),
-                errorMessage = viewState.textFieldViewState.errorMessage
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(
-                    onClick = onDismiss,
-                    enabled = !viewState.isSubmitting
-                ) {
-                    Text(text = stringResource(R.string.cancel))
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                TextButton(
-                    onClick = onSubmit,
-                    enabled = !viewState.isSubmitting
-                ) {
-                    if (viewState.isSubmitting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        Text(
-                            text = viewState.positiveButtonText
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+    if (viewState.deleteHabitDialogViewState.showDialog) {
+        DeleteHabitConfirmationDialog(
+            viewState = viewState.deleteHabitDialogViewState,
+            onDismiss = onDismissDeleteHabitDialog,
+            onConfirm = onConfirmDeleteHabit
+        )
     }
 }
 
@@ -725,6 +661,159 @@ fun EndOfPaginationListItem(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outline
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HabitEditorBottomSheet(
+    viewState: HabitEditorBottomSheetViewState,
+    onNameChange: (String) -> Unit = {},
+    onDismiss: () -> Unit = {},
+    onSubmit: () -> Unit = {}
+) {
+    val latestIsSubmittingHabit by rememberUpdatedState(viewState.isSubmitting)
+    val confirmValueChange = remember {
+        { newValue: SheetValue ->
+            !(latestIsSubmittingHabit && newValue == SheetValue.Hidden)
+        }
+    }
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = confirmValueChange
+    )
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = {
+            if (!viewState.isSubmitting) {
+                onDismiss()
+            }
+        },
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = viewState.title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            HabitTrackerTextField(
+                value = viewState.textFieldViewState.value,
+                onValueChange = onNameChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
+                enabled = !viewState.isSubmitting,
+                isError = viewState.textFieldViewState.isError,
+                labelText = stringResource(R.string.habit_list_add_habit_name_label),
+                errorMessage = viewState.textFieldViewState.errorMessage
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    enabled = !viewState.isSubmitting
+                ) {
+                    Text(text = stringResource(R.string.cancel))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(
+                    onClick = onSubmit,
+                    enabled = !viewState.isSubmitting
+                ) {
+                    if (viewState.isSubmitting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(
+                            text = viewState.positiveButtonText
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DeleteHabitConfirmationDialog(
+    viewState: DeleteHabitDialogViewState,
+    onDismiss: () -> Unit = {},
+    onConfirm: () -> Unit = {}
+) {
+    BasicAlertDialog(
+        onDismissRequest = {},
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    ) {
+        Box(
+            modifier = Modifier.background(
+                color = MaterialTheme.colorScheme.background,
+                shape = RoundedCornerShape(8.dp)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.habit_list_delete_dialog_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.habit_list_delete_dialog_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        enabled = !viewState.isSubmitting
+                    ) {
+                        Text(text = stringResource(R.string.no))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(
+                        onClick = onConfirm,
+                        enabled = !viewState.isSubmitting
+                    ) {
+                        if (viewState.isSubmitting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Text(text = stringResource(R.string.yes))
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

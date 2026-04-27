@@ -12,4 +12,6 @@ sealed class HabitListViewIntent {
     class ClickCheckInHabitButton(val habitId: String) : HabitListViewIntent()
     class ClickEditHabitButton(val habitId: String, val currentName: String = "") : HabitListViewIntent()
     class ClickDeleteHabitButton(val habitId: String) : HabitListViewIntent()
+    object DismissDeleteHabitDialog : HabitListViewIntent()
+    object ConfirmDeleteHabit : HabitListViewIntent()
 }

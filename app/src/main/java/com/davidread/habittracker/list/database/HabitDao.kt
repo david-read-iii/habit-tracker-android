@@ -27,4 +27,7 @@ interface HabitDao {
 
     @Query("UPDATE ${DatabaseConstants.HABIT_TABLE_NAME} SET name = :name WHERE id = :id")
     suspend fun updateHabitName(id: String, name: String)
+
+    @Query("DELETE FROM ${DatabaseConstants.HABIT_TABLE_NAME} WHERE id = :id")
+    suspend fun deleteHabit(id: String)
 }

@@ -10,6 +10,8 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.list.mapper.HabitMapper
 import com.davidread.habittracker.list.model.CheckInResult
 import com.davidread.habittracker.list.model.CreateHabitResult
+import com.davidread.habittracker.list.model.DeleteHabitDialogViewState
+import com.davidread.habittracker.list.model.DeleteHabitResult
 import com.davidread.habittracker.list.model.EditorState
 import com.davidread.habittracker.list.model.HabitListTextFieldViewState
 import com.davidread.habittracker.list.model.HabitListViewEffect
@@ -19,6 +21,7 @@ import com.davidread.habittracker.list.model.HabitViewState
 import com.davidread.habittracker.list.model.UpdateHabitResult
 import com.davidread.habittracker.list.usecase.CheckInUseCase
 import com.davidread.habittracker.list.usecase.CreateHabitUseCase
+import com.davidread.habittracker.list.usecase.DeleteHabitUseCase
 import com.davidread.habittracker.list.usecase.GetHabitsUseCase
 import com.davidread.habittracker.list.usecase.UpdateHabitUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +42,7 @@ class HabitListViewModel @Inject constructor(
     private val checkInUseCase: CheckInUseCase,
     private val createHabitUseCase: CreateHabitUseCase,
     private val updateHabitUseCase: UpdateHabitUseCase,
+    private val deleteHabitUseCase: DeleteHabitUseCase,
     private val application: Application
 ) : ViewModel() {
 
@@ -192,6 +196,61 @@ class HabitListViewModel @Inject constructor(
                         }
 
                         else -> Unit
+                    }
+                }
+            }
+
+            is HabitListViewIntent.ClickDeleteHabitButton -> {
+                _viewState.update {
+                    it.copy(
+                        deleteHabitDialogViewState = DeleteHabitDialogViewState(
+                            showDialog = true,
+                            habitId = intent.habitId,
+                            isSubmitting = false
+                        )
+                    )
+                }
+            }
+
+            HabitListViewIntent.DismissDeleteHabitDialog -> {
+                if (!_viewState.value.deleteHabitDialogViewState.isSubmitting) {
+                    _viewState.update {
+                        it.copy(deleteHabitDialogViewState = DeleteHabitDialogViewState())
+                    }
+                }
+            }
+
+            HabitListViewIntent.ConfirmDeleteHabit -> {
+                val currentDeleteDialogState = _viewState.value.deleteHabitDialogViewState
+                val habitId = currentDeleteDialogState.habitId
+                if (currentDeleteDialogState.isSubmitting || habitId == null) return
+
+                viewModelScope.launch {
+                    _viewState.update {
+                        it.copy(
+                            deleteHabitDialogViewState = it.deleteHabitDialogViewState.copy(
+                                isSubmitting = true
+                            )
+                        )
+                    }
+
+                    when (deleteHabitUseCase(habitId)) {
+                        is DeleteHabitResult.Success -> {
+                            _viewState.update {
+                                it.copy(deleteHabitDialogViewState = DeleteHabitDialogViewState())
+                            }
+                        }
+
+                        is DeleteHabitResult.Error -> {
+                            _viewState.update {
+                                it.copy(deleteHabitDialogViewState = DeleteHabitDialogViewState())
+                            }
+                            _viewEffect.emit(
+                                HabitListViewEffect.ShowSnackbar(
+                                    application.getString(R.string.delete_habit_error)
+                                )
+                            )
+                        }
                     }
                 }
             }
