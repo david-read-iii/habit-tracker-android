@@ -10,6 +10,7 @@ import com.davidread.habittracker.list.model.CreateHabitRequest
 import com.davidread.habittracker.list.model.CreateHabitResponse
 import com.davidread.habittracker.list.model.DeleteHabitResponse
 import com.davidread.habittracker.list.model.HabitDto
+import com.davidread.habittracker.list.model.UpdateHabitRequest
 import com.davidread.habittracker.list.model.UpdateHabitResponse
 import com.davidread.habittracker.list.service.HabitListService
 import com.davidread.habittracker.testutil.MainDispatcherRule
@@ -121,21 +122,31 @@ class HabitListRepositoryImplTest {
 
     @Test
     fun test_updateHabit_success() = runTest {
+        val updateHabitRequest = UpdateHabitRequest("Exercise Updated")
         val updateHabitResponse = mockk<UpdateHabitResponse>()
-        coEvery { habitListService.updateHabit(any(), any()) } returns updateHabitResponse
+        val habitDao = mockk<HabitDao>()
+        every { habitTrackerDatabase.habitDao() } returns habitDao
+        coEvery { habitListService.updateHabit("1", updateHabitRequest) } returns updateHabitResponse
+        coEvery { habitDao.updateHabitName("1", "Exercise Updated") } returns Unit
 
         Assert.assertEquals(
             Result.Success(updateHabitResponse),
-            habitListRepository.updateHabit("1", mockk())
+            habitListRepository.updateHabit("1", updateHabitRequest)
         )
+        coVerify {
+            habitListService.updateHabit("1", updateHabitRequest)
+            habitDao.updateHabitName("1", "Exercise Updated")
+        }
     }
 
     @Test
     fun test_updateHabit_error() = runTest {
+        val updateHabitRequest = UpdateHabitRequest("Exercise Updated")
         val exception = mockk<Exception>()
-        coEvery { habitListService.updateHabit(any(), any()) } throws exception
+        coEvery { habitListService.updateHabit("1", updateHabitRequest) } throws exception
 
-        Assert.assertEquals(Result.Error(exception), habitListRepository.updateHabit("1", mockk()))
+        Assert.assertEquals(Result.Error(exception), habitListRepository.updateHabit("1", updateHabitRequest))
+        verify(exactly = 0) { habitTrackerDatabase.habitDao() }
     }
 
     @Test

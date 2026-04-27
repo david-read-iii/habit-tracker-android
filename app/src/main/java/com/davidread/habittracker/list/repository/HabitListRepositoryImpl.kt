@@ -63,6 +63,7 @@ class HabitListRepositoryImpl @Inject constructor(
         updateHabitRequest: UpdateHabitRequest
     ): Result<UpdateHabitResponse> = try {
         val response = habitListService.updateHabit(id, updateHabitRequest)
+        database.habitDao().updateHabitName(id, updateHabitRequest.name)
         Result.Success(response)
     } catch (e: Exception) {
         Result.Error(e)

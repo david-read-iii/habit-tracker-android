@@ -24,4 +24,7 @@ interface HabitDao {
 
     @Query("UPDATE ${DatabaseConstants.HABIT_TABLE_NAME} SET streak = streak + 1 WHERE id = :id")
     suspend fun incrementStreak(id: String)
+
+    @Query("UPDATE ${DatabaseConstants.HABIT_TABLE_NAME} SET name = :name WHERE id = :id")
+    suspend fun updateHabitName(id: String, name: String)
 }
