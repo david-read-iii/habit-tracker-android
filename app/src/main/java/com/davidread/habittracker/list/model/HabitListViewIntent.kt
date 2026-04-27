@@ -1,6 +1,5 @@
 package com.davidread.habittracker.list.model
 
-// TODO: Remove any of these if they remain unused.
 sealed class HabitListViewIntent {
     object ClickAddHabitButton : HabitListViewIntent()
     object ClickSettingsButton : HabitListViewIntent()
