@@ -14,6 +14,12 @@ data class HabitEditorBottomSheetViewState(
     val editorState: EditorState = EditorState.Add
 )
 
+data class HabitListTextFieldViewState(
+    val value: String = "",
+    val isError: Boolean = false,
+    val errorMessage: String = ""
+)
+
 sealed interface EditorState {
     data object Add : EditorState
     data class Edit(val habitId: String) : EditorState
@@ -24,10 +30,4 @@ data class HabitViewState(
     val name: String,
     val streak: String,
     val createdAt: String
-)
-
-data class HabitListTextFieldViewState(
-    val value: String = "",
-    val isError: Boolean = false,
-    val errorMessage: String = ""
 )
