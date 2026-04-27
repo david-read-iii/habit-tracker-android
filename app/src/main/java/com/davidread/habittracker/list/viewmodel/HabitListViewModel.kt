@@ -102,58 +102,6 @@ class HabitListViewModel @Inject constructor(
                 }
             }
 
-            is HabitListViewIntent.ChangeHabitEditorNameValue -> {
-                _viewState.update {
-                    it.copy(
-                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
-                            textFieldViewState = HabitListTextFieldViewState(
-                                value = intent.value,
-                                errorMessage = "",
-                                isError = false
-                            )
-                        )
-                    )
-                }
-            }
-
-            HabitListViewIntent.DismissHabitEditorBottomSheet -> {
-                if (!_viewState.value.habitEditorBottomSheetViewState.isSubmitting) {
-                    _viewState.update {
-                        it.copy(
-                            habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
-                                showBottomSheet = false,
-                                textFieldViewState = HabitListTextFieldViewState(),
-                                isSubmitting = false
-                            )
-                        )
-                    }
-                }
-            }
-
-            HabitListViewIntent.SubmitHabitEditorChanges -> {
-                val currentState = _viewState.value
-                if (currentState.habitEditorBottomSheetViewState.isSubmitting) return
-
-                viewModelScope.launch {
-                    _viewState.update {
-                        it.copy(
-                            habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
-                                isSubmitting = true
-                            )
-                        )
-                    }
-
-                    when (val editorState =
-                        currentState.habitEditorBottomSheetViewState.editorState) {
-                        EditorState.Add -> handleSubmitAddHabit(currentState)
-                        is EditorState.Edit -> handleSubmitEditHabit(
-                            currentState,
-                            editorState.habitId
-                        )
-                    }
-                }
-            }
-
             HabitListViewIntent.ClickSettingsButton -> {
                 viewModelScope.launch {
                     _viewEffect.emit(HabitListViewEffect.NavigateToSettingsScreen)
@@ -209,6 +157,58 @@ class HabitListViewModel @Inject constructor(
                             isSubmitting = false
                         )
                     )
+                }
+            }
+
+            is HabitListViewIntent.ChangeHabitEditorNameValue -> {
+                _viewState.update {
+                    it.copy(
+                        habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                            textFieldViewState = HabitListTextFieldViewState(
+                                value = intent.value,
+                                errorMessage = "",
+                                isError = false
+                            )
+                        )
+                    )
+                }
+            }
+
+            HabitListViewIntent.DismissHabitEditorBottomSheet -> {
+                if (!_viewState.value.habitEditorBottomSheetViewState.isSubmitting) {
+                    _viewState.update {
+                        it.copy(
+                            habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                                showBottomSheet = false,
+                                textFieldViewState = HabitListTextFieldViewState(),
+                                isSubmitting = false
+                            )
+                        )
+                    }
+                }
+            }
+
+            HabitListViewIntent.SubmitHabitEditorChanges -> {
+                val currentState = _viewState.value
+                if (currentState.habitEditorBottomSheetViewState.isSubmitting) return
+
+                viewModelScope.launch {
+                    _viewState.update {
+                        it.copy(
+                            habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
+                                isSubmitting = true
+                            )
+                        )
+                    }
+
+                    when (val editorState =
+                        currentState.habitEditorBottomSheetViewState.editorState) {
+                        EditorState.Add -> handleSubmitAddHabit(currentState)
+                        is EditorState.Edit -> handleSubmitEditHabit(
+                            currentState,
+                            editorState.habitId
+                        )
+                    }
                 }
             }
 
