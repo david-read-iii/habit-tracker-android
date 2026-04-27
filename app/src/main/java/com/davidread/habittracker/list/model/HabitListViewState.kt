@@ -11,13 +11,12 @@ data class HabitEditorBottomSheetViewState(
     val textFieldViewState: HabitListTextFieldViewState = HabitListTextFieldViewState(),
     val positiveButtonText: String = "",
     val isEditingHabit: Boolean = false,
-    val mode: HabitEditorMode = HabitEditorMode.Add,
-    val editingHabitId: String? = null
+    val editorState: EditorState = EditorState.Add
 )
 
-enum class HabitEditorMode {
-    Add,
-    Edit
+sealed interface EditorState {
+    data object Add : EditorState
+    data class Edit(val habitId: String) : EditorState
 }
 
 data class HabitViewState(

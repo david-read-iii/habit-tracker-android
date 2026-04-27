@@ -7,7 +7,7 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.list.mapper.HabitMapper
 import com.davidread.habittracker.list.model.CheckInResult
 import com.davidread.habittracker.list.model.CreateHabitResult
-import com.davidread.habittracker.list.model.HabitEditorMode
+import com.davidread.habittracker.list.model.EditorState
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
 import com.davidread.habittracker.list.model.UpdateHabitResult
@@ -294,8 +294,7 @@ class HabitListViewModelTest {
             Assert.assertTrue(editingState.showBottomSheet)
             Assert.assertEquals(UPDATED_HABIT_NAME, editingState.textFieldViewState.value)
             Assert.assertTrue(editingState.isEditingHabit)
-            Assert.assertEquals(HabitEditorMode.Edit, editingState.mode)
-            Assert.assertEquals(HABIT_ID, editingState.editingHabitId)
+            Assert.assertEquals(EditorState.Edit(HABIT_ID), editingState.editorState)
 
             updateHabitResultDeferred.complete(UpdateHabitResult.Success)
             advanceUntilIdle()
@@ -306,8 +305,6 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
             Assert.assertFalse(completedState.isEditingHabit)
-            Assert.assertEquals(HabitEditorMode.Add, completedState.mode)
-            Assert.assertNull(completedState.editingHabitId)
             viewEffectTurbine.expectNoEvents()
             coVerify {
                 updateHabitUseCase(
@@ -344,8 +341,7 @@ class HabitListViewModelTest {
                 habitEditorBottomSheetViewState.textFieldViewState.errorMessage
             )
             Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
-            Assert.assertEquals(HabitEditorMode.Edit, habitEditorBottomSheetViewState.mode)
-            Assert.assertEquals(HABIT_ID, habitEditorBottomSheetViewState.editingHabitId)
+            Assert.assertEquals(EditorState.Edit(HABIT_ID), habitEditorBottomSheetViewState.editorState)
             viewEffectTurbine.expectNoEvents()
             coVerify {
                 updateHabitUseCase(
@@ -379,8 +375,6 @@ class HabitListViewModelTest {
             Assert.assertFalse(habitEditorBottomSheetViewState.textFieldViewState.isError)
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
             Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
-            Assert.assertEquals(HabitEditorMode.Add, habitEditorBottomSheetViewState.mode)
-            Assert.assertNull(habitEditorBottomSheetViewState.editingHabitId)
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(UPDATE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()

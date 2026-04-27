@@ -86,7 +86,7 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.list.model.HabitEditorBottomSheetViewState
-import com.davidread.habittracker.list.model.HabitEditorMode
+import com.davidread.habittracker.list.model.EditorState
 import com.davidread.habittracker.list.model.HabitListTextFieldViewState
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
@@ -968,7 +968,7 @@ private fun HabitEditorBottomSheetPreview_Add_Default() {
                 textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
                 positiveButtonText = "Add",
                 isEditingHabit = false,
-                mode = HabitEditorMode.Add
+                editorState = EditorState.Add
             )
         )
     }
@@ -985,7 +985,7 @@ private fun HabitEditorBottomSheetPreview_Add_Loading() {
                 textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
                 positiveButtonText = "Add",
                 isEditingHabit = false,
-                mode = HabitEditorMode.Add
+                editorState = EditorState.Add
             )
         )
     }
@@ -1006,7 +1006,7 @@ private fun HabitEditorBottomSheetPreview_Add_Error() {
                 ),
                 positiveButtonText = "Add",
                 isEditingHabit = false,
-                mode = HabitEditorMode.Add
+                editorState = EditorState.Add
             )
         )
     }

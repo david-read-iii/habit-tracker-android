@@ -10,7 +10,7 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.list.mapper.HabitMapper
 import com.davidread.habittracker.list.model.CheckInResult
 import com.davidread.habittracker.list.model.CreateHabitResult
-import com.davidread.habittracker.list.model.HabitEditorMode
+import com.davidread.habittracker.list.model.EditorState
 import com.davidread.habittracker.list.model.HabitListTextFieldViewState
 import com.davidread.habittracker.list.model.HabitListViewEffect
 import com.davidread.habittracker.list.model.HabitListViewIntent
@@ -85,14 +85,13 @@ class HabitListViewModel @Inject constructor(
                                 else -> ""
                             },
                             isEditingHabit = false,
-                            mode = when (intent) {
-                                HabitListViewIntent.ClickAddHabitButton -> HabitEditorMode.Add
-                                is HabitListViewIntent.ClickEditHabitButton -> HabitEditorMode.Edit
-                                else -> HabitEditorMode.Add
-                            },
-                            editingHabitId = when (intent) {
-                                is HabitListViewIntent.ClickEditHabitButton -> intent.habitId
-                                else -> null
+                            editorState = when (intent) {
+                                HabitListViewIntent.ClickAddHabitButton -> EditorState.Add
+                                is HabitListViewIntent.ClickEditHabitButton -> EditorState.Edit(
+                                    intent.habitId
+                                )
+
+                                else -> EditorState.Add
                             }
                         )
                     )
@@ -120,8 +119,7 @@ class HabitListViewModel @Inject constructor(
                             habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                                 showBottomSheet = false,
                                 textFieldViewState = HabitListTextFieldViewState(),
-                                isEditingHabit = false,
-                                editingHabitId = null
+                                isEditingHabit = false
                             )
                         )
                     }
@@ -141,9 +139,13 @@ class HabitListViewModel @Inject constructor(
                         )
                     }
 
-                    when (currentState.habitEditorBottomSheetViewState.mode) {
-                        HabitEditorMode.Add -> handleSubmitAddHabit(currentState)
-                        HabitEditorMode.Edit -> handleSubmitEditHabit(currentState)
+                    when (val editorState =
+                        currentState.habitEditorBottomSheetViewState.editorState) {
+                        EditorState.Add -> handleSubmitAddHabit(currentState)
+                        is EditorState.Edit -> handleSubmitEditHabit(
+                            currentState,
+                            editorState.habitId
+                        )
                     }
                 }
             }
@@ -207,8 +209,7 @@ class HabitListViewModel @Inject constructor(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
                             isEditingHabit = false,
-                            mode = HabitEditorMode.Add,
-                            editingHabitId = null
+                            editorState = EditorState.Add
                         )
                     )
                 }
@@ -235,8 +236,7 @@ class HabitListViewModel @Inject constructor(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
                             isEditingHabit = false,
-                            mode = HabitEditorMode.Add,
-                            editingHabitId = null
+                            editorState = EditorState.Add
                         )
                     )
                 }
@@ -249,10 +249,10 @@ class HabitListViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleSubmitEditHabit(currentState: HabitListViewState) {
+    private suspend fun handleSubmitEditHabit(currentState: HabitListViewState, habitId: String) {
         when (
             updateHabitUseCase(
-                id = currentState.habitEditorBottomSheetViewState.editingHabitId,
+                id = habitId,
                 name = currentState.habitEditorBottomSheetViewState.textFieldViewState.value
             )
         ) {
@@ -262,9 +262,7 @@ class HabitListViewModel @Inject constructor(
                         habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
-                            isEditingHabit = false,
-                            mode = HabitEditorMode.Add,
-                            editingHabitId = null
+                            isEditingHabit = false
                         )
                     )
                 }
@@ -290,9 +288,7 @@ class HabitListViewModel @Inject constructor(
                         habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
-                            isEditingHabit = false,
-                            mode = HabitEditorMode.Add,
-                            editingHabitId = null
+                            isEditingHabit = false
                         )
                     )
                 }
