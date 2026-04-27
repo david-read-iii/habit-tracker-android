@@ -10,7 +10,7 @@ data class HabitEditorBottomSheetViewState(
     val title: String = "",
     val textFieldViewState: HabitListTextFieldViewState = HabitListTextFieldViewState(),
     val positiveButtonText: String = "",
-    val isEditingHabit: Boolean = false,
+    val isSubmitting: Boolean = false,
     val editorState: EditorState = EditorState.Add
 )
 

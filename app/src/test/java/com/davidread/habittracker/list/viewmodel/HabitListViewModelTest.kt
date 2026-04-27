@@ -102,7 +102,7 @@ class HabitListViewModelTest {
         Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.value)
         Assert.assertFalse(habitEditorBottomSheetViewState.textFieldViewState.isError)
         Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
-        Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
+        Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
     }
 
     @Test
@@ -133,7 +133,7 @@ class HabitListViewModelTest {
         Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.value)
         Assert.assertFalse(habitEditorBottomSheetViewState.textFieldViewState.isError)
         Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
-        Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
+        Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
     }
 
     @Test
@@ -146,19 +146,19 @@ class HabitListViewModelTest {
         viewModel.processIntent(HabitListViewIntent.SubmitHabitEditorChanges)
         advanceUntilIdle()
 
-        Assert.assertTrue(viewModel.viewState.value.habitEditorBottomSheetViewState.isEditingHabit)
+        Assert.assertTrue(viewModel.viewState.value.habitEditorBottomSheetViewState.isSubmitting)
 
         viewModel.processIntent(HabitListViewIntent.DismissHabitEditorBottomSheet)
 
         val habitEditorBottomSheetViewState = viewModel.viewState.value.habitEditorBottomSheetViewState
         Assert.assertTrue(habitEditorBottomSheetViewState.showBottomSheet)
         Assert.assertEquals(HABIT_NAME, habitEditorBottomSheetViewState.textFieldViewState.value)
-        Assert.assertTrue(habitEditorBottomSheetViewState.isEditingHabit)
+        Assert.assertTrue(habitEditorBottomSheetViewState.isSubmitting)
 
         createHabitResultDeferred.complete(CreateHabitResult.Success)
         advanceUntilIdle()
 
-        Assert.assertFalse(viewModel.viewState.value.habitEditorBottomSheetViewState.isEditingHabit)
+        Assert.assertFalse(viewModel.viewState.value.habitEditorBottomSheetViewState.isSubmitting)
     }
 
     @Test
@@ -178,7 +178,7 @@ class HabitListViewModelTest {
                 viewStateTurbine.expectMostRecentItem().habitEditorBottomSheetViewState
             Assert.assertTrue(creatingHabitState.showBottomSheet)
             Assert.assertEquals(HABIT_NAME, creatingHabitState.textFieldViewState.value)
-            Assert.assertTrue(creatingHabitState.isEditingHabit)
+            Assert.assertTrue(creatingHabitState.isSubmitting)
 
             createHabitResultDeferred.complete(CreateHabitResult.Success)
             advanceUntilIdle()
@@ -189,7 +189,7 @@ class HabitListViewModelTest {
             Assert.assertEquals("", completedState.textFieldViewState.value)
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
-            Assert.assertFalse(completedState.isEditingHabit)
+            Assert.assertFalse(completedState.isSubmitting)
             coVerify { createHabitUseCase(HABIT_NAME) }
         }
     }
@@ -218,7 +218,7 @@ class HabitListViewModelTest {
                 INVALID_HABIT_NAME_MESSAGE,
                 habitEditorBottomSheetViewState.textFieldViewState.errorMessage
             )
-            Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
+            Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             viewEffectTurbine.expectNoEvents()
             coVerify { createHabitUseCase(INVALID_HABIT_NAME) }
         }
@@ -241,7 +241,7 @@ class HabitListViewModelTest {
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.value)
             Assert.assertFalse(habitEditorBottomSheetViewState.textFieldViewState.isError)
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
-            Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
+            Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(CREATE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -260,7 +260,7 @@ class HabitListViewModelTest {
         viewModel.processIntent(HabitListViewIntent.SubmitHabitEditorChanges)
         advanceUntilIdle()
 
-        Assert.assertTrue(viewModel.viewState.value.habitEditorBottomSheetViewState.isEditingHabit)
+        Assert.assertTrue(viewModel.viewState.value.habitEditorBottomSheetViewState.isSubmitting)
 
         viewModel.processIntent(HabitListViewIntent.SubmitHabitEditorChanges)
 
@@ -269,7 +269,7 @@ class HabitListViewModelTest {
         createHabitResultDeferred.complete(CreateHabitResult.Success)
         advanceUntilIdle()
 
-        Assert.assertFalse(viewModel.viewState.value.habitEditorBottomSheetViewState.isEditingHabit)
+        Assert.assertFalse(viewModel.viewState.value.habitEditorBottomSheetViewState.isSubmitting)
     }
 
     @Test
@@ -293,7 +293,7 @@ class HabitListViewModelTest {
             val editingState = viewStateTurbine.expectMostRecentItem().habitEditorBottomSheetViewState
             Assert.assertTrue(editingState.showBottomSheet)
             Assert.assertEquals(UPDATED_HABIT_NAME, editingState.textFieldViewState.value)
-            Assert.assertTrue(editingState.isEditingHabit)
+            Assert.assertTrue(editingState.isSubmitting)
             Assert.assertEquals(EditorState.Edit(HABIT_ID), editingState.editorState)
 
             updateHabitResultDeferred.complete(UpdateHabitResult.Success)
@@ -304,7 +304,7 @@ class HabitListViewModelTest {
             Assert.assertEquals("", completedState.textFieldViewState.value)
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
-            Assert.assertFalse(completedState.isEditingHabit)
+            Assert.assertFalse(completedState.isSubmitting)
             viewEffectTurbine.expectNoEvents()
             coVerify {
                 updateHabitUseCase(
@@ -340,7 +340,7 @@ class HabitListViewModelTest {
                 INVALID_HABIT_NAME_MESSAGE,
                 habitEditorBottomSheetViewState.textFieldViewState.errorMessage
             )
-            Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
+            Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             Assert.assertEquals(EditorState.Edit(HABIT_ID), habitEditorBottomSheetViewState.editorState)
             viewEffectTurbine.expectNoEvents()
             coVerify {
@@ -374,7 +374,7 @@ class HabitListViewModelTest {
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.value)
             Assert.assertFalse(habitEditorBottomSheetViewState.textFieldViewState.isError)
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
-            Assert.assertFalse(habitEditorBottomSheetViewState.isEditingHabit)
+            Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(UPDATE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()

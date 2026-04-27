@@ -271,10 +271,10 @@ private fun HabitEditorBottomSheet(
     onDismiss: () -> Unit = {},
     onSubmit: () -> Unit = {}
 ) {
-    val latestIsEditingHabit by rememberUpdatedState(viewState.isEditingHabit)
+    val latestIsSubmittingHabit by rememberUpdatedState(viewState.isSubmitting)
     val confirmValueChange = remember {
         { newValue: SheetValue ->
-            !(latestIsEditingHabit && newValue == SheetValue.Hidden)
+            !(latestIsSubmittingHabit && newValue == SheetValue.Hidden)
         }
     }
     val sheetState = rememberModalBottomSheetState(
@@ -289,7 +289,7 @@ private fun HabitEditorBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = {
-            if (!viewState.isEditingHabit) {
+            if (!viewState.isSubmitting) {
                 onDismiss()
             }
         },
@@ -312,7 +312,7 @@ private fun HabitEditorBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
-                enabled = !viewState.isEditingHabit,
+                enabled = !viewState.isSubmitting,
                 isError = viewState.textFieldViewState.isError,
                 labelText = stringResource(R.string.habit_list_add_habit_name_label),
                 errorMessage = viewState.textFieldViewState.errorMessage
@@ -325,16 +325,16 @@ private fun HabitEditorBottomSheet(
             ) {
                 TextButton(
                     onClick = onDismiss,
-                    enabled = !viewState.isEditingHabit
+                    enabled = !viewState.isSubmitting
                 ) {
                     Text(text = stringResource(R.string.cancel))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 TextButton(
                     onClick = onSubmit,
-                    enabled = !viewState.isEditingHabit
+                    enabled = !viewState.isSubmitting
                 ) {
-                    if (viewState.isEditingHabit) {
+                    if (viewState.isSubmitting) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp,
@@ -967,7 +967,7 @@ private fun HabitEditorBottomSheetPreview_Add_Default() {
                 title = "Add habit",
                 textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
                 positiveButtonText = "Add",
-                isEditingHabit = false,
+                isSubmitting = false,
                 editorState = EditorState.Add
             )
         )
@@ -984,7 +984,7 @@ private fun HabitEditorBottomSheetPreview_Add_Loading() {
                 title = "Add habit",
                 textFieldViewState = HabitListTextFieldViewState(value = "Drink Water"),
                 positiveButtonText = "Add",
-                isEditingHabit = false,
+                isSubmitting = true,
                 editorState = EditorState.Add
             )
         )
@@ -1005,7 +1005,7 @@ private fun HabitEditorBottomSheetPreview_Add_Error() {
                     errorMessage = "Habit name is required"
                 ),
                 positiveButtonText = "Add",
-                isEditingHabit = false,
+                isSubmitting = false,
                 editorState = EditorState.Add
             )
         )

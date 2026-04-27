@@ -84,7 +84,7 @@ class HabitListViewModel @Inject constructor(
 
                                 else -> ""
                             },
-                            isEditingHabit = false,
+                            isSubmitting = false,
                             editorState = when (intent) {
                                 HabitListViewIntent.ClickAddHabitButton -> EditorState.Add
                                 is HabitListViewIntent.ClickEditHabitButton -> EditorState.Edit(
@@ -113,13 +113,13 @@ class HabitListViewModel @Inject constructor(
             }
 
             HabitListViewIntent.DismissHabitEditorBottomSheet -> {
-                if (!_viewState.value.habitEditorBottomSheetViewState.isEditingHabit) {
+                if (!_viewState.value.habitEditorBottomSheetViewState.isSubmitting) {
                     _viewState.update {
                         it.copy(
                             habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                                 showBottomSheet = false,
                                 textFieldViewState = HabitListTextFieldViewState(),
-                                isEditingHabit = false
+                                isSubmitting = false
                             )
                         )
                     }
@@ -128,13 +128,13 @@ class HabitListViewModel @Inject constructor(
 
             HabitListViewIntent.SubmitHabitEditorChanges -> {
                 val currentState = _viewState.value
-                if (currentState.habitEditorBottomSheetViewState.isEditingHabit) return
+                if (currentState.habitEditorBottomSheetViewState.isSubmitting) return
 
                 viewModelScope.launch {
                     _viewState.update {
                         it.copy(
                             habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
-                                isEditingHabit = true
+                                isSubmitting = true
                             )
                         )
                     }
@@ -208,7 +208,7 @@ class HabitListViewModel @Inject constructor(
                         habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
-                            isEditingHabit = false,
+                            isSubmitting = false,
                             editorState = EditorState.Add
                         )
                     )
@@ -223,7 +223,7 @@ class HabitListViewModel @Inject constructor(
                                 isError = true,
                                 errorMessage = application.getString(R.string.habit_list_add_habit_name_error)
                             ),
-                            isEditingHabit = false
+                            isSubmitting = false
                         )
                     )
                 }
@@ -235,7 +235,7 @@ class HabitListViewModel @Inject constructor(
                         habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
-                            isEditingHabit = false,
+                            isSubmitting = false,
                             editorState = EditorState.Add
                         )
                     )
@@ -262,7 +262,7 @@ class HabitListViewModel @Inject constructor(
                         habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
-                            isEditingHabit = false
+                            isSubmitting = false
                         )
                     )
                 }
@@ -276,7 +276,7 @@ class HabitListViewModel @Inject constructor(
                                 isError = true,
                                 errorMessage = application.getString(R.string.habit_list_add_habit_name_error)
                             ),
-                            isEditingHabit = false
+                            isSubmitting = false
                         )
                     )
                 }
@@ -288,7 +288,7 @@ class HabitListViewModel @Inject constructor(
                         habitEditorBottomSheetViewState = it.habitEditorBottomSheetViewState.copy(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
-                            isEditingHabit = false
+                            isSubmitting = false
                         )
                     )
                 }
