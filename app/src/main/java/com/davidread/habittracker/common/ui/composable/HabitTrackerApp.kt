@@ -45,9 +45,6 @@ fun HabitTrackerApp() {
 
         composable(route = Screen.HabitList.route) {
             HabitListScreen(
-                onNavigateToAddHabitScreen = {
-                    // TODO: Define this when add-habit screen is available.
-                },
                 onNavigateToSettingsScreen = {
                     // TODO: Define this when settings screen is available.
                 }

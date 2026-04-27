@@ -105,7 +105,6 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 fun HabitListScreen(
     modifier: Modifier = Modifier,
     viewModel: HabitListViewModel = hiltViewModel(),
-    onNavigateToAddHabitScreen: () -> Unit = {},
     onNavigateToSettingsScreen: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -113,7 +112,6 @@ fun HabitListScreen(
     LaunchedEffect(Unit) {
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
-                is HabitListViewEffect.NavigateToAddHabitScreen -> onNavigateToAddHabitScreen()
                 is HabitListViewEffect.NavigateToSettingsScreen -> onNavigateToSettingsScreen()
                 is HabitListViewEffect.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(
