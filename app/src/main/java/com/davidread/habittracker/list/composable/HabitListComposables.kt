@@ -1118,3 +1118,31 @@ private fun HabitEditorBottomSheetPreview_Error() {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun DeleteHabitConfirmationDialogPreview_Default() {
+    HabitTrackerTheme {
+        DeleteHabitConfirmationDialog(
+            viewState = DeleteHabitDialogViewState(
+                showDialog = true,
+                habitId = "1",
+                isSubmitting = false
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DeleteHabitConfirmationDialogPreview_Loading() {
+    HabitTrackerTheme {
+        DeleteHabitConfirmationDialog(
+            viewState = DeleteHabitDialogViewState(
+                showDialog = true,
+                habitId = "1",
+                isSubmitting = true
+            )
+        )
+    }
+}
