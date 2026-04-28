@@ -34,7 +34,7 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.Card
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
-import com.davidread.habittracker.common.ui.composable.LoadingDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.signup.model.SignUpTextFieldViewState
@@ -139,7 +139,7 @@ fun SignUpScreenContent(
     }
 
     if (viewState.showLoadingDialog) {
-        LoadingDialog()
+        HabitTrackerLoadingDialog()
     }
 
     if (viewState.alertDialogViewState.showDialog) {
