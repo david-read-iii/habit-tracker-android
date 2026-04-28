@@ -39,12 +39,13 @@ fun HabitTrackerAlertDialog(
     onPrimaryButtonClick: () -> Unit = {},
     negativeButtonText: String? = null,
     onNegativeButtonClick: () -> Unit = {},
+    onDismissRequest: () -> Unit = {},
     dismissOnBackPress: Boolean = false,
     dismissOnClickOutside: Boolean = false,
     mode: HabitTrackerAlertDialogMode = HabitTrackerAlertDialogMode.Default
 ) {
     BasicAlertDialog(
-        onDismissRequest = {},
+        onDismissRequest = onDismissRequest,
         modifier = modifier,
         properties = DialogProperties(
             dismissOnBackPress = dismissOnBackPress,

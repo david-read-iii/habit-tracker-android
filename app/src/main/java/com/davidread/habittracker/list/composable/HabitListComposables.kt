@@ -787,6 +787,7 @@ private fun DeleteHabitConfirmationDialog(
         onNegativeButtonClick = onDismiss,
         dismissOnBackPress = !viewState.isSubmitting,
         dismissOnClickOutside = !viewState.isSubmitting,
+        onDismissRequest = onDismiss,
         mode = if (viewState.isSubmitting) {
             HabitTrackerAlertDialogMode.Loading
         } else {
