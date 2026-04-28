@@ -1066,7 +1066,7 @@ private fun HabitListContentPreview_EndOfPagination() {
 
 @Preview(showBackground = true)
 @Composable
-private fun HabitEditorBottomSheetPreview_Add_Default() {
+private fun HabitEditorBottomSheetPreview_Default() {
     HabitTrackerTheme {
         HabitEditorBottomSheet(
             viewState = HabitEditorBottomSheetViewState(
@@ -1083,7 +1083,7 @@ private fun HabitEditorBottomSheetPreview_Add_Default() {
 
 @Preview(showBackground = true)
 @Composable
-private fun HabitEditorBottomSheetPreview_Add_Loading() {
+private fun HabitEditorBottomSheetPreview_Loading() {
     HabitTrackerTheme {
         HabitEditorBottomSheet(
             viewState = HabitEditorBottomSheetViewState(
@@ -1100,7 +1100,7 @@ private fun HabitEditorBottomSheetPreview_Add_Loading() {
 
 @Preview(showBackground = true)
 @Composable
-private fun HabitEditorBottomSheetPreview_Add_Error() {
+private fun HabitEditorBottomSheetPreview_Error() {
     HabitTrackerTheme {
         HabitEditorBottomSheet(
             viewState = HabitEditorBottomSheetViewState(
