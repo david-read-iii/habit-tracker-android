@@ -13,7 +13,7 @@ import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 
 @Composable
-fun Card(
+fun HabitTrackerCard(
     modifier: Modifier = Modifier,
     content: @Composable (ColumnScope.() -> Unit)
 ) {
@@ -29,9 +29,9 @@ fun Card(
 
 @Preview
 @Composable
-private fun CardPreview() {
+private fun HabitTrackerCardPreview() {
     HabitTrackerTheme {
-        com.davidread.habittracker.common.ui.composable.Card {
+        HabitTrackerCard {
             Text(modifier = Modifier.padding(16.dp), text = "Put content here")
         }
     }

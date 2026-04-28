@@ -32,7 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
-import com.davidread.habittracker.common.ui.composable.Card
+import com.davidread.habittracker.common.ui.composable.HabitTrackerCard
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
@@ -159,7 +159,7 @@ fun SignUpCredentialsCard(
     onConfirmPasswordValueChange: (String) -> Unit = {},
     onSignUpButtonClick: () -> Unit = {}
 ) {
-    Card(modifier = modifier) {
+    HabitTrackerCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
             HabitTrackerTextField(
                 value = viewState.emailTextFieldViewState.value,
