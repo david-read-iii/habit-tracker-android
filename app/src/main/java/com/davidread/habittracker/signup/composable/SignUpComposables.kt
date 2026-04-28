@@ -30,7 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
-import com.davidread.habittracker.common.ui.composable.AlertDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.Card
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
@@ -143,7 +143,7 @@ fun SignUpScreenContent(
     }
 
     if (viewState.alertDialogViewState.showDialog) {
-        AlertDialog(
+        HabitTrackerAlertDialog(
             message = viewState.alertDialogViewState.message,
             onButtonClick = onAlertDialogButtonClick
         )

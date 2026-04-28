@@ -46,7 +46,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
-import com.davidread.habittracker.common.ui.composable.AlertDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.composable.LoadingDialog
 import com.davidread.habittracker.common.ui.theme.Color
@@ -158,7 +158,7 @@ fun LoginScreenContent(
     }
 
     if (viewState.alertDialogViewState.showDialog) {
-        AlertDialog(
+        HabitTrackerAlertDialog(
             message = viewState.alertDialogViewState.message,
             onButtonClick = onAlertDialogButtonClick
         )

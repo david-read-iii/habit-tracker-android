@@ -26,7 +26,7 @@ import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlertDialog(
+fun HabitTrackerAlertDialog(
     modifier: Modifier = Modifier,
     message: String? = null,
     buttonText: String? = null,
@@ -73,17 +73,17 @@ fun AlertDialog(
 
 @Preview
 @Composable
-private fun AlertDialogPreview_Default() {
+private fun HabitTrackerAlertDialogPreview_Default() {
     HabitTrackerTheme {
-        AlertDialog()
+        HabitTrackerAlertDialog()
     }
 }
 
 @Preview
 @Composable
-private fun AlertDialogPreview_Custom() {
+private fun HabitTrackerAlertDialogPreview_Custom() {
     HabitTrackerTheme {
-        AlertDialog(
+        HabitTrackerAlertDialog(
             message = "Service failed.",
             buttonText = "Retry"
         )
