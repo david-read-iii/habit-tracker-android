@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
@@ -200,12 +200,10 @@ fun LoginCredentialsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                Button(onClick = onLoginButtonClick) {
-                    Text(
-                        stringResource(R.string.login),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
+                HabitTrackerButton(
+                    label = stringResource(R.string.login),
+                    onClick = onLoginButtonClick
+                )
             }
         }
     }
