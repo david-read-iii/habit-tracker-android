@@ -145,7 +145,7 @@ fun SignUpScreenContent(
     if (viewState.alertDialogViewState.showDialog) {
         HabitTrackerAlertDialog(
             message = viewState.alertDialogViewState.message,
-            onButtonClick = onAlertDialogButtonClick
+            onPrimaryButtonClick = onAlertDialogButtonClick
         )
     }
 }
