@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -19,7 +18,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,10 +33,8 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -49,6 +45,7 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
@@ -180,17 +177,21 @@ fun LoginCredentialsCard(
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            LoginTextField(
-                viewState = viewState.emailTextFieldViewState,
+            HabitTrackerTextField(
+                value = viewState.emailTextFieldViewState.value,
                 onValueChange = onEmailValueChange,
                 labelText = stringResource(R.string.email),
+                isError = viewState.emailTextFieldViewState.isError,
+                errorMessage = viewState.emailTextFieldViewState.errorMessage,
                 keyboardType = KeyboardType.Email,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            LoginTextField(
-                viewState = viewState.passwordTextFieldViewState,
+            HabitTrackerTextField(
+                value = viewState.passwordTextFieldViewState.value,
                 onValueChange = onPasswordValueChange,
                 labelText = stringResource(R.string.password),
+                isError = viewState.passwordTextFieldViewState.isError,
+                errorMessage = viewState.passwordTextFieldViewState.errorMessage,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardType = KeyboardType.Password,
             )
@@ -210,37 +211,6 @@ fun LoginCredentialsCard(
     }
 }
 
-@Composable
-fun LoginTextField(
-    modifier: Modifier = Modifier,
-    viewState: LoginTextFieldViewState,
-    onValueChange: (String) -> Unit = {},
-    labelText: String = "",
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardType: KeyboardType = KeyboardType.Unspecified
-) {
-    TextField(
-        value = viewState.value,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        label = { Text(labelText) },
-        isError = viewState.isError,
-        visualTransformation = visualTransformation,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType,
-            imeAction = ImeAction.Done
-        ),
-        singleLine = true
-    )
-    if (viewState.isError && viewState.errorMessage.isNotBlank()) {
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = viewState.errorMessage,
-            color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodySmall
-        )
-    }
-}
 
 @Composable
 fun SignUpText(modifier: Modifier = Modifier, onSignUpLinkClick: () -> Unit = {}) {
