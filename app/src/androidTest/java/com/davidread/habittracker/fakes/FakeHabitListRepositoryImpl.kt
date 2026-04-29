@@ -1,5 +1,7 @@
 package com.davidread.habittracker.fakes
 
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.list.database.HabitEntity
@@ -35,7 +37,16 @@ class FakeHabitListRepositoryImpl : HabitListRepository {
     var updateHabitResponseType = UpdateHabitResponseType.SUCCESS
     var checkInResponseType = CheckInResponseType.SUCCESS
 
-    override fun getHabits(): Flow<PagingData<HabitEntity>> = flowOf(PagingData.from(habits))
+    override fun getHabits(): Flow<PagingData<HabitEntity>> = flowOf(
+        PagingData.from(
+            data = habits,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.NotLoading(true)
+            )
+        )
+    )
 
     override suspend fun createHabit(createHabitRequest: CreateHabitRequest) =
         when (createHabitResponseType) {
