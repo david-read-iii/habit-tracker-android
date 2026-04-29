@@ -46,7 +46,6 @@ class AuthenticationTokenRepository @Inject constructor(
         }
     }
 
-    // TODO: Remove this if it remains unused.
     fun clearAuthenticationToken() {
         application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
             remove(TOKEN_KEY)

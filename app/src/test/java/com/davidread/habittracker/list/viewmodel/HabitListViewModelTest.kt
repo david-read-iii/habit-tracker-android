@@ -4,6 +4,7 @@ import android.app.Application
 import app.cash.turbine.test
 import app.cash.turbine.turbineScope
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.usecase.LogoutUseCase
 import com.davidread.habittracker.list.mapper.HabitMapper
 import com.davidread.habittracker.list.model.CheckInResult
 import com.davidread.habittracker.list.model.CreateHabitResult
@@ -47,6 +48,7 @@ class HabitListViewModelTest {
     private val createHabitUseCase = mockk<CreateHabitUseCase>()
     private val updateHabitUseCase = mockk<UpdateHabitUseCase>()
     private val deleteHabitUseCase = mockk<DeleteHabitUseCase>()
+    private val logoutUseCase = mockk<LogoutUseCase>()
     private val application = mockk<Application>()
 
     private lateinit var viewModel: HabitListViewModel
@@ -54,6 +56,7 @@ class HabitListViewModelTest {
     @Before
     fun setUp() {
         every { getHabitsUseCase() } returns emptyFlow()
+        coEvery { logoutUseCase() } returns Unit
         every { application.getString(R.string.check_in_already_checked_in) } returns ALREADY_CHECKED_IN_MESSAGE
         every { application.getString(R.string.check_in_generic_error) } returns GENERIC_ERROR_MESSAGE
         every { application.getString(R.string.habit_list_add_habit_sheet_title) } returns
@@ -76,6 +79,7 @@ class HabitListViewModelTest {
             createHabitUseCase,
             updateHabitUseCase,
             deleteHabitUseCase,
+            logoutUseCase,
             application
         )
     }
@@ -517,6 +521,7 @@ class HabitListViewModelTest {
         viewModel.processIntent(HabitListViewIntent.ClickBackButton)
 
         Assert.assertTrue(viewModel.viewState.value.showLogoutDialog)
+        coVerify(exactly = 0) { logoutUseCase() }
     }
 
     @Test
@@ -527,6 +532,7 @@ class HabitListViewModelTest {
         viewModel.processIntent(HabitListViewIntent.DismissLogoutDialog)
 
         Assert.assertFalse(viewModel.viewState.value.showLogoutDialog)
+        coVerify(exactly = 0) { logoutUseCase() }
     }
 
     @Test
@@ -534,11 +540,13 @@ class HabitListViewModelTest {
         viewModel.viewEffect.test {
             viewModel.processIntent(HabitListViewIntent.ClickBackButton)
             Assert.assertTrue(viewModel.viewState.value.showLogoutDialog)
+            coVerify(exactly = 0) { logoutUseCase() }
 
             viewModel.processIntent(HabitListViewIntent.ConfirmLogout)
 
             Assert.assertFalse(viewModel.viewState.value.showLogoutDialog)
             Assert.assertEquals(HabitListViewEffect.NavigateToLoginScreen, awaitItem())
+            coVerify(exactly = 1) { logoutUseCase() }
         }
     }
 

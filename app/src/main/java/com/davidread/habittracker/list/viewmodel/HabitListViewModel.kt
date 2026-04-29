@@ -24,6 +24,7 @@ import com.davidread.habittracker.list.usecase.CreateHabitUseCase
 import com.davidread.habittracker.list.usecase.DeleteHabitUseCase
 import com.davidread.habittracker.list.usecase.GetHabitsUseCase
 import com.davidread.habittracker.list.usecase.UpdateHabitUseCase
+import com.davidread.habittracker.common.usecase.LogoutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -43,6 +44,7 @@ class HabitListViewModel @Inject constructor(
     private val createHabitUseCase: CreateHabitUseCase,
     private val updateHabitUseCase: UpdateHabitUseCase,
     private val deleteHabitUseCase: DeleteHabitUseCase,
+    private val logoutUseCase: LogoutUseCase,
     private val application: Application
 ) : ViewModel() {
 
@@ -278,6 +280,7 @@ class HabitListViewModel @Inject constructor(
             HabitListViewIntent.ConfirmLogout -> {
                 _viewState.update { it.copy(showLogoutDialog = false) }
                 viewModelScope.launch {
+                    logoutUseCase()
                     _viewEffect.emit(HabitListViewEffect.NavigateToLoginScreen)
                 }
             }
