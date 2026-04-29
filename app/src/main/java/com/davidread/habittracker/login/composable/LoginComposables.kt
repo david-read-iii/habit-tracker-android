@@ -54,6 +54,7 @@ import com.davidread.habittracker.login.model.LoginViewIntent
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.viewmodel.LoginViewModel
 
+internal const val LOGIN_BUTTON_TEST_TAG = "login_button"
 internal const val SIGN_UP_LINK_TEST_TAG = "sign_up_link"
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
@@ -201,6 +202,7 @@ fun LoginCredentialsCard(
                 horizontalArrangement = Arrangement.End
             ) {
                 HabitTrackerButton(
+                    modifier = Modifier.testTag(LOGIN_BUTTON_TEST_TAG),
                     label = stringResource(R.string.login),
                     onClick = onLoginButtonClick
                 )
