@@ -432,6 +432,19 @@ class HabitListViewModelTest {
     }
 
     @Test
+    fun test_processIntent_DismissDeleteHabitDialog() {
+        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+
+        viewModel.processIntent(HabitListViewIntent.DismissDeleteHabitDialog)
+
+        val deleteDialogViewState = viewModel.viewState.value.deleteHabitDialogViewState
+        Assert.assertFalse(deleteDialogViewState.showDialog)
+        Assert.assertEquals(null, deleteDialogViewState.habitId)
+        Assert.assertFalse(deleteDialogViewState.isSubmitting)
+        coVerify(exactly = 0) { deleteHabitUseCase(any()) }
+    }
+
+    @Test
     fun test_processIntent_DismissDeleteHabitDialog_doesNothingWhileSubmitting() = runTest {
         val deleteHabitResultDeferred = CompletableDeferred<DeleteHabitResult>()
         coEvery { deleteHabitUseCase(HABIT_ID) } coAnswers { deleteHabitResultDeferred.await() }
