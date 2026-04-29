@@ -47,6 +47,9 @@ fun HabitTrackerApp() {
             HabitListScreen(
                 onNavigateToSettingsScreen = {
                     // TODO: Define this when settings screen is available.
+                },
+                onNavigateToLoginScreen = {
+                    navController.popBackStack(Screen.Login.route, inclusive = false)
                 }
             )
         }

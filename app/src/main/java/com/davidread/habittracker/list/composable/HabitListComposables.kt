@@ -1,5 +1,6 @@
 package com.davidread.habittracker.list.composable
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -107,14 +108,20 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 fun HabitListScreen(
     modifier: Modifier = Modifier,
     viewModel: HabitListViewModel = hiltViewModel(),
-    onNavigateToSettingsScreen: () -> Unit = {}
+    onNavigateToSettingsScreen: () -> Unit = {},
+    onNavigateToLoginScreen: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+
+    BackHandler {
+        viewModel.processIntent(HabitListViewIntent.ClickBackButton)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
                 is HabitListViewEffect.NavigateToSettingsScreen -> onNavigateToSettingsScreen()
+                is HabitListViewEffect.NavigateToLoginScreen -> onNavigateToLoginScreen()
                 is HabitListViewEffect.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(
                         message = viewEffect.message,
@@ -165,7 +172,9 @@ fun HabitListScreen(
             viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
         },
         onRefresh = { viewModel.processIntent(HabitListViewIntent.PullToRefresh) },
-        onRefreshComplete = { viewModel.processIntent(HabitListViewIntent.RefreshComplete) }
+        onRefreshComplete = { viewModel.processIntent(HabitListViewIntent.RefreshComplete) },
+        onDismissLogoutDialog = { viewModel.processIntent(HabitListViewIntent.DismissLogoutDialog) },
+        onConfirmLogout = { viewModel.processIntent(HabitListViewIntent.ConfirmLogout) }
     )
 }
 
@@ -188,7 +197,9 @@ fun HabitListContent(
     onDismissDeleteHabitDialog: () -> Unit = {},
     onConfirmDeleteHabit: () -> Unit = {},
     onRefresh: () -> Unit = {},
-    onRefreshComplete: () -> Unit = {}
+    onRefreshComplete: () -> Unit = {},
+    onDismissLogoutDialog: () -> Unit = {},
+    onConfirmLogout: () -> Unit = {}
 ) {
     var openSwipeHabitId by remember { mutableStateOf<String?>(null) }
 
@@ -316,6 +327,13 @@ fun HabitListContent(
             viewState = viewState.deleteHabitDialogViewState,
             onDismiss = onDismissDeleteHabitDialog,
             onConfirm = onConfirmDeleteHabit
+        )
+    }
+
+    if (viewState.showLogoutDialog) {
+        LogoutConfirmationDialog(
+            onDismiss = onDismissLogoutDialog,
+            onConfirm = onConfirmLogout
         )
     }
 }
@@ -825,6 +843,24 @@ private fun DeleteHabitConfirmationDialog(
         } else {
             HabitTrackerAlertDialogMode.Default
         }
+    )
+}
+
+@Composable
+private fun LogoutConfirmationDialog(
+    onDismiss: () -> Unit = {},
+    onConfirm: () -> Unit = {}
+) {
+    HabitTrackerAlertDialog(
+        title = stringResource(R.string.habit_list_logout_dialog_title),
+        message = stringResource(R.string.habit_list_logout_dialog_message),
+        primaryButtonText = stringResource(R.string.yes),
+        onPrimaryButtonClick = onConfirm,
+        negativeButtonText = stringResource(R.string.no),
+        onNegativeButtonClick = onDismiss,
+        dismissOnBackPress = true,
+        dismissOnClickOutside = true,
+        onDismissRequest = onDismiss
     )
 }
 

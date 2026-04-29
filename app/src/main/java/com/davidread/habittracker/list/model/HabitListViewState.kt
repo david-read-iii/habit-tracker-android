@@ -4,7 +4,8 @@ data class HabitListViewState(
     val checkingInHabitIds: Set<String> = emptySet(),
     val isRefreshing: Boolean = false,
     val habitEditorBottomSheetViewState: HabitEditorBottomSheetViewState = HabitEditorBottomSheetViewState(),
-    val deleteHabitDialogViewState: DeleteHabitDialogViewState = DeleteHabitDialogViewState()
+    val deleteHabitDialogViewState: DeleteHabitDialogViewState = DeleteHabitDialogViewState(),
+    val showLogoutDialog: Boolean = false
 )
 
 data class HabitEditorBottomSheetViewState(

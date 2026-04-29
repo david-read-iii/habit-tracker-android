@@ -14,4 +14,7 @@ sealed class HabitListViewIntent {
     object SubmitHabitEditorChanges : HabitListViewIntent()
     object DismissDeleteHabitDialog : HabitListViewIntent()
     object ConfirmDeleteHabit : HabitListViewIntent()
+    object ClickBackButton : HabitListViewIntent()
+    object DismissLogoutDialog : HabitListViewIntent()
+    object ConfirmLogout : HabitListViewIntent()
 }

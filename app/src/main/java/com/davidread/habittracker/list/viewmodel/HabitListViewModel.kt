@@ -267,7 +267,20 @@ class HabitListViewModel @Inject constructor(
                 }
             }
 
-            else -> {} // TODO: Handle other intents.
+            HabitListViewIntent.ClickBackButton -> {
+                _viewState.update { it.copy(showLogoutDialog = true) }
+            }
+
+            HabitListViewIntent.DismissLogoutDialog -> {
+                _viewState.update { it.copy(showLogoutDialog = false) }
+            }
+
+            HabitListViewIntent.ConfirmLogout -> {
+                _viewState.update { it.copy(showLogoutDialog = false) }
+                viewModelScope.launch {
+                    _viewEffect.emit(HabitListViewEffect.NavigateToLoginScreen)
+                }
+            }
         }
     }
 

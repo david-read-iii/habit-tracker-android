@@ -512,6 +512,36 @@ class HabitListViewModelTest {
         }
     }
 
+    @Test
+    fun test_processIntent_ClickBackButton_setsShowLogoutDialogTrue() {
+        viewModel.processIntent(HabitListViewIntent.ClickBackButton)
+
+        Assert.assertTrue(viewModel.viewState.value.showLogoutDialog)
+    }
+
+    @Test
+    fun test_processIntent_DismissLogoutDialog_setsShowLogoutDialogFalse() {
+        viewModel.processIntent(HabitListViewIntent.ClickBackButton)
+        Assert.assertTrue(viewModel.viewState.value.showLogoutDialog)
+
+        viewModel.processIntent(HabitListViewIntent.DismissLogoutDialog)
+
+        Assert.assertFalse(viewModel.viewState.value.showLogoutDialog)
+    }
+
+    @Test
+    fun test_processIntent_ConfirmLogout_hidesDialogAndEmitsNavigateToLoginScreen() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(HabitListViewIntent.ClickBackButton)
+            Assert.assertTrue(viewModel.viewState.value.showLogoutDialog)
+
+            viewModel.processIntent(HabitListViewIntent.ConfirmLogout)
+
+            Assert.assertFalse(viewModel.viewState.value.showLogoutDialog)
+            Assert.assertEquals(HabitListViewEffect.NavigateToLoginScreen, awaitItem())
+        }
+    }
+
 
     @Test
     fun test_processIntent_ClickHabit_success() = runTest {
