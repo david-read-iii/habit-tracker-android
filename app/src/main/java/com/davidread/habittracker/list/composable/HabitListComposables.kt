@@ -190,6 +190,8 @@ fun HabitListContent(
     onRefresh: () -> Unit = {},
     onRefreshComplete: () -> Unit = {}
 ) {
+    var openSwipeHabitId by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(habits.loadState.refresh) {
         if (habits.loadState.refresh is LoadState.NotLoading && viewState.isRefreshing) {
             onRefreshComplete()
@@ -264,6 +266,18 @@ fun HabitListContent(
                                 HabitListItem(
                                     viewState = habit,
                                     isCheckingIn = habit.id in viewState.checkingInHabitIds,
+                                    shouldCloseSwipeActions =
+                                        openSwipeHabitId != null && openSwipeHabitId != habit.id,
+                                    onRequestOpenSwipeActions = {
+                                        if (openSwipeHabitId != habit.id) {
+                                            openSwipeHabitId = habit.id
+                                        }
+                                    },
+                                    onSwipeActionsClosed = {
+                                        if (openSwipeHabitId == habit.id) {
+                                            openSwipeHabitId = null
+                                        }
+                                    },
                                     onClick = { onHabitClick(habit.id) },
                                     onCheckInClick = { onHabitCheckInClick(habit.id) },
                                     onRenameClick = { onHabitRenameClick(habit.id, habit.name) },
@@ -311,6 +325,9 @@ fun HabitListItem(
     modifier: Modifier = Modifier,
     viewState: HabitViewState,
     isCheckingIn: Boolean = false,
+    shouldCloseSwipeActions: Boolean = false,
+    onRequestOpenSwipeActions: () -> Unit = {},
+    onSwipeActionsClosed: () -> Unit = {},
     onClick: () -> Unit = {},
     onCheckInClick: () -> Unit = {},
     onRenameClick: () -> Unit = {},
@@ -329,7 +346,14 @@ fun HabitListItem(
     val closeSwipeAndRun: (() -> Unit) -> Unit = { action ->
         scope.launch {
             offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300))
+            onSwipeActionsClosed()
             action()
+        }
+    }
+
+    LaunchedEffect(shouldCloseSwipeActions) {
+        if (shouldCloseSwipeActions && offsetX.value != 0f) {
+            offsetX.animateTo(0f, animationSpec = tween(durationMillis = 300))
         }
     }
 
@@ -372,6 +396,9 @@ fun HabitListItem(
                     detectHorizontalDragGestures(
                         onHorizontalDrag = { _, dragAmount ->
                             if (!isCheckingIn) {
+                                if (dragAmount < 0f) {
+                                    onRequestOpenSwipeActions()
+                                }
                                 scope.launch {
                                     val newValue = (offsetX.value + dragAmount).coerceIn(
                                         -totalActionsWidthPx,
@@ -391,6 +418,11 @@ fun HabitListItem(
                                         targetValue,
                                         animationSpec = tween(durationMillis = 300)
                                     )
+                                    if (targetValue == 0f) {
+                                        onSwipeActionsClosed()
+                                    } else {
+                                        onRequestOpenSwipeActions()
+                                    }
                                 }
                             }
                         }
