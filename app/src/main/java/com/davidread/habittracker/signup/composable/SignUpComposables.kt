@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -42,6 +43,8 @@ import com.davidread.habittracker.signup.model.SignUpViewEffect
 import com.davidread.habittracker.signup.model.SignUpViewIntent
 import com.davidread.habittracker.signup.model.SignUpViewState
 import com.davidread.habittracker.signup.viewmodel.SignUpViewModel
+
+internal const val SIGN_UP_BUTTON_TEST_TAG = "sign_up_button"
 
 @Composable
 fun SignUpScreen(
@@ -193,6 +196,7 @@ fun SignUpCredentialsCard(
                 horizontalArrangement = Arrangement.End
             ) {
                 HabitTrackerButton(
+                    modifier = Modifier.testTag(SIGN_UP_BUTTON_TEST_TAG),
                     label = stringResource(R.string.sign_up),
                     onClick = { onSignUpButtonClick() }
                 )
