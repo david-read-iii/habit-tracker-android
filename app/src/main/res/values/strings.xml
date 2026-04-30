@@ -16,4 +16,46 @@
     <string name="email_already_used_error_message">This email address is already in use. Please try another one.</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="sign_up">Sign up</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="habit_list_title">Habits</string>
+    <string name="habit_list_add_habit">Add habit</string>
+    <string name="habit_list_open_settings">Open settings</string>
+    <string name="habit_list_error_message">An error occurred. Tap to retry.</string>
+    <string name="habit_list_end_of_pagination_message">No more habits to show</string>
+    <string name="habit_list_empty_message">No habits yet. Tap + to add your first habit.</string>
+    <string name="check_in_already_checked_in">Already checked in today.</string>
+    <string name="check_in_generic_error">Failed to check in. Please try again.</string>
+    <string name="created_at_just_now">Just now</string>
+    <plurals name="created_at_mins_ago">
+        <item quantity="one">%1$d min ago</item>
+        <item quantity="other">%1$d mins ago</item>
+    </plurals>
+    <plurals name="created_at_hours_ago">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="created_at_days_ago">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <string name="habit_list_delete_action">Delete</string>
+    <string name="habit_list_rename_action">Rename</string>
+    <string name="habit_list_check_in_action">Check In</string>
+    <string name="habit_list_add_habit_sheet_title">Add habit</string>
+    <string name="habit_list_add_habit_name_label">Habit name</string>
+    <string name="habit_list_add_habit_name_error">Please enter a habit name</string>
+    <string name="habit_list_add_habit_submit">Add</string>
+    <string name="habit_list_edit_habit_sheet_title">Edit habit</string>
+    <string name="habit_list_edit_habit_submit">Save</string>
+    <string name="create_habit_success">Habit added successfully.</string>
+    <string name="create_habit_error">Failed to add habit. Please try again.</string>
+    <string name="update_habit_error">Failed to update habit. Please try again.</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="habit_list_delete_dialog_title">Delete habit?</string>
+    <string name="habit_list_delete_dialog_message">Are you sure you want to delete this habit?</string>
+    <string name="delete_habit_error">Failed to delete habit. Please try again.</string>
+    <string name="habit_list_logout_dialog_title">Log out?</string>
+    <string name="habit_list_logout_dialog_message">Are you sure you want to log out?</string>
 </resources>

@@ -5,23 +5,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,10 +32,8 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -48,8 +41,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
-import com.davidread.habittracker.common.ui.composable.AlertDialog
-import com.davidread.habittracker.common.ui.composable.LoadingDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
+import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
@@ -58,6 +54,7 @@ import com.davidread.habittracker.login.model.LoginViewIntent
 import com.davidread.habittracker.login.model.LoginViewState
 import com.davidread.habittracker.login.viewmodel.LoginViewModel
 
+internal const val LOGIN_BUTTON_TEST_TAG = "login_button"
 internal const val SIGN_UP_LINK_TEST_TAG = "sign_up_link"
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
@@ -118,43 +115,50 @@ fun LoginScreenContent(
     onAlertDialogButtonClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(WindowInsets.systemBars.asPaddingValues()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        Image(
-            painter = painterResource(id = R.drawable.undraw_login_weas),
-            contentDescription = null,
-            modifier = Modifier.size(192.dp)
-        )
-        Spacer(modifier = Modifier.height(64.dp))
-        LoginCredentialsCard(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            viewState = viewState,
-            onEmailValueChange = onEmailValueChange,
-            onPasswordValueChange = onPasswordValueChange,
-            onLoginButtonClick = onLoginButtonClick
-        )
-        Spacer(modifier = Modifier.height(64.dp))
-        SignUpText(onSignUpLinkClick = onSignUpLinkClick)
-        Spacer(modifier = Modifier.height(16.dp))
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            HabitTrackerTopAppBar(title = stringResource(R.string.login))
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Image(
+                painter = painterResource(id = R.drawable.undraw_login_weas),
+                contentDescription = null,
+                modifier = Modifier.size(192.dp)
+            )
+            Spacer(modifier = Modifier.height(64.dp))
+            LoginCredentialsCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                viewState = viewState,
+                onEmailValueChange = onEmailValueChange,
+                onPasswordValueChange = onPasswordValueChange,
+                onLoginButtonClick = onLoginButtonClick
+            )
+            Spacer(modifier = Modifier.height(64.dp))
+            SignUpText(onSignUpLinkClick = onSignUpLinkClick)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 
     if (viewState.showLoadingDialog) {
-        LoadingDialog()
+        HabitTrackerLoadingDialog()
     }
 
     if (viewState.alertDialogViewState.showDialog) {
-        AlertDialog(
+        HabitTrackerAlertDialog(
             message = viewState.alertDialogViewState.message,
-            onButtonClick = onAlertDialogButtonClick
+            onPrimaryButtonClick = onAlertDialogButtonClick
         )
     }
 }
@@ -174,17 +178,21 @@ fun LoginCredentialsCard(
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            LoginTextField(
-                viewState = viewState.emailTextFieldViewState,
+            HabitTrackerTextField(
+                value = viewState.emailTextFieldViewState.value,
                 onValueChange = onEmailValueChange,
                 labelText = stringResource(R.string.email),
+                isError = viewState.emailTextFieldViewState.isError,
+                errorMessage = viewState.emailTextFieldViewState.errorMessage,
                 keyboardType = KeyboardType.Email,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            LoginTextField(
-                viewState = viewState.passwordTextFieldViewState,
+            HabitTrackerTextField(
+                value = viewState.passwordTextFieldViewState.value,
                 onValueChange = onPasswordValueChange,
                 labelText = stringResource(R.string.password),
+                isError = viewState.passwordTextFieldViewState.isError,
+                errorMessage = viewState.passwordTextFieldViewState.errorMessage,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardType = KeyboardType.Password,
             )
@@ -193,48 +201,16 @@ fun LoginCredentialsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                Button(onClick = onLoginButtonClick) {
-                    Text(
-                        stringResource(R.string.login),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
+                HabitTrackerButton(
+                    modifier = Modifier.testTag(LOGIN_BUTTON_TEST_TAG),
+                    label = stringResource(R.string.login),
+                    onClick = onLoginButtonClick
+                )
             }
         }
     }
 }
 
-@Composable
-fun LoginTextField(
-    modifier: Modifier = Modifier,
-    viewState: LoginTextFieldViewState,
-    onValueChange: (String) -> Unit = {},
-    labelText: String = "",
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardType: KeyboardType = KeyboardType.Unspecified
-) {
-    TextField(
-        value = viewState.value,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        label = { Text(labelText) },
-        isError = viewState.isError,
-        visualTransformation = visualTransformation,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType,
-            imeAction = ImeAction.Done
-        ),
-        singleLine = true
-    )
-    if (viewState.isError && viewState.errorMessage.isNotBlank()) {
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = viewState.errorMessage,
-            color = MaterialTheme.colorScheme.error,
-            style = MaterialTheme.typography.bodySmall
-        )
-    }
-}
 
 @Composable
 fun SignUpText(modifier: Modifier = Modifier, onSignUpLinkClick: () -> Unit = {}) {

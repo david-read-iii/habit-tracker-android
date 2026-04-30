@@ -24,7 +24,7 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 
 @Composable
-fun LoadingDialog() {
+fun HabitTrackerLoadingDialog() {
     Dialog(
         onDismissRequest = {},
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
@@ -55,8 +55,8 @@ fun LoadingDialog() {
 
 @Preview
 @Composable
-fun LoadingDialogPreview() {
+fun HabitTrackerLoadingDialogPreview() {
     HabitTrackerTheme {
-        LoadingDialog()
+        HabitTrackerLoadingDialog()
     }
 }

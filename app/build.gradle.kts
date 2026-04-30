@@ -34,12 +34,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlin {
-        jvmToolchain(11)
+        jvmToolchain(17)
     }
 
     buildFeatures {
@@ -66,7 +66,10 @@ android {
 
 dependencies {
     implementation(platform(libs.compose.bom))
+    implementation(libs.google.material)
     implementation(libs.material3)
+    implementation(libs.material.icons.extended)
+    implementation(libs.compose.material)
     implementation(libs.ui.tooling.preview)
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
@@ -77,6 +80,12 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.tink.android)
     implementation(libs.security.crypto)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    implementation(libs.room.paging)
+    kapt(libs.room.compiler)
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.leakcanary.android)
     debugImplementation(libs.compose.ui.test.manifest)

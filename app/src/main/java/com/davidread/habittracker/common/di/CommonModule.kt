@@ -17,6 +17,8 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.Clock
+import java.util.Locale
 import javax.inject.Singleton
 
 private const val KEYSET_NAME = "auth_keyset"
@@ -59,5 +61,15 @@ class CommonModule {
             .build()
             .keysetHandle
         return keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
+    }
+
+    @Provides
+    fun providesClock(): Clock {
+        return Clock.systemDefaultZone()
+    }
+
+    @Provides
+    fun providesLocale(): Locale {
+        return Locale.getDefault()
     }
 }

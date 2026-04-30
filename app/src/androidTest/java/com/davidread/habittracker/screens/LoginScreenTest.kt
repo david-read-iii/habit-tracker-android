@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.davidread.habittracker.common.ui.activity.MainActivity
 import com.davidread.habittracker.fakes.FakeLoginRepositoryImpl
+import com.davidread.habittracker.login.composable.LOGIN_BUTTON_TEST_TAG
 import com.davidread.habittracker.login.composable.SIGN_UP_LINK_TEST_TAG
 import com.davidread.habittracker.login.repository.LoginRepository
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -49,35 +50,41 @@ class LoginScreenTest {
     fun test_textFieldErrorsAreDisplayed() {
         composeRule.onNodeWithText("Email").performTextInput("invalid email")
         composeRule.onNodeWithText("Password").performTextInput("123")
-        composeRule.onNodeWithText("Login").performClick()
+        composeRule.onNodeWithTag(LOGIN_BUTTON_TEST_TAG).performClick()
 
-        composeRule.onNodeWithText("Please enter a valid email address (e.g. name@example.com)").assertIsDisplayed()
-        composeRule.onNodeWithText("Please enter a password with at least 8 characters").assertIsDisplayed()
+        composeRule.onNodeWithText("Please enter a valid email address (e.g. name@example.com)")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Please enter a password with at least 8 characters")
+            .assertIsDisplayed()
     }
 
     @Test
     fun test_unknownLoginCredentialsErrorDialogIsDisplayed() {
-        (loginRepository as FakeLoginRepositoryImpl).loginResponseType = FakeLoginRepositoryImpl.LoginResponseType.ERROR_400
+        (loginRepository as FakeLoginRepositoryImpl).loginResponseType =
+            FakeLoginRepositoryImpl.LoginResponseType.ERROR_400
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
         composeRule.onNodeWithText("Password").performTextInput("password123")
-        composeRule.onNodeWithText("Login").performClick()
+        composeRule.onNodeWithTag(LOGIN_BUTTON_TEST_TAG).performClick()
 
-        composeRule.onNodeWithText("Incorrect email or password. Please try again.").assertIsDisplayed()
+        composeRule.onNodeWithText("Incorrect email or password. Please try again.")
+            .assertIsDisplayed()
     }
 
     @Test
     fun test_genericErrorDialogIsDisplayed() {
-        (loginRepository as FakeLoginRepositoryImpl).loginResponseType = FakeLoginRepositoryImpl.LoginResponseType.GENERIC_ERROR
+        (loginRepository as FakeLoginRepositoryImpl).loginResponseType =
+            FakeLoginRepositoryImpl.LoginResponseType.GENERIC_ERROR
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
         composeRule.onNodeWithText("Password").performTextInput("password123")
-        composeRule.onNodeWithText("Login").performClick()
+        composeRule.onNodeWithTag(LOGIN_BUTTON_TEST_TAG).performClick()
 
         composeRule.onNodeWithText("An error occurred. Please try again later.").assertIsDisplayed()
     }
 
     @Test
     fun test_signUpScreenIsDisplayed() {
-        composeRule.onNodeWithTag(SIGN_UP_LINK_TEST_TAG).performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.onNodeWithTag(SIGN_UP_LINK_TEST_TAG)
+            .performSemanticsAction(SemanticsActions.OnClick)
 
         composeRule.onNodeWithText("Email").assertIsDisplayed()
         composeRule.onNodeWithText("Password").assertIsDisplayed()
@@ -86,11 +93,12 @@ class LoginScreenTest {
 
     @Test
     fun test_habitListScreenIsDisplayed() {
-        (loginRepository as FakeLoginRepositoryImpl).loginResponseType = FakeLoginRepositoryImpl.LoginResponseType.SUCCESS
+        (loginRepository as FakeLoginRepositoryImpl).loginResponseType =
+            FakeLoginRepositoryImpl.LoginResponseType.SUCCESS
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
         composeRule.onNodeWithText("Password").performTextInput("password123")
-        composeRule.onNodeWithText("Login").performClick()
+        composeRule.onNodeWithTag(LOGIN_BUTTON_TEST_TAG).performClick()
 
-        composeRule.onNodeWithText("Habit List Screen").assertIsDisplayed()
+        composeRule.onNodeWithText("Habits").assertIsDisplayed()
     }
 }

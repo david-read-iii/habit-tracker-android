@@ -13,13 +13,17 @@ kotlinxCoroutinesTest = "1.10.2"
 composeUiTest = "1.9.0"
 mockk = "1.14.5"
 turbine = "1.2.1"
-espressoCore = "3.5.1"
-agp = "8.12.3"
+espressoCore = "3.7.0"
+agp = "9.2.0"
 kotlin = "2.2.10"
+room = "2.8.4"
+paging = "3.3.2"
+material = "1.12.0"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 material3 = { group = "androidx.compose.material3", name = "material3" }
+material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -41,6 +45,14 @@ compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4", vers
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hiltAndroid" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
+paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
+paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+compose-material = { group = "androidx.compose.material", name = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

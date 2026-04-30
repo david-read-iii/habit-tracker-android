@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.davidread.habittracker.common.ui.activity.MainActivity
 import com.davidread.habittracker.fakes.FakeSignUpRepositoryImpl
 import com.davidread.habittracker.login.composable.SIGN_UP_LINK_TEST_TAG
+import com.davidread.habittracker.signup.composable.SIGN_UP_BUTTON_TEST_TAG
 import com.davidread.habittracker.signup.repository.SignUpRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -53,7 +54,7 @@ class SignUpScreenTest {
         composeRule.onNodeWithText("Email").performTextInput("invalid email")
         composeRule.onNodeWithText("Password").performTextInput("1234")
         composeRule.onNodeWithText("Confirm Password").performTextInput("123")
-        composeRule.onNodeWithText("Sign up").performClick()
+        composeRule.onNodeWithTag(SIGN_UP_BUTTON_TEST_TAG).performClick()
 
         composeRule.onNodeWithText("Please enter a valid email address (e.g. name@example.com)")
             .assertIsDisplayed()
@@ -69,7 +70,7 @@ class SignUpScreenTest {
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
         composeRule.onNodeWithText("Password").performTextInput("password123")
         composeRule.onNodeWithText("Confirm Password").performTextInput("password123")
-        composeRule.onNodeWithText("Sign up").performClick()
+        composeRule.onNodeWithTag(SIGN_UP_BUTTON_TEST_TAG).performClick()
 
         composeRule.onNodeWithText("This email address is already in use. Please try another one.")
             .assertIsDisplayed()
@@ -82,7 +83,7 @@ class SignUpScreenTest {
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
         composeRule.onNodeWithText("Password").performTextInput("password123")
         composeRule.onNodeWithText("Confirm Password").performTextInput("password123")
-        composeRule.onNodeWithText("Sign up").performClick()
+        composeRule.onNodeWithTag(SIGN_UP_BUTTON_TEST_TAG).performClick()
 
         composeRule.onNodeWithText("An error occurred. Please try again later.").assertIsDisplayed()
     }
@@ -94,8 +95,8 @@ class SignUpScreenTest {
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
         composeRule.onNodeWithText("Password").performTextInput("password123")
         composeRule.onNodeWithText("Confirm Password").performTextInput("password123")
-        composeRule.onNodeWithText("Sign up").performClick()
+        composeRule.onNodeWithTag(SIGN_UP_BUTTON_TEST_TAG).performClick()
 
-        composeRule.onNodeWithText("Habit List Screen").assertIsDisplayed()
+        composeRule.onNodeWithText("Habits").assertIsDisplayed()
     }
 }
