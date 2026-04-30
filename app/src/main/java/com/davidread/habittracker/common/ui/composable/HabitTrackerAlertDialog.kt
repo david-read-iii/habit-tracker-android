@@ -60,7 +60,6 @@ fun HabitTrackerAlertDialog(
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(16.dp)
             ) {
                 title?.let {
@@ -68,7 +67,6 @@ fun HabitTrackerAlertDialog(
                         text = it,
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Left
                     )
                     Spacer(modifier = Modifier.height(8.dp))
