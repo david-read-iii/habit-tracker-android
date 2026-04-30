@@ -254,56 +254,60 @@ fun HabitListContent(
                 }
 
                 is LoadState.NotLoading -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        when (habits.loadState.prepend) {
-                            is LoadState.Loading -> item {
-                                LoadingListItem()
-                                HorizontalDivider()
+                    if (habits.itemCount == 0) {
+                        HabitListEmptyStateItem()
+                    } else {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            when (habits.loadState.prepend) {
+                                is LoadState.Loading -> item {
+                                    LoadingListItem()
+                                    HorizontalDivider()
+                                }
+
+                                is LoadState.Error -> item {
+                                    ErrorListItem(onClick = { habits.retry() })
+                                    HorizontalDivider()
+                                }
+
+                                is LoadState.NotLoading -> Unit
                             }
 
-                            is LoadState.Error -> item {
-                                ErrorListItem(onClick = { habits.retry() })
-                                HorizontalDivider()
+                            items(
+                                count = habits.itemCount,
+                                key = habits.itemKey { it.id }
+                            ) { index ->
+                                habits[index]?.let { habit ->
+                                    HabitListItem(
+                                        viewState = habit,
+                                        isCheckingIn = habit.id in viewState.checkingInHabitIds,
+                                        shouldCloseSwipeActions =
+                                            openSwipeHabitId != null && openSwipeHabitId != habit.id,
+                                        onRequestOpenSwipeActions = {
+                                            if (openSwipeHabitId != habit.id) {
+                                                openSwipeHabitId = habit.id
+                                            }
+                                        },
+                                        onSwipeActionsClosed = {
+                                            if (openSwipeHabitId == habit.id) {
+                                                openSwipeHabitId = null
+                                            }
+                                        },
+                                        onClick = { onHabitClick(habit.id) },
+                                        onCheckInClick = { onHabitCheckInClick(habit.id) },
+                                        onRenameClick = { onHabitRenameClick(habit.id, habit.name) },
+                                        onDeleteClick = { onHabitDeleteClick(habit.id) }
+                                    )
+                                    HorizontalDivider()
+                                }
                             }
 
-                            is LoadState.NotLoading -> Unit
-                        }
-
-                        items(
-                            count = habits.itemCount,
-                            key = habits.itemKey { it.id }
-                        ) { index ->
-                            habits[index]?.let { habit ->
-                                HabitListItem(
-                                    viewState = habit,
-                                    isCheckingIn = habit.id in viewState.checkingInHabitIds,
-                                    shouldCloseSwipeActions =
-                                        openSwipeHabitId != null && openSwipeHabitId != habit.id,
-                                    onRequestOpenSwipeActions = {
-                                        if (openSwipeHabitId != habit.id) {
-                                            openSwipeHabitId = habit.id
-                                        }
-                                    },
-                                    onSwipeActionsClosed = {
-                                        if (openSwipeHabitId == habit.id) {
-                                            openSwipeHabitId = null
-                                        }
-                                    },
-                                    onClick = { onHabitClick(habit.id) },
-                                    onCheckInClick = { onHabitCheckInClick(habit.id) },
-                                    onRenameClick = { onHabitRenameClick(habit.id, habit.name) },
-                                    onDeleteClick = { onHabitDeleteClick(habit.id) }
-                                )
-                                HorizontalDivider()
-                            }
-                        }
-
-                        when (val appendState = habits.loadState.append) {
-                            is LoadState.Loading -> item { LoadingListItem() }
-                            is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
-                            is LoadState.NotLoading -> {
-                                if (appendState.endOfPaginationReached && habits.itemCount > 0) {
-                                    item { EndOfPaginationListItem() }
+                            when (val appendState = habits.loadState.append) {
+                                is LoadState.Loading -> item { LoadingListItem() }
+                                is LoadState.Error -> item { ErrorListItem(onClick = { habits.retry() }) }
+                                is LoadState.NotLoading -> {
+                                    if (appendState.endOfPaginationReached && habits.itemCount > 0) {
+                                        item { EndOfPaginationListItem() }
+                                    }
                                 }
                             }
                         }
@@ -732,6 +736,23 @@ fun EndOfPaginationListItem(modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+fun HabitListEmptyStateItem(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = stringResource(R.string.habit_list_empty_message),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.outline,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HabitEditorBottomSheet(
@@ -1077,6 +1098,28 @@ private fun HabitListContentPreview_EndOfPagination() {
     val habits = flowOf(
         PagingData.from(
             habitListPreviewData,
+            sourceLoadStates = LoadStates(
+                refresh = LoadState.NotLoading(false),
+                prepend = LoadState.NotLoading(false),
+                append = LoadState.NotLoading(true)
+            )
+        )
+    ).collectAsLazyPagingItems()
+
+    HabitTrackerTheme {
+        HabitListContent(
+            habits = habits,
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun HabitListContentPreview_EmptyList() {
+    val habits = flowOf(
+        PagingData.from(
+            emptyList<HabitViewState>(),
             sourceLoadStates = LoadStates(
                 refresh = LoadState.NotLoading(false),
                 prepend = LoadState.NotLoading(false),
