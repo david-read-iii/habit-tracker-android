@@ -15,11 +15,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,12 +48,19 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToLoginScreen: () -> Unit = {}
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     val viewState by viewModel.viewState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
                 is SettingsViewEffect.NavigateToLoginScreen -> onNavigateToLoginScreen()
+                is SettingsViewEffect.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(viewEffect.messageResId)
+                    )
+                }
             }
         }
     }
@@ -57,6 +68,7 @@ fun SettingsScreen(
     SettingsContent(
         modifier = modifier,
         viewState = viewState,
+        snackbarHostState = snackbarHostState,
         onNavigateBack = onNavigateBack,
         onClickResetTimezone = { viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton) },
         onDismissResetTimezoneDialog = { viewModel.processIntent(SettingsViewIntent.DismissResetTimezoneDialog) },
@@ -71,6 +83,7 @@ fun SettingsScreen(
 fun SettingsContent(
     modifier: Modifier = Modifier,
     viewState: SettingsViewState,
+    snackbarHostState: SnackbarHostState,
     onNavigateBack: () -> Unit = {},
     onClickResetTimezone: () -> Unit = {},
     onDismissResetTimezoneDialog: () -> Unit = {},
@@ -93,7 +106,8 @@ fun SettingsContent(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         val scrollState = rememberScrollState()
         Column(
@@ -174,7 +188,10 @@ fun ResetTimezoneConfirmationDialog(
 @Composable
 private fun SettingsContentPreview() {
     HabitTrackerTheme {
-        SettingsContent(viewState = SettingsViewState())
+        SettingsContent(
+            viewState = SettingsViewState(),
+            snackbarHostState = remember { SnackbarHostState() }
+        )
     }
 }
 
@@ -187,7 +204,8 @@ private fun SettingsContentPreview_ResetTimezoneDialog() {
                 resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
                     showDialog = true
                 )
-            )
+            ),
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
@@ -199,7 +217,8 @@ private fun SettingsContentPreview_LogoutDialog() {
         SettingsContent(
             viewState = SettingsViewState(
                 showLogoutDialog = true
-            )
+            ),
+            snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }

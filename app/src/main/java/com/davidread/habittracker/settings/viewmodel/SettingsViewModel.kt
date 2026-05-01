@@ -2,13 +2,15 @@ package com.davidread.habittracker.settings.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.davidread.habittracker.R
 import com.davidread.habittracker.common.usecase.LogoutUseCase
 import com.davidread.habittracker.settings.model.ResetTimezoneConfirmationDialogViewState
+import com.davidread.habittracker.settings.model.ResetTimezoneResult
 import com.davidread.habittracker.settings.model.SettingsViewEffect
 import com.davidread.habittracker.settings.model.SettingsViewIntent
 import com.davidread.habittracker.settings.model.SettingsViewState
+import com.davidread.habittracker.settings.usecase.ResetTimezoneUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -19,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val logoutUseCase: LogoutUseCase
+    private val logoutUseCase: LogoutUseCase,
+    private val resetTimezoneUseCase: ResetTimezoneUseCase
 ) : ViewModel() {
 
     private val _viewState = MutableStateFlow(SettingsViewState())
@@ -53,16 +56,32 @@ class SettingsViewModel @Inject constructor(
             }
 
             SettingsViewIntent.ConfirmResetTimezone -> {
+                if (_viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting) return
                 _viewState.update {
                     it.copy(
-                        resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
-                            showDialog = true,
+                        resetTimezoneConfirmationDialogViewState = it.resetTimezoneConfirmationDialogViewState.copy(
                             isSubmitting = true
                         )
                     )
                 }
                 viewModelScope.launch {
-                    delay(5000) // FIXME: Simulated delay.
+                    when (resetTimezoneUseCase()) {
+                        is ResetTimezoneResult.Success -> {
+                            _viewEffect.emit(
+                                SettingsViewEffect.ShowSnackbar(
+                                    R.string.settings_reset_timezone_success
+                                )
+                            )
+                        }
+
+                        is ResetTimezoneResult.Error -> {
+                            _viewEffect.emit(
+                                SettingsViewEffect.ShowSnackbar(
+                                    R.string.settings_reset_timezone_error
+                                )
+                            )
+                        }
+                    }
                     _viewState.update {
                         it.copy(
                             resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
@@ -70,7 +89,6 @@ class SettingsViewModel @Inject constructor(
                             )
                         )
                     }
-                    // TODO: Implement reset timezone functionality.
                 }
             }
 

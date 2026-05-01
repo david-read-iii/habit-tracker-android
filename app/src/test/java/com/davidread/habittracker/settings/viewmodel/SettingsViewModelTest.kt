@@ -1,16 +1,19 @@
 package com.davidread.habittracker.settings.viewmodel
 
 import app.cash.turbine.turbineScope
+import com.davidread.habittracker.R
 import com.davidread.habittracker.common.usecase.LogoutUseCase
+import com.davidread.habittracker.settings.model.ResetTimezoneResult
 import com.davidread.habittracker.settings.model.SettingsViewEffect
 import com.davidread.habittracker.settings.model.SettingsViewIntent
+import com.davidread.habittracker.settings.usecase.ResetTimezoneUseCase
 import com.davidread.habittracker.testutil.MainDispatcherRule
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -22,11 +25,12 @@ import org.junit.Test
 class SettingsViewModelTest {
 
     @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val mainDispatcherRule = MainDispatcherRule(StandardTestDispatcher())
 
     private val logoutUseCase = mockk<LogoutUseCase>()
+    private val resetTimezoneUseCase = mockk<ResetTimezoneUseCase>()
 
-    private val viewModel = SettingsViewModel(logoutUseCase)
+    private val viewModel = SettingsViewModel(logoutUseCase, resetTimezoneUseCase)
 
     @After
     fun tearDown() {
@@ -60,20 +64,48 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun test_processIntent_ConfirmResetTimezone_setsSubmittingThenHidesDialog() = runTest {
-        viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton)
-        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+    fun test_processIntent_ConfirmResetTimezone_success_hidesDialogAndEmitsSuccessSnackbar() = runTest {
+        turbineScope {
+            val turbine = viewModel.viewEffect.testIn(backgroundScope)
+            coEvery { resetTimezoneUseCase() } returns ResetTimezoneResult.Success
+            viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton)
+            Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
 
-        viewModel.processIntent(SettingsViewIntent.ConfirmResetTimezone)
+            viewModel.processIntent(SettingsViewIntent.ConfirmResetTimezone)
 
-        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
-        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+            Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+            Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
 
-        advanceTimeBy(5000)
-        runCurrent()
+            runCurrent()
 
-        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
-        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+            Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+            Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+            Assert.assertEquals(
+                SettingsViewEffect.ShowSnackbar(R.string.settings_reset_timezone_success),
+                turbine.expectMostRecentItem()
+            )
+            coVerify(exactly = 1) { resetTimezoneUseCase() }
+        }
+    }
+
+    @Test
+    fun test_processIntent_ConfirmResetTimezone_error_hidesDialogAndEmitsErrorSnackbar() = runTest {
+        turbineScope {
+            val turbine = viewModel.viewEffect.testIn(backgroundScope)
+            coEvery { resetTimezoneUseCase() } returns ResetTimezoneResult.Error
+            viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton)
+
+            viewModel.processIntent(SettingsViewIntent.ConfirmResetTimezone)
+            runCurrent()
+
+            Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+            Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+            Assert.assertEquals(
+                SettingsViewEffect.ShowSnackbar(R.string.settings_reset_timezone_error),
+                turbine.expectMostRecentItem()
+            )
+            coVerify(exactly = 1) { resetTimezoneUseCase() }
+        }
     }
 
     @Test
@@ -101,6 +133,7 @@ class SettingsViewModelTest {
             viewModel.processIntent(SettingsViewIntent.ClickLogOutButton)
 
             viewModel.processIntent(SettingsViewIntent.ConfirmLogout)
+            runCurrent()
 
             Assert.assertFalse(viewModel.viewState.value.showLogoutDialog)
             Assert.assertEquals(
