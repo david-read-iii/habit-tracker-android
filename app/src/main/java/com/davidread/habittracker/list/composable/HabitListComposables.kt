@@ -11,7 +11,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -451,8 +450,6 @@ fun HabitListItem(
                     )
                 }
                 .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
                     onClick = onClick,
                     enabled = !isCheckingIn && offsetX.value == 0f
                 )
@@ -697,11 +694,7 @@ fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
         modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            ),
+            .clickable(onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
