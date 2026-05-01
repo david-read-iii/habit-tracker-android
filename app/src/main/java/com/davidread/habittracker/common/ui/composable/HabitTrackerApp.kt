@@ -57,7 +57,10 @@ fun HabitTrackerApp() {
 
         composable(route = Screen.Settings.route) {
             SettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToLoginScreen = {
+                    navController.popBackStack(Screen.Login.route, inclusive = false)
+                }
             )
         }
     }

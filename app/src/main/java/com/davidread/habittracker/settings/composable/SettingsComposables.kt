@@ -17,14 +17,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.settings.model.SettingsViewEffect
+import com.davidread.habittracker.settings.model.SettingsViewIntent
+import com.davidread.habittracker.settings.model.SettingsViewState
 import com.davidread.habittracker.settings.viewmodel.SettingsViewModel
 
 @Composable
@@ -32,23 +40,38 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
-    onResetTimezoneClick: () -> Unit = {},
-    onLogOutClick: () -> Unit = {}
+    onNavigateToLoginScreen: () -> Unit = {}
 ) {
+    val viewState by viewModel.viewState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.viewEffect.collect { viewEffect ->
+            when (viewEffect) {
+                is SettingsViewEffect.NavigateToLoginScreen -> onNavigateToLoginScreen()
+            }
+        }
+    }
+
     SettingsContent(
         modifier = modifier,
+        viewState = viewState,
         onNavigateBack = onNavigateBack,
-        onResetTimezoneClick = onResetTimezoneClick,
-        onLogOutClick = onLogOutClick
+        onClickResetTimezone = { viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton) },
+        onClickLogOut = { viewModel.processIntent(SettingsViewIntent.ClickLogOutButton) },
+        onDismissLogoutDialog = { viewModel.processIntent(SettingsViewIntent.DismissLogoutDialog) },
+        onConfirmLogout = { viewModel.processIntent(SettingsViewIntent.ConfirmLogout) }
     )
 }
 
 @Composable
 fun SettingsContent(
     modifier: Modifier = Modifier,
+    viewState: SettingsViewState = SettingsViewState(),
     onNavigateBack: () -> Unit = {},
-    onResetTimezoneClick: () -> Unit = {},
-    onLogOutClick: () -> Unit = {}
+    onClickResetTimezone: () -> Unit = {},
+    onClickLogOut: () -> Unit = {},
+    onDismissLogoutDialog: () -> Unit = {},
+    onConfirmLogout: () -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -75,14 +98,21 @@ fun SettingsContent(
         ) {
             SettingsListItem(
                 text = stringResource(R.string.settings_reset_timezone),
-                onClick = onResetTimezoneClick
+                onClick = onClickResetTimezone
             )
             HorizontalDivider()
             SettingsListItem(
                 text = stringResource(R.string.settings_log_out),
-                onClick = onLogOutClick
+                onClick = onClickLogOut
             )
         }
+    }
+
+    if (viewState.showLogoutDialog) {
+        LogoutConfirmationDialog(
+            onDismiss = onDismissLogoutDialog,
+            onConfirm = onConfirmLogout
+        )
     }
 }
 
@@ -100,6 +130,25 @@ private fun SettingsListItem(
             .background(MaterialTheme.colorScheme.background)
             .clickable(onClick = onClick)
             .padding(16.dp)
+    )
+}
+
+@Composable
+private fun LogoutConfirmationDialog(
+    onDismiss: () -> Unit = {},
+    onConfirm: () -> Unit = {}
+) {
+    HabitTrackerAlertDialog(
+        title = stringResource(R.string.habit_list_logout_dialog_title),
+        message = stringResource(R.string.habit_list_logout_dialog_message),
+        primaryButtonText = stringResource(R.string.yes),
+        onPrimaryButtonClick = onConfirm,
+        negativeButtonText = stringResource(R.string.no),
+        onNegativeButtonClick = onDismiss,
+        dismissOnBackPress = true,
+        dismissOnClickOutside = true,
+        onDismissRequest = onDismiss,
+        mode = HabitTrackerAlertDialogMode.Default
     )
 }
 
