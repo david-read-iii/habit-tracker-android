@@ -3,10 +3,12 @@ package com.davidread.habittracker.settings.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidread.habittracker.common.usecase.LogoutUseCase
+import com.davidread.habittracker.settings.model.ResetTimezoneConfirmationDialogViewState
 import com.davidread.habittracker.settings.model.SettingsViewEffect
 import com.davidread.habittracker.settings.model.SettingsViewIntent
 import com.davidread.habittracker.settings.model.SettingsViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,7 +33,45 @@ class SettingsViewModel @Inject constructor(
     fun processIntent(intent: SettingsViewIntent) {
         when (intent) {
             SettingsViewIntent.ClickResetTimezoneButton -> {
-                // TODO: Implement reset timezone functionality.
+                _viewState.update {
+                    it.copy(
+                        resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
+                            showDialog = true
+                        )
+                    )
+                }
+            }
+
+            SettingsViewIntent.DismissResetTimezoneDialog -> {
+                _viewState.update {
+                    it.copy(
+                        resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
+                            showDialog = false
+                        )
+                    )
+                }
+            }
+
+            SettingsViewIntent.ConfirmResetTimezone -> {
+                _viewState.update {
+                    it.copy(
+                        resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
+                            showDialog = true,
+                            isSubmitting = true
+                        )
+                    )
+                }
+                viewModelScope.launch {
+                    delay(5000) // FIXME: Simulated delay.
+                    _viewState.update {
+                        it.copy(
+                            resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
+                                showDialog = false
+                            )
+                        )
+                    }
+                    // TODO: Implement reset timezone functionality.
+                }
             }
 
             SettingsViewIntent.ClickLogOutButton -> {

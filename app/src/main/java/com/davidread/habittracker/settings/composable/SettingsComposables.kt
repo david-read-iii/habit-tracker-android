@@ -26,9 +26,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
+import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.settings.model.ResetTimezoneConfirmationDialogViewState
 import com.davidread.habittracker.settings.model.SettingsViewEffect
 import com.davidread.habittracker.settings.model.SettingsViewIntent
 import com.davidread.habittracker.settings.model.SettingsViewState
@@ -56,6 +59,8 @@ fun SettingsScreen(
         viewState = viewState,
         onNavigateBack = onNavigateBack,
         onClickResetTimezone = { viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton) },
+        onDismissResetTimezoneDialog = { viewModel.processIntent(SettingsViewIntent.DismissResetTimezoneDialog) },
+        onConfirmResetTimezone = { viewModel.processIntent(SettingsViewIntent.ConfirmResetTimezone) },
         onClickLogOut = { viewModel.processIntent(SettingsViewIntent.ClickLogOutButton) },
         onDismissLogoutDialog = { viewModel.processIntent(SettingsViewIntent.DismissLogoutDialog) },
         onConfirmLogout = { viewModel.processIntent(SettingsViewIntent.ConfirmLogout) }
@@ -65,9 +70,11 @@ fun SettingsScreen(
 @Composable
 fun SettingsContent(
     modifier: Modifier = Modifier,
-    viewState: SettingsViewState = SettingsViewState(),
+    viewState: SettingsViewState,
     onNavigateBack: () -> Unit = {},
     onClickResetTimezone: () -> Unit = {},
+    onDismissResetTimezoneDialog: () -> Unit = {},
+    onConfirmResetTimezone: () -> Unit = {},
     onClickLogOut: () -> Unit = {},
     onDismissLogoutDialog: () -> Unit = {},
     onConfirmLogout: () -> Unit = {}
@@ -107,6 +114,14 @@ fun SettingsContent(
         }
     }
 
+    if (viewState.resetTimezoneConfirmationDialogViewState.showDialog) {
+        ResetTimezoneConfirmationDialog(
+            isSubmitting = viewState.resetTimezoneConfirmationDialogViewState.isSubmitting,
+            onDismiss = onDismissResetTimezoneDialog,
+            onConfirm = onConfirmResetTimezone
+        )
+    }
+
     if (viewState.showLogoutDialog) {
         HabitTrackerLogoutConfirmationDialog(
             onDismiss = onDismissLogoutDialog,
@@ -132,10 +147,59 @@ private fun SettingsListItem(
     )
 }
 
+@Composable
+fun ResetTimezoneConfirmationDialog(
+    isSubmitting: Boolean,
+    onDismiss: () -> Unit = {},
+    onConfirm: () -> Unit = {}
+) {
+    HabitTrackerAlertDialog(
+        title = stringResource(R.string.settings_reset_timezone_dialog_title),
+        message = stringResource(R.string.settings_reset_timezone_dialog_message),
+        primaryButtonText = stringResource(R.string.yes),
+        onPrimaryButtonClick = onConfirm,
+        negativeButtonText = stringResource(R.string.no),
+        onNegativeButtonClick = onDismiss,
+        dismissOnBackPress = !isSubmitting,
+        dismissOnClickOutside = !isSubmitting,
+        onDismissRequest = onDismiss,
+        mode = when (isSubmitting) {
+            true -> HabitTrackerAlertDialogMode.Loading
+            false -> HabitTrackerAlertDialogMode.Default
+        }
+    )
+}
+
 @Preview(showSystemUi = true)
 @Composable
 private fun SettingsContentPreview() {
     HabitTrackerTheme {
-        SettingsContent()
+        SettingsContent(viewState = SettingsViewState())
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun SettingsContentPreview_ResetTimezoneDialog() {
+    HabitTrackerTheme {
+        SettingsContent(
+            viewState = SettingsViewState(
+                resetTimezoneConfirmationDialogViewState = ResetTimezoneConfirmationDialogViewState(
+                    showDialog = true
+                )
+            )
+        )
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun SettingsContentPreview_LogoutDialog() {
+    HabitTrackerTheme {
+        SettingsContent(
+            viewState = SettingsViewState(
+                showLogoutDialog = true
+            )
+        )
     }
 }

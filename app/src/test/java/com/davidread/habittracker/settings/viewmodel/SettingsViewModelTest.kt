@@ -10,6 +10,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -34,6 +36,44 @@ class SettingsViewModelTest {
     @Test
     fun test_viewState_initialState() {
         Assert.assertFalse(viewModel.viewState.value.showLogoutDialog)
+        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+    }
+
+    @Test
+    fun test_processIntent_ClickResetTimezoneButton_setsShowResetTimezoneDialogTrue() {
+        viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton)
+
+        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+    }
+
+    @Test
+    fun test_processIntent_DismissResetTimezoneDialog_setsShowResetTimezoneDialogFalse() {
+        viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton)
+        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+
+        viewModel.processIntent(SettingsViewIntent.DismissResetTimezoneDialog)
+
+        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+    }
+
+    @Test
+    fun test_processIntent_ConfirmResetTimezone_setsSubmittingThenHidesDialog() = runTest {
+        viewModel.processIntent(SettingsViewIntent.ClickResetTimezoneButton)
+        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+
+        viewModel.processIntent(SettingsViewIntent.ConfirmResetTimezone)
+
+        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+        Assert.assertTrue(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
+
+        advanceTimeBy(5000)
+        runCurrent()
+
+        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.showDialog)
+        Assert.assertFalse(viewModel.viewState.value.resetTimezoneConfirmationDialogViewState.isSubmitting)
     }
 
     @Test
