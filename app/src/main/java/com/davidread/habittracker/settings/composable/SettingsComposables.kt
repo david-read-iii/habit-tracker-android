@@ -1,17 +1,28 @@
 package com.davidread.habittracker.settings.composable
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
@@ -22,18 +33,24 @@ import com.davidread.habittracker.settings.viewmodel.SettingsViewModel
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onResetTimezoneClick: () -> Unit = {},
+    onLogOutClick: () -> Unit = {}
 ) {
     SettingsContent(
         modifier = modifier,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onResetTimezoneClick = onResetTimezoneClick,
+        onLogOutClick = onLogOutClick
     )
 }
 
 @Composable
 fun SettingsContent(
     modifier: Modifier = Modifier,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onResetTimezoneClick: () -> Unit = {},
+    onLogOutClick: () -> Unit = {}
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -51,12 +68,45 @@ fun SettingsContent(
             )
         }
     ) { paddingValues ->
-        Box(
+        val scrollState = rememberScrollState()
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-        )
+                .verticalScroll(scrollState)
+        ) {
+            SettingsListItem(
+                text = stringResource(R.string.settings_reset_timezone),
+                onClick = onResetTimezoneClick
+            )
+            HorizontalDivider()
+            SettingsListItem(
+                text = stringResource(R.string.settings_log_out),
+                onClick = onLogOutClick
+            )
+        }
     }
+}
+
+@Composable
+private fun SettingsListItem(
+    text: String,
+    onClick: () -> Unit
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onBackground,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .padding(16.dp)
+    )
 }
 
 @Preview(showSystemUi = true)

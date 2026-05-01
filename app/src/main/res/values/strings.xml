@@ -59,4 +59,6 @@
     <string name="habit_list_logout_dialog_title">Log out?</string>
     <string name="habit_list_logout_dialog_message">Are you sure you want to log out?</string>
     <string name="settings_title">Settings</string>
+    <string name="settings_reset_timezone">Reset timezone</string>
+    <string name="settings_log_out">Log out</string>
 </resources>
