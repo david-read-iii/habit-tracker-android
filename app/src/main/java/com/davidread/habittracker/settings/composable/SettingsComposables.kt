@@ -26,8 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
-import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
-import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
+import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.settings.model.SettingsViewEffect
@@ -109,7 +108,7 @@ fun SettingsContent(
     }
 
     if (viewState.showLogoutDialog) {
-        LogoutConfirmationDialog(
+        HabitTrackerLogoutConfirmationDialog(
             onDismiss = onDismissLogoutDialog,
             onConfirm = onConfirmLogout
         )
@@ -130,25 +129,6 @@ private fun SettingsListItem(
             .background(MaterialTheme.colorScheme.background)
             .clickable(onClick = onClick)
             .padding(16.dp)
-    )
-}
-
-@Composable
-private fun LogoutConfirmationDialog(
-    onDismiss: () -> Unit = {},
-    onConfirm: () -> Unit = {}
-) {
-    HabitTrackerAlertDialog(
-        title = stringResource(R.string.habit_list_logout_dialog_title),
-        message = stringResource(R.string.habit_list_logout_dialog_message),
-        primaryButtonText = stringResource(R.string.yes),
-        onPrimaryButtonClick = onConfirm,
-        negativeButtonText = stringResource(R.string.no),
-        onNegativeButtonClick = onDismiss,
-        dismissOnBackPress = true,
-        dismissOnClickOutside = true,
-        onDismissRequest = onDismiss,
-        mode = HabitTrackerAlertDialogMode.Default
     )
 }
 

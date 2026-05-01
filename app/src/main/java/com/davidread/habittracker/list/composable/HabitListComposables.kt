@@ -85,6 +85,7 @@ import androidx.paging.compose.itemKey
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
+import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
@@ -334,7 +335,7 @@ fun HabitListContent(
     }
 
     if (viewState.showLogoutDialog) {
-        LogoutConfirmationDialog(
+        HabitTrackerLogoutConfirmationDialog(
             onDismiss = onDismissLogoutDialog,
             onConfirm = onConfirmLogout
         )
@@ -857,24 +858,6 @@ private fun DeleteHabitConfirmationDialog(
         } else {
             HabitTrackerAlertDialogMode.Default
         }
-    )
-}
-
-@Composable
-private fun LogoutConfirmationDialog(
-    onDismiss: () -> Unit = {},
-    onConfirm: () -> Unit = {}
-) {
-    HabitTrackerAlertDialog(
-        title = stringResource(R.string.habit_list_logout_dialog_title),
-        message = stringResource(R.string.habit_list_logout_dialog_message),
-        primaryButtonText = stringResource(R.string.yes),
-        onPrimaryButtonClick = onConfirm,
-        negativeButtonText = stringResource(R.string.no),
-        onNegativeButtonClick = onDismiss,
-        dismissOnBackPress = true,
-        dismissOnClickOutside = true,
-        onDismissRequest = onDismiss
     )
 }
 
