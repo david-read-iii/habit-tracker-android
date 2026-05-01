@@ -2,6 +2,10 @@ package com.davidread.habittracker.settings.usecase
 
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.common.util.Logger
+import com.davidread.habittracker.common.database.HabitTrackerDatabase
+import com.davidread.habittracker.list.database.HabitDao
+import com.davidread.habittracker.list.database.RemoteKeyDao
+import com.davidread.habittracker.list.repository.HabitListRepository
 import com.davidread.habittracker.settings.model.ResetTimezoneRequest
 import com.davidread.habittracker.settings.model.ResetTimezoneResponse
 import com.davidread.habittracker.settings.model.ResetTimezoneResult
@@ -25,14 +29,29 @@ class ResetTimezoneUseCaseTest {
 
     private val settingsRepository = mockk<SettingsRepository>()
     private val getTimezoneUseCase = mockk<GetTimezoneUseCase>()
+    private val database = mockk<HabitTrackerDatabase>()
+    private val habitDao = mockk<HabitDao>()
+    private val remoteKeyDao = mockk<RemoteKeyDao>()
+    private val habitListRepository = mockk<HabitListRepository>()
     private val logger = mockk<Logger>()
 
     private val resetTimezoneUseCase =
-        ResetTimezoneUseCase(settingsRepository, getTimezoneUseCase, logger)
+        ResetTimezoneUseCase(
+            settingsRepository,
+            getTimezoneUseCase,
+            database,
+            habitListRepository,
+            logger
+        )
 
     @Before
     fun setUp() {
         every { logger.e(any(), any(), any()) } just runs
+        every { database.habitDao() } returns habitDao
+        every { database.remoteKeyDao() } returns remoteKeyDao
+        every { habitListRepository.invalidateHabits() } returns Unit
+        coEvery { habitDao.clearAll() } just runs
+        coEvery { remoteKeyDao.clearRemoteKeys() } just runs
     }
 
     @After
@@ -52,6 +71,9 @@ class ResetTimezoneUseCaseTest {
         coVerify(exactly = 1) {
             settingsRepository.resetTimezone(ResetTimezoneRequest(timezone))
         }
+        coVerify(exactly = 1) { remoteKeyDao.clearRemoteKeys() }
+        coVerify(exactly = 1) { habitDao.clearAll() }
+        coVerify(exactly = 1) { habitListRepository.invalidateHabits() }
     }
 
     @Test
@@ -60,6 +82,9 @@ class ResetTimezoneUseCaseTest {
 
         Assert.assertEquals(ResetTimezoneResult.Error, resetTimezoneUseCase())
         coVerify(exactly = 0) { settingsRepository.resetTimezone(any()) }
+        coVerify(exactly = 0) { remoteKeyDao.clearRemoteKeys() }
+        coVerify(exactly = 0) { habitDao.clearAll() }
+        coVerify(exactly = 0) { habitListRepository.invalidateHabits() }
     }
 
     @Test
@@ -68,5 +93,21 @@ class ResetTimezoneUseCaseTest {
         coEvery { settingsRepository.resetTimezone(any()) } returns Result.Error(mockk<Exception>())
 
         Assert.assertEquals(ResetTimezoneResult.Error, resetTimezoneUseCase())
+        coVerify(exactly = 0) { remoteKeyDao.clearRemoteKeys() }
+        coVerify(exactly = 0) { habitDao.clearAll() }
+        coVerify(exactly = 0) { habitListRepository.invalidateHabits() }
+    }
+
+    @Test
+    fun test_invoke_databaseClearError_stillReturnsSuccess() = runTest {
+        val timezone = "America/New_York"
+        every { getTimezoneUseCase() } returns GetTimezoneResult.Success(timezone)
+        coEvery { settingsRepository.resetTimezone(any()) } returns Result.Success(
+            ResetTimezoneResponse("Timezone updated successfully")
+        )
+        coEvery { remoteKeyDao.clearRemoteKeys() } throws Exception("DB error")
+
+        Assert.assertEquals(ResetTimezoneResult.Success, resetTimezoneUseCase())
+        coVerify(exactly = 0) { habitListRepository.invalidateHabits() }
     }
 }

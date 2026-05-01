@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface HabitListRepository {
     fun getHabits(): Flow<PagingData<HabitEntity>>
+    fun invalidateHabits()
     suspend fun createHabit(createHabitRequest: CreateHabitRequest): Result<CreateHabitResponse>
     suspend fun deleteHabit(id: String): Result<DeleteHabitResponse>
     suspend fun updateHabit(id: String, updateHabitRequest: UpdateHabitRequest): Result<UpdateHabitResponse>

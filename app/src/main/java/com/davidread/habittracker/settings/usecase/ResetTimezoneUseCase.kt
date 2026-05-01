@@ -1,7 +1,9 @@
 package com.davidread.habittracker.settings.usecase
 
+import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.common.model.Result
 import com.davidread.habittracker.common.util.Logger
+import com.davidread.habittracker.list.repository.HabitListRepository
 import com.davidread.habittracker.settings.model.ResetTimezoneRequest
 import com.davidread.habittracker.settings.model.ResetTimezoneResult
 import com.davidread.habittracker.settings.repository.SettingsRepository
@@ -14,6 +16,8 @@ private const val TAG = "ResetTimezoneUseCase"
 class ResetTimezoneUseCase @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val getTimezoneUseCase: GetTimezoneUseCase,
+    private val database: HabitTrackerDatabase,
+    private val habitListRepository: HabitListRepository,
     private val logger: Logger
 ) {
 
@@ -23,14 +27,19 @@ class ResetTimezoneUseCase @Inject constructor(
             logger.e(TAG, "Error getting device timezone")
             return ResetTimezoneResult.Error
         }
-
-        return when (val resetTimezoneResult =
-            settingsRepository.resetTimezone(ResetTimezoneRequest(timezone = (getTimezoneResult as GetTimezoneResult.Success).timezone))) {
-            is Result.Success -> ResetTimezoneResult.Success
-            is Result.Error -> {
-                logger.e(TAG, "Error resetting timezone", resetTimezoneResult.exception)
-                ResetTimezoneResult.Error
-            }
+        val resetTimezoneResult =
+            settingsRepository.resetTimezone(ResetTimezoneRequest(timezone = (getTimezoneResult as GetTimezoneResult.Success).timezone))
+        if (resetTimezoneResult is Result.Error) {
+            logger.e(TAG, "Error resetting timezone", resetTimezoneResult.exception)
+            return ResetTimezoneResult.Error
         }
+        try {
+            database.remoteKeyDao().clearRemoteKeys()
+            database.habitDao().clearAll()
+            habitListRepository.invalidateHabits()
+        } catch (e: Exception) {
+            logger.e(TAG, "Error clearing database after timezone reset", e)
+        }
+        return ResetTimezoneResult.Success
     }
 }

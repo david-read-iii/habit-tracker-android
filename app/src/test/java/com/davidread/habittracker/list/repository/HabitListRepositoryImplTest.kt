@@ -54,6 +54,19 @@ class HabitListRepositoryImplTest {
     }
 
     @Test
+    fun test_invalidateHabits_doesNotCallServiceOrDatabase() {
+        habitListRepository.invalidateHabits()
+
+        verify(exactly = 0) { habitTrackerDatabase.habitDao() }
+        coVerify(exactly = 0) {
+            habitListService.createHabit(any())
+            habitListService.deleteHabit(any())
+            habitListService.updateHabit(any(), any())
+            habitListService.checkIn(any())
+        }
+    }
+
+    @Test
     fun test_createHabit_success() = runTest {
         val createHabitRequest = CreateHabitRequest("Exercise")
         val createHabitResponse = CreateHabitResponse(
