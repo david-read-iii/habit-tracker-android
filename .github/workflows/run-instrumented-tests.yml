@@ -32,7 +32,8 @@ jobs:
           target: google_apis
           arch: x86_64
           force-avd-creation: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-linux-hw-accel: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-metrics
           emulator-boot-timeout: 900
           script: |
             adb wait-for-device
@@ -43,6 +44,10 @@ jobs:
             echo "Waiting for PackageManager..."
             until adb shell pm path android 2>/dev/null | grep -q "package:"; do sleep 3; done
             echo "PackageManager ready."
+
+            # Recover ADB transport in case emulator boot leaves device offline.
+            adb reconnect || true
+            adb wait-for-device
           
             sleep 5
             ./gradlew connectedDebugAndroidTest --stacktrace
