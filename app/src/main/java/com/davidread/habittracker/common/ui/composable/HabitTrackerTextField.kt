@@ -26,7 +26,8 @@ fun HabitTrackerTextField(
     errorMessage: String = "",
     enabled: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardType: KeyboardType = KeyboardType.Unspecified
+    keyboardType: KeyboardType = KeyboardType.Unspecified,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
     TextField(
         value = value,
@@ -36,6 +37,7 @@ fun HabitTrackerTextField(
         label = { Text(labelText) },
         isError = isError,
         visualTransformation = visualTransformation,
+        trailingIcon = trailingIcon,
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
             imeAction = ImeAction.Done

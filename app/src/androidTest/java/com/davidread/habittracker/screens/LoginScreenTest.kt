@@ -1,8 +1,11 @@
 package com.davidread.habittracker.screens
 
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -10,9 +13,11 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.davidread.habittracker.common.ui.activity.MainActivity
+import com.davidread.habittracker.login.composable.CLEAR_EMAIL_BUTTON_TEST_TAG
 import com.davidread.habittracker.fakes.FakeLoginRepositoryImpl
 import com.davidread.habittracker.login.composable.LOGIN_BUTTON_TEST_TAG
 import com.davidread.habittracker.login.composable.SIGN_UP_LINK_TEST_TAG
+import com.davidread.habittracker.login.composable.TOGGLE_PASSWORD_VISIBILITY_BUTTON_TEST_TAG
 import com.davidread.habittracker.login.repository.LoginRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -56,6 +61,23 @@ class LoginScreenTest {
             .assertIsDisplayed()
         composeRule.onNodeWithText("Please enter a password with at least 8 characters")
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun test_clearEmailButtonClearsEmailField() {
+        composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
+        composeRule.onNodeWithTag(CLEAR_EMAIL_BUTTON_TEST_TAG).performClick()
+
+        composeRule.onAllNodesWithTag(CLEAR_EMAIL_BUTTON_TEST_TAG).assertCountEquals(0)
+    }
+
+    @Test
+    fun test_passwordVisibilityButtonTogglesContentDescription() {
+        composeRule.onNodeWithTag(TOGGLE_PASSWORD_VISIBILITY_BUTTON_TEST_TAG).performClick()
+        composeRule.onNodeWithContentDescription("Hide password").assertIsDisplayed()
+
+        composeRule.onNodeWithTag(TOGGLE_PASSWORD_VISIBILITY_BUTTON_TEST_TAG).performClick()
+        composeRule.onNodeWithContentDescription("Show password").assertIsDisplayed()
     }
 
     @Test

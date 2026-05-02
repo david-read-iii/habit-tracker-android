@@ -56,6 +56,20 @@ class LoginViewModel @Inject constructor(
             }
         }
 
+        is LoginViewIntent.ClickClearEmailButton -> {
+            _viewState.update {
+                it.copy(
+                    emailTextFieldViewState = it.emailTextFieldViewState.copy(value = "")
+                )
+            }
+        }
+
+        is LoginViewIntent.ClickTogglePasswordVisibilityButton -> {
+            _viewState.update {
+                it.copy(isPasswordVisible = !it.isPasswordVisible)
+            }
+        }
+
         is LoginViewIntent.ClickLoginButton -> handleLoginButtonClick()
 
         is LoginViewIntent.ClickSignUpLink -> {
@@ -96,6 +110,10 @@ class LoginViewModel @Inject constructor(
                         oldState = it.passwordTextFieldViewState,
                         errorMessage = application.getString(R.string.password_validation_error_message)
                     ),
+                    isPasswordVisible = when (loginFlowResult) {
+                        is LoginFlowResult.Success -> false
+                        else -> it.isPasswordVisible
+                    },
                     showLoading = false,
                     alertDialogViewState = loginFlowResult.toAlertDialogViewState()
                 )

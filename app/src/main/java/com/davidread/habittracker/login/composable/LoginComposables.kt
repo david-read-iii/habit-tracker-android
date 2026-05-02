@@ -12,6 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -33,6 +39,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -54,6 +61,8 @@ import com.davidread.habittracker.login.viewmodel.LoginViewModel
 
 internal const val LOGIN_BUTTON_TEST_TAG = "login_button"
 internal const val SIGN_UP_LINK_TEST_TAG = "sign_up_link"
+internal const val CLEAR_EMAIL_BUTTON_TEST_TAG = "clear_email_button"
+internal const val TOGGLE_PASSWORD_VISIBILITY_BUTTON_TEST_TAG = "toggle_password_visibility_button"
 private const val SIGN_UP_LINK_ANNOTATION_TAG = "sign_up"
 
 @Composable
@@ -90,6 +99,12 @@ fun LoginScreen(
                 )
             )
         },
+        onClearEmailButtonClick = {
+            viewModel.processIntent(intent = LoginViewIntent.ClickClearEmailButton)
+        },
+        onTogglePasswordVisibilityButtonClick = {
+            viewModel.processIntent(intent = LoginViewIntent.ClickTogglePasswordVisibilityButton)
+        },
         onLoginButtonClick = {
             viewModel.processIntent(intent = LoginViewIntent.ClickLoginButton)
         },
@@ -108,6 +123,8 @@ fun LoginScreenContent(
     viewState: LoginViewState = LoginViewState(),
     onEmailValueChange: (String) -> Unit = {},
     onPasswordValueChange: (String) -> Unit = {},
+    onClearEmailButtonClick: () -> Unit = {},
+    onTogglePasswordVisibilityButtonClick: () -> Unit = {},
     onLoginButtonClick: () -> Unit = {},
     onSignUpLinkClick: () -> Unit = {},
     onAlertDialogButtonClick: () -> Unit = {}
@@ -141,6 +158,8 @@ fun LoginScreenContent(
                 viewState = viewState,
                 onEmailValueChange = onEmailValueChange,
                 onPasswordValueChange = onPasswordValueChange,
+                onClearEmailButtonClick = onClearEmailButtonClick,
+                onTogglePasswordVisibilityButtonClick = onTogglePasswordVisibilityButtonClick,
                 onLoginButtonClick = onLoginButtonClick
             )
             Spacer(modifier = Modifier.height(64.dp))
@@ -163,6 +182,8 @@ fun LoginCredentialsCard(
     viewState: LoginViewState = LoginViewState(),
     onEmailValueChange: (String) -> Unit = {},
     onPasswordValueChange: (String) -> Unit = {},
+    onClearEmailButtonClick: () -> Unit = {},
+    onTogglePasswordVisibilityButtonClick: () -> Unit = {},
     onLoginButtonClick: () -> Unit = {}
 ) {
     HabitTrackerCard(modifier = modifier) {
@@ -175,6 +196,19 @@ fun LoginCredentialsCard(
                 errorMessage = viewState.emailTextFieldViewState.errorMessage,
                 enabled = !viewState.showLoading,
                 keyboardType = KeyboardType.Email,
+                trailingIcon = {
+                    if (viewState.emailTextFieldViewState.value.isNotBlank() && !viewState.showLoading) {
+                        IconButton(
+                            modifier = Modifier.testTag(CLEAR_EMAIL_BUTTON_TEST_TAG),
+                            onClick = onClearEmailButtonClick
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(R.string.clear_email)
+                            )
+                        }
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             HabitTrackerTextField(
@@ -184,8 +218,34 @@ fun LoginCredentialsCard(
                 isError = viewState.passwordTextFieldViewState.isError,
                 errorMessage = viewState.passwordTextFieldViewState.errorMessage,
                 enabled = !viewState.showLoading,
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (viewState.isPasswordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
                 keyboardType = KeyboardType.Password,
+                trailingIcon = {
+                    IconButton(
+                        modifier = Modifier.testTag(TOGGLE_PASSWORD_VISIBILITY_BUTTON_TEST_TAG),
+                        onClick = onTogglePasswordVisibilityButtonClick,
+                        enabled = !viewState.showLoading
+                    ) {
+                        Icon(
+                            imageVector = if (viewState.isPasswordVisible) {
+                                Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
+                            },
+                            contentDescription = stringResource(
+                                if (viewState.isPasswordVisible) {
+                                    R.string.hide_password
+                                } else {
+                                    R.string.show_password
+                                }
+                            )
+                        )
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(

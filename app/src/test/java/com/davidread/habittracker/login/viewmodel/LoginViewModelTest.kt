@@ -70,6 +70,31 @@ class LoginViewModelTest {
     }
 
     @Test
+    fun test_processIntent_ClickClearEmailButton() = runTest {
+        turbineScope {
+            val turbine = viewModel.viewState.testIn(backgroundScope)
+            viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = EMAIL))
+            Assert.assertEquals(EMAIL, turbine.expectMostRecentItem().emailTextFieldViewState.value)
+
+            viewModel.processIntent(LoginViewIntent.ClickClearEmailButton)
+            Assert.assertEquals("", turbine.expectMostRecentItem().emailTextFieldViewState.value)
+        }
+    }
+
+    @Test
+    fun test_processIntent_ClickTogglePasswordVisibilityButton() = runTest {
+        turbineScope {
+            val turbine = viewModel.viewState.testIn(backgroundScope)
+
+            viewModel.processIntent(LoginViewIntent.ClickTogglePasswordVisibilityButton)
+            Assert.assertEquals(true, turbine.expectMostRecentItem().isPasswordVisible)
+
+            viewModel.processIntent(LoginViewIntent.ClickTogglePasswordVisibilityButton)
+            Assert.assertEquals(false, turbine.expectMostRecentItem().isPasswordVisible)
+        }
+    }
+
+    @Test
     fun test_processIntent_ClickSignUpLink() = runTest {
         turbineScope {
             val turbine = viewModel.viewEffect.testIn(backgroundScope)

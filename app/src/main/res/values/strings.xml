@@ -65,4 +65,7 @@
     <string name="settings_reset_timezone_success">Timezone reset successfully. Streaks have been reset.</string>
     <string name="settings_reset_timezone_error">Failed to reset timezone. Please try again.</string>
     <string name="settings_log_out">Log out</string>
+    <string name="clear_email">Clear email</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
 </resources>
