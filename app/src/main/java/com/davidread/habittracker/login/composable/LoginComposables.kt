@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,10 +41,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
-import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
+import com.davidread.habittracker.common.ui.composable.HabitTrackerCard
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
-import com.davidread.habittracker.common.ui.theme.Color
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.login.model.LoginTextFieldViewState
 import com.davidread.habittracker.login.model.LoginViewEffect
@@ -171,12 +169,7 @@ fun LoginCredentialsCard(
     onPasswordValueChange: (String) -> Unit = {},
     onLoginButtonClick: () -> Unit = {}
 ) {
-    Card(
-        modifier = modifier,
-        border = CardDefaults.outlinedCardBorder(),
-        elevation = CardDefaults.elevatedCardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
+    HabitTrackerCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
             HabitTrackerTextField(
                 value = viewState.emailTextFieldViewState.value,
