@@ -9,7 +9,8 @@ on:
 jobs:
   run-instrumented-tests:
     name: Run Instrumented Tests
-    runs-on: macos-13
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
