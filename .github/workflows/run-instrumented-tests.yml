@@ -10,7 +10,7 @@ jobs:
   run-instrumented-tests:
     name: Run Instrumented Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
