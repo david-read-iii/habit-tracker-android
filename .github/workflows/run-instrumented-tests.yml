@@ -35,22 +35,14 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           emulator-boot-timeout: 900
           script: |
-            # Wait for full boot (sys.boot_completed=1)
             adb wait-for-device
             echo "Waiting for boot to complete..."
-            until adb shell getprop sys.boot_completed 2>/dev/null | grep -q "^1$"; do
-            sleep 3
-            done
+            until adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | grep -q "^1$"; do sleep 3; done
             echo "Boot completed."
           
-            # Wait for PackageManager to be available
             echo "Waiting for PackageManager..."
-            until adb shell pm path android 2>/dev/null | grep -q "package:"; do
-            sleep 3
-            done
+            until adb shell pm path android 2>/dev/null | grep -q "package:"; do sleep 3; done
             echo "PackageManager ready."
           
-            # Extra settle time for system services
             sleep 5
-          
             ./gradlew connectedDebugAndroidTest --stacktrace
