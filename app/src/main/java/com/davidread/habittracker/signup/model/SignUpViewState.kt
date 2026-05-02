@@ -4,7 +4,7 @@ data class SignUpViewState(
     val emailTextFieldViewState: SignUpTextFieldViewState = SignUpTextFieldViewState(),
     val passwordTextFieldViewState: SignUpTextFieldViewState = SignUpTextFieldViewState(),
     val confirmPasswordTextFieldViewState: SignUpTextFieldViewState = SignUpTextFieldViewState(),
-    val showLoadingDialog: Boolean = false,
+    val showLoading: Boolean = false,
     val alertDialogViewState: AlertDialogViewState = AlertDialogViewState()
 )
 

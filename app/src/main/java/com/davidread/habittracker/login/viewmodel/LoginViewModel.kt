@@ -74,7 +74,7 @@ class LoginViewModel @Inject constructor(
     private fun handleLoginButtonClick() {
         viewModelScope.launch {
             _viewState.update {
-                it.copy(showLoadingDialog = true)
+                it.copy(showLoading = true)
             }
 
             val loginFlowResult = loginFlowUseCase(
@@ -96,7 +96,7 @@ class LoginViewModel @Inject constructor(
                         oldState = it.passwordTextFieldViewState,
                         errorMessage = application.getString(R.string.password_validation_error_message)
                     ),
-                    showLoadingDialog = false,
+                    showLoading = false,
                     alertDialogViewState = loginFlowResult.toAlertDialogViewState()
                 )
             }

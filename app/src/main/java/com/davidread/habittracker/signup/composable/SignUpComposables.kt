@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +36,6 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.HabitTrackerCard
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
-import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.signup.model.SignUpTextFieldViewState
@@ -141,10 +141,6 @@ fun SignUpScreenContent(
         }
     }
 
-    if (viewState.showLoadingDialog) {
-        HabitTrackerLoadingDialog()
-    }
-
     if (viewState.alertDialogViewState.showDialog) {
         HabitTrackerAlertDialog(
             message = viewState.alertDialogViewState.message,
@@ -170,6 +166,7 @@ fun SignUpCredentialsCard(
                 labelText = stringResource(R.string.email),
                 isError = viewState.emailTextFieldViewState.isError,
                 errorMessage = viewState.emailTextFieldViewState.errorMessage,
+                enabled = !viewState.showLoading,
                 keyboardType = KeyboardType.Email,
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -179,6 +176,7 @@ fun SignUpCredentialsCard(
                 labelText = stringResource(R.string.password),
                 isError = viewState.passwordTextFieldViewState.isError,
                 errorMessage = viewState.passwordTextFieldViewState.errorMessage,
+                enabled = !viewState.showLoading,
                 keyboardType = KeyboardType.Password,
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -188,6 +186,7 @@ fun SignUpCredentialsCard(
                 labelText = stringResource(R.string.confirm_password),
                 isError = viewState.confirmPasswordTextFieldViewState.isError,
                 errorMessage = viewState.confirmPasswordTextFieldViewState.errorMessage,
+                enabled = !viewState.showLoading,
                 keyboardType = KeyboardType.Password,
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -195,11 +194,15 @@ fun SignUpCredentialsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                HabitTrackerButton(
-                    modifier = Modifier.testTag(SIGN_UP_BUTTON_TEST_TAG),
-                    label = stringResource(R.string.sign_up),
-                    onClick = { onSignUpButtonClick() }
-                )
+                if (viewState.showLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                } else {
+                    HabitTrackerButton(
+                        modifier = Modifier.testTag(SIGN_UP_BUTTON_TEST_TAG),
+                        label = stringResource(R.string.sign_up),
+                        onClick = onSignUpButtonClick
+                    )
+                }
             }
         }
     }

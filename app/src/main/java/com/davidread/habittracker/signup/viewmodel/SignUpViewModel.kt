@@ -78,7 +78,7 @@ class SignUpViewModel @Inject constructor(
     private fun handleClickSignUpButton() {
         viewModelScope.launch {
             _viewState.update {
-                it.copy(showLoadingDialog = true)
+                it.copy(showLoading = true)
             }
 
             val signUpFlowResult = signUpFlowUseCase(
@@ -101,7 +101,7 @@ class SignUpViewModel @Inject constructor(
                         oldState = it.confirmPasswordTextFieldViewState,
                         errorMessage = application.getString(R.string.confirm_password_validation_error_message)
                     ),
-                    showLoadingDialog = false,
+                    showLoading = false,
                     alertDialogViewState = signUpFlowResult.toAlertDialogViewState()
                 )
             }

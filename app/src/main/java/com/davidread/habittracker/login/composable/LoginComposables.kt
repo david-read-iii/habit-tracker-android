@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +43,6 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.HabitTrackerCard
-import com.davidread.habittracker.common.ui.composable.HabitTrackerLoadingDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
@@ -149,10 +149,6 @@ fun LoginScreenContent(
         }
     }
 
-    if (viewState.showLoadingDialog) {
-        HabitTrackerLoadingDialog()
-    }
-
     if (viewState.alertDialogViewState.showDialog) {
         HabitTrackerAlertDialog(
             message = viewState.alertDialogViewState.message,
@@ -177,6 +173,7 @@ fun LoginCredentialsCard(
                 labelText = stringResource(R.string.email),
                 isError = viewState.emailTextFieldViewState.isError,
                 errorMessage = viewState.emailTextFieldViewState.errorMessage,
+                enabled = !viewState.showLoading,
                 keyboardType = KeyboardType.Email,
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -186,6 +183,7 @@ fun LoginCredentialsCard(
                 labelText = stringResource(R.string.password),
                 isError = viewState.passwordTextFieldViewState.isError,
                 errorMessage = viewState.passwordTextFieldViewState.errorMessage,
+                enabled = !viewState.showLoading,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardType = KeyboardType.Password,
             )
@@ -194,11 +192,15 @@ fun LoginCredentialsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                HabitTrackerButton(
-                    modifier = Modifier.testTag(LOGIN_BUTTON_TEST_TAG),
-                    label = stringResource(R.string.login),
-                    onClick = onLoginButtonClick
-                )
+                if (viewState.showLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
+                } else {
+                    HabitTrackerButton(
+                        modifier = Modifier.testTag(LOGIN_BUTTON_TEST_TAG),
+                        label = stringResource(R.string.login),
+                        onClick = onLoginButtonClick
+                    )
+                }
             }
         }
     }
