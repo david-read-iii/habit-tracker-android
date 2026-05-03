@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -326,15 +325,13 @@ fun SignUpCredentialsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                if (viewState.showLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
-                } else {
-                    HabitTrackerButton(
-                        modifier = Modifier.testTag(SIGN_UP_BUTTON_TEST_TAG),
-                        label = stringResource(R.string.sign_up),
-                        onClick = onSignUpButtonClick
-                    )
-                }
+                HabitTrackerButton(
+                    modifier = Modifier.testTag(SIGN_UP_BUTTON_TEST_TAG),
+                    label = stringResource(R.string.sign_up),
+                    enabled = !viewState.showLoading,
+                    isLoading = viewState.showLoading,
+                    onClick = onSignUpButtonClick
+                )
             }
         }
     }

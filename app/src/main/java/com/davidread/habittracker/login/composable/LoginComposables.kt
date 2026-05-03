@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -290,15 +289,13 @@ fun LoginCredentialsCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                if (viewState.showLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(40.dp))
-                } else {
-                    HabitTrackerButton(
-                        modifier = Modifier.testTag(LOGIN_BUTTON_TEST_TAG),
-                        label = stringResource(R.string.login),
-                        onClick = onLoginButtonClick
-                    )
-                }
+                HabitTrackerButton(
+                    modifier = Modifier.testTag(LOGIN_BUTTON_TEST_TAG),
+                    label = stringResource(R.string.login),
+                    enabled = !viewState.showLoading,
+                    isLoading = viewState.showLoading,
+                    onClick = onLoginButtonClick
+                )
             }
         }
     }
