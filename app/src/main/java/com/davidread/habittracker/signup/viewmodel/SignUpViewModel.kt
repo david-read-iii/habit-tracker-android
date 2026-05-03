@@ -126,6 +126,10 @@ class SignUpViewModel @Inject constructor(
                 )
             }
 
+            signUpFlowResult.toAccessibilityAnnouncement()?.let { message ->
+                _viewEffect.emit(SignUpViewEffect.AnnounceForAccessibility(message))
+            }
+
             if (signUpFlowResult is SignUpFlowResult.Success) {
                 _viewEffect.emit(SignUpViewEffect.NavigateToHabitListScreen)
             }
@@ -158,5 +162,20 @@ class SignUpViewModel @Inject constructor(
             showDialog = true,
             message = application.getString(R.string.email_already_used_error_message)
         )
+    }
+
+    private fun SignUpFlowResult.toAccessibilityAnnouncement(): String? = when (this) {
+        is SignUpFlowResult.Success -> null
+        is SignUpFlowResult.ValidationError ->
+            application.getString(R.string.form_validation_error_announcement)
+
+        is SignUpFlowResult.EmailAlreadyUsedError ->
+            application.getString(R.string.email_already_used_error_message)
+
+        is SignUpFlowResult.GetTimezoneError,
+        is SignUpFlowResult.SignUpServiceGenericError,
+        is SignUpFlowResult.NullTokenError,
+        is SignUpFlowResult.SaveAuthenticationTokenError ->
+            application.getString(R.string.generic_error_message)
     }
 }

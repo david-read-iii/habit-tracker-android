@@ -32,7 +32,8 @@ class ClickLoginButtonTest(
     private val emailValue: String,
     private val passwordValue: String,
     private val expectedViewState: LoginViewState,
-    private val expectedIsNavigateToHabitListScreen: Boolean
+    private val expectedIsNavigateToHabitListScreen: Boolean,
+    private val expectedAnnouncementMessage: String?
 ) {
 
     @get:Rule
@@ -47,7 +48,7 @@ class ClickLoginButtonTest(
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun data(): Collection<Array<Any>> = listOf(
+        fun data(): Collection<Array<Any?>> = listOf(
             arrayOf(
                 LoginFlowResult.Success(
                     emailValidationResult = ValidationResult.Valid,
@@ -56,7 +57,8 @@ class ClickLoginButtonTest(
                 EMAIL,
                 PASSWORD,
                 LoginViewState(),
-                true
+                true,
+                null
             ),
             arrayOf(
                 LoginFlowResult.ValidationError(
@@ -77,7 +79,8 @@ class ClickLoginButtonTest(
                         errorMessage = PASSWORD_ERROR_MESSAGE
                     )
                 ),
-                false
+                false,
+                FORM_VALIDATION_ERROR_ANNOUNCEMENT
             ),
             arrayOf(
                 LoginFlowResult.IncorrectLoginCredentialsError(
@@ -94,7 +97,8 @@ class ClickLoginButtonTest(
                         message = INCORRECT_LOGIN_CREDENTIALS
                     )
                 ),
-                false
+                false,
+                INCORRECT_LOGIN_CREDENTIALS
             ),
             arrayOf(
                 LoginFlowResult.LoginServiceGenericError(
@@ -108,7 +112,8 @@ class ClickLoginButtonTest(
                     passwordTextFieldViewState = LoginTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
                 LoginFlowResult.NullTokenError(
@@ -122,7 +127,8 @@ class ClickLoginButtonTest(
                     passwordTextFieldViewState = LoginTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
                 LoginFlowResult.SaveAuthenticationTokenError(
@@ -136,7 +142,8 @@ class ClickLoginButtonTest(
                     passwordTextFieldViewState = LoginTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
         )
 
@@ -150,6 +157,9 @@ class ClickLoginButtonTest(
             "Please enter a password with at least 8 characters"
         private const val INCORRECT_LOGIN_CREDENTIALS =
             "Incorrect email or password. Please try again."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT =
+            "Please fix the errors in the form."
+        private const val GENERIC_ERROR_MESSAGE = "An error occurred. Please try again later."
     }
 
     @Before
@@ -158,6 +168,8 @@ class ClickLoginButtonTest(
             every { getString(R.string.email_validation_error_message) } returns EMAIL_ERROR_MESSAGE
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
             every { getString(R.string.login_credentials_incorrect_error_message) } returns INCORRECT_LOGIN_CREDENTIALS
+            every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
+            every { getString(R.string.generic_error_message) } returns GENERIC_ERROR_MESSAGE
         }
     }
 
@@ -182,6 +194,12 @@ class ClickLoginButtonTest(
                 loginFlowUseCase.invoke(email = emailValue, password = passwordValue)
             }
             Assert.assertEquals(expectedViewState, viewStateTurbine.expectMostRecentItem())
+            expectedAnnouncementMessage?.let {
+                Assert.assertEquals(
+                    LoginViewEffect.AnnounceForAccessibility(it),
+                    viewEffectTurbine.expectMostRecentItem()
+                )
+            }
             if (expectedIsNavigateToHabitListScreen) {
                 Assert.assertEquals(
                     LoginViewEffect.NavigateToHabitListScreen,

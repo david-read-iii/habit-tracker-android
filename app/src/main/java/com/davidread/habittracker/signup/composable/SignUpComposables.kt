@@ -27,6 +27,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -41,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.AccessibilityAnnouncementHost
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.HabitTrackerCard
@@ -63,10 +68,17 @@ fun SignUpScreen(
     onNavigateToHabitListScreen: () -> Unit = {},
     onNavigateBack: () -> Unit = {}
 ) {
+    var accessibilityAnnouncement by remember { mutableStateOf("") }
+    var accessibilityAnnouncementId by remember { mutableIntStateOf(0) }
+
     LaunchedEffect(Unit) {
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
                 is SignUpViewEffect.NavigateToHabitListScreen -> onNavigateToHabitListScreen()
+                is SignUpViewEffect.AnnounceForAccessibility -> {
+                    accessibilityAnnouncement = viewEffect.message
+                    accessibilityAnnouncementId += 1
+                }
             }
         }
     }
@@ -100,6 +112,11 @@ fun SignUpScreen(
         onAlertDialogButtonClick = {
             viewModel.processIntent(SignUpViewIntent.ClickAlertDialogButton)
         }
+    )
+
+    AccessibilityAnnouncementHost(
+        message = accessibilityAnnouncement,
+        announcementId = accessibilityAnnouncementId
     )
 }
 

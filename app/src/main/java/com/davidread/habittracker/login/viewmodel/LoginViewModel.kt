@@ -125,6 +125,10 @@ class LoginViewModel @Inject constructor(
                 )
             }
 
+            loginFlowResult.toAccessibilityAnnouncement()?.let { message ->
+                _viewEffect.emit(LoginViewEffect.AnnounceForAccessibility(message))
+            }
+
             if (loginFlowResult is LoginFlowResult.Success) {
                 _viewEffect.emit(LoginViewEffect.NavigateToHabitListScreen)
             }
@@ -162,5 +166,19 @@ class LoginViewModel @Inject constructor(
             showDialog = true,
             message = application.getString(R.string.login_credentials_incorrect_error_message)
         )
+    }
+
+    private fun LoginFlowResult.toAccessibilityAnnouncement(): String? = when (this) {
+        is LoginFlowResult.Success -> null
+        is LoginFlowResult.ValidationError ->
+            application.getString(R.string.form_validation_error_announcement)
+
+        is LoginFlowResult.IncorrectLoginCredentialsError ->
+            application.getString(R.string.login_credentials_incorrect_error_message)
+
+        is LoginFlowResult.LoginServiceGenericError,
+        is LoginFlowResult.NullTokenError,
+        is LoginFlowResult.SaveAuthenticationTokenError ->
+            application.getString(R.string.generic_error_message)
     }
 }

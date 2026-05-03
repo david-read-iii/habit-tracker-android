@@ -33,7 +33,8 @@ class ClickSignUpButtonTest(
     private val passwordValue: String,
     private val confirmPasswordValue: String,
     private val expectedViewState: SignUpViewState,
-    private val expectedIsNavigateToHabitListScreen: Boolean
+    private val expectedIsNavigateToHabitListScreen: Boolean,
+    private val expectedAnnouncementMessage: String?
 ) {
 
     @get:Rule
@@ -48,7 +49,7 @@ class ClickSignUpButtonTest(
     companion object {
         @JvmStatic
         @Parameterized.Parameters
-        fun data(): Collection<Array<Any>> = listOf(
+        fun data(): Collection<Array<Any?>> = listOf(
             arrayOf(
                 SignUpFlowResult.Success(
                     emailValidationResult = ValidationResult.Valid,
@@ -63,7 +64,8 @@ class ClickSignUpButtonTest(
                     passwordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD)
                 ),
-                true
+                true,
+                null
             ),
             arrayOf(
                 SignUpFlowResult.ValidationError(
@@ -91,7 +93,8 @@ class ClickSignUpButtonTest(
                         errorMessage = CONFIRM_PASSWORD_ERROR_MESSAGE
                     )
                 ),
-                false
+                false,
+                FORM_VALIDATION_ERROR_ANNOUNCEMENT
             ),
             arrayOf(
                 SignUpFlowResult.GetTimezoneError(
@@ -108,7 +111,8 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
                 SignUpFlowResult.EmailAlreadyUsedError(
@@ -128,7 +132,8 @@ class ClickSignUpButtonTest(
                         message = EMAIL_ALREADY_USED_ERROR_MESSAGE
                     )
                 ),
-                false
+                false,
+                EMAIL_ALREADY_USED_ERROR_MESSAGE
             ),
             arrayOf(
                 SignUpFlowResult.SignUpServiceGenericError(
@@ -145,7 +150,8 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
                 SignUpFlowResult.NullTokenError(
@@ -162,7 +168,8 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
                 SignUpFlowResult.SaveAuthenticationTokenError(
@@ -179,7 +186,8 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             )
         )
 
@@ -194,6 +202,9 @@ class ClickSignUpButtonTest(
         private const val CONFIRM_PASSWORD_ERROR_MESSAGE = "Please make sure your passwords match"
         private const val EMAIL_ALREADY_USED_ERROR_MESSAGE =
             "This email address is already in use. Please try another one."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT =
+            "Please fix the errors in the form."
+        private const val GENERIC_ERROR_MESSAGE = "An error occurred. Please try again later."
     }
 
     @Before
@@ -203,6 +214,8 @@ class ClickSignUpButtonTest(
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
             every { getString(R.string.confirm_password_validation_error_message) } returns CONFIRM_PASSWORD_ERROR_MESSAGE
             every { getString(R.string.email_already_used_error_message) } returns EMAIL_ALREADY_USED_ERROR_MESSAGE
+            every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
+            every { getString(R.string.generic_error_message) } returns GENERIC_ERROR_MESSAGE
         }
     }
 
@@ -232,6 +245,12 @@ class ClickSignUpButtonTest(
                 )
             }
             Assert.assertEquals(expectedViewState, viewStateTurbine.expectMostRecentItem())
+            expectedAnnouncementMessage?.let {
+                Assert.assertEquals(
+                    SignUpViewEffect.AnnounceForAccessibility(it),
+                    viewEffectTurbine.expectMostRecentItem()
+                )
+            }
             if (expectedIsNavigateToHabitListScreen) {
                 Assert.assertEquals(
                     SignUpViewEffect.NavigateToHabitListScreen,
