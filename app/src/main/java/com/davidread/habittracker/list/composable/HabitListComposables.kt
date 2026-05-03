@@ -648,7 +648,7 @@ private fun SwipeActionButton(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = label,
+                contentDescription = null,
                 modifier = Modifier.size(22.dp),
                 tint = contentColor
             )
