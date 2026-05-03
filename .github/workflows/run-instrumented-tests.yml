@@ -42,7 +42,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-metrics
           emulator-boot-timeout: 900
           script: |
-            set -euo pipefail
+            set -eu
 
             wait_for_android_ready() {
               adb wait-for-device
