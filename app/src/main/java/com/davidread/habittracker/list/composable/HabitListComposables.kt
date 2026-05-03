@@ -77,6 +77,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -382,6 +385,13 @@ fun HabitListItem(
     val actionButtonWidth = 60.dp
     val totalActionsWidth = actionButtonWidth * 3
     val totalActionsWidthPx = with(density) { totalActionsWidth.toPx() }
+    val isHabitClickable = !isCheckingIn && offsetX.value == 0f
+    val accessibilityReadout = stringResource(
+        R.string.habit_list_item_accessibility_readout,
+        viewState.name,
+        viewState.streak,
+        viewState.createdAt
+    )
 
     val closeSwipeAndRun: (() -> Unit) -> Unit = { action ->
         scope.launch {
@@ -470,8 +480,17 @@ fun HabitListItem(
                 }
                 .clickable(
                     onClick = onClick,
-                    enabled = !isCheckingIn && offsetX.value == 0f
+                    enabled = isHabitClickable
                 )
+                .clearAndSetSemantics {
+                    contentDescription = accessibilityReadout
+                    if (isHabitClickable) {
+                        onClick(action = {
+                            onClick()
+                            true
+                        })
+                    }
+                }
                 .onSizeChanged { itemHeightPx = it.height }
                 .padding(16.dp),
             viewState = viewState,
