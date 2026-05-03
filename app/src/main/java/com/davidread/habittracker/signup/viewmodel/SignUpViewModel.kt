@@ -110,6 +110,11 @@ class SignUpViewModel @Inject constructor(
             _viewState.update {
                 it.copy(showLoading = true)
             }
+            _viewEffect.emit(
+                SignUpViewEffect.AnnounceForAccessibility(
+                    application.getString(R.string.loading)
+                )
+            )
 
             val signUpFlowResult = signUpFlowUseCase(
                 _viewState.value.emailTextFieldViewState.value,

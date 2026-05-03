@@ -104,6 +104,11 @@ class LoginViewModel @Inject constructor(
             _viewState.update {
                 it.copy(showLoading = true)
             }
+            _viewEffect.emit(
+                LoginViewEffect.AnnounceForAccessibility(
+                    application.getString(R.string.loading)
+                )
+            )
 
             val loginFlowResult = loginFlowUseCase(
                 email = viewState.value.emailTextFieldViewState.value,

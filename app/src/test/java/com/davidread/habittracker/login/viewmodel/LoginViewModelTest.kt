@@ -14,6 +14,7 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -39,6 +40,7 @@ class LoginViewModelTest {
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
             every { getString(R.string.login_credentials_incorrect_error_message) } returns INCORRECT_CREDENTIALS_ERROR_MESSAGE
             every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
+            every { getString(R.string.loading) } returns LOADING_ANNOUNCEMENT
         }
     }
 
@@ -158,6 +160,7 @@ class LoginViewModelTest {
                 passwordValidationResult = ValidationResult.Valid
             )
             viewModel.processIntent(LoginViewIntent.ClickLoginButton) // show alert dialog on UI
+            advanceUntilIdle()
             Assert.assertEquals(
                 AlertDialogViewState(
                     showDialog = true,
@@ -183,5 +186,6 @@ class LoginViewModelTest {
         private const val INCORRECT_CREDENTIALS_ERROR_MESSAGE =
             "Incorrect email or password. Please try again."
         private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT = "Please check the form and try again"
+        private const val LOADING_ANNOUNCEMENT = "Loading..."
     }
 }

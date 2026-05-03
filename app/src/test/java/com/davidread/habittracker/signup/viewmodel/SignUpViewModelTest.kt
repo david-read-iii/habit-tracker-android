@@ -39,6 +39,7 @@ class SignUpViewModelTest {
             every { getString(R.string.confirm_password_validation_error_message) } returns CONFIRM_PASSWORD_ERROR_MESSAGE
             every { getString(R.string.email_already_used_error_message) } returns EMAIL_ALREADY_USED_ERROR_MESSAGE
             every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
+            every { getString(R.string.loading) } returns LOADING_ANNOUNCEMENT
         }
     }
 
@@ -195,5 +196,6 @@ class SignUpViewModelTest {
         private const val EMAIL_ALREADY_USED_ERROR_MESSAGE =
             "This email address is already in use. Please try another one."
         private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT = "Please check the form and try again"
+        private const val LOADING_ANNOUNCEMENT = "Loading..."
     }
 }

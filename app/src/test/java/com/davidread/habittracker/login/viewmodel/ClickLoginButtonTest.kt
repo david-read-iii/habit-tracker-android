@@ -17,6 +17,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -159,6 +161,7 @@ class ClickLoginButtonTest(
             "Incorrect email or password. Please try again."
         private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT =
             "Please fix the errors in the form."
+        private const val LOADING_ANNOUNCEMENT = "Loading..."
         private const val GENERIC_ERROR_MESSAGE = "An error occurred. Please try again later."
     }
 
@@ -170,6 +173,7 @@ class ClickLoginButtonTest(
             every { getString(R.string.login_credentials_incorrect_error_message) } returns INCORRECT_LOGIN_CREDENTIALS
             every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
             every { getString(R.string.generic_error_message) } returns GENERIC_ERROR_MESSAGE
+            every { getString(R.string.loading) } returns LOADING_ANNOUNCEMENT
         }
     }
 
@@ -183,27 +187,33 @@ class ClickLoginButtonTest(
         turbineScope {
             val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+            runCurrent()
             coEvery {
                 loginFlowUseCase.invoke(any(), any())
             } returns loginFlowResult
             viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = emailValue))
             viewModel.processIntent(LoginViewIntent.ChangePasswordValue(newValue = passwordValue))
             viewModel.processIntent(LoginViewIntent.ClickLoginButton)
+            advanceUntilIdle()
 
             coVerify(exactly = 1) {
                 loginFlowUseCase.invoke(email = emailValue, password = passwordValue)
             }
             Assert.assertEquals(expectedViewState, viewStateTurbine.expectMostRecentItem())
+            Assert.assertEquals(
+                LoginViewEffect.AnnounceForAccessibility(LOADING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             expectedAnnouncementMessage?.let {
                 Assert.assertEquals(
                     LoginViewEffect.AnnounceForAccessibility(it),
-                    viewEffectTurbine.expectMostRecentItem()
+                    viewEffectTurbine.awaitItem()
                 )
             }
             if (expectedIsNavigateToHabitListScreen) {
                 Assert.assertEquals(
                     LoginViewEffect.NavigateToHabitListScreen,
-                    viewEffectTurbine.expectMostRecentItem()
+                    viewEffectTurbine.awaitItem()
                 )
             }
             viewEffectTurbine.expectNoEvents()

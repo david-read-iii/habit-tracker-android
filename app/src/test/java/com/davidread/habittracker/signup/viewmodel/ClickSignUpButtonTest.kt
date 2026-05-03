@@ -17,6 +17,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -204,6 +205,7 @@ class ClickSignUpButtonTest(
             "This email address is already in use. Please try another one."
         private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT =
             "Please fix the errors in the form."
+        private const val LOADING_ANNOUNCEMENT = "Loading..."
         private const val GENERIC_ERROR_MESSAGE = "An error occurred. Please try again later."
     }
 
@@ -216,6 +218,7 @@ class ClickSignUpButtonTest(
             every { getString(R.string.email_already_used_error_message) } returns EMAIL_ALREADY_USED_ERROR_MESSAGE
             every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
             every { getString(R.string.generic_error_message) } returns GENERIC_ERROR_MESSAGE
+            every { getString(R.string.loading) } returns LOADING_ANNOUNCEMENT
         }
     }
 
@@ -229,6 +232,7 @@ class ClickSignUpButtonTest(
         turbineScope {
             val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+            runCurrent()
             coEvery {
                 signUpFlowUseCase.invoke(any(), any(), any())
             } returns signUpFlowResult
@@ -245,16 +249,20 @@ class ClickSignUpButtonTest(
                 )
             }
             Assert.assertEquals(expectedViewState, viewStateTurbine.expectMostRecentItem())
+            Assert.assertEquals(
+                SignUpViewEffect.AnnounceForAccessibility(LOADING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             expectedAnnouncementMessage?.let {
                 Assert.assertEquals(
                     SignUpViewEffect.AnnounceForAccessibility(it),
-                    viewEffectTurbine.expectMostRecentItem()
+                    viewEffectTurbine.awaitItem()
                 )
             }
             if (expectedIsNavigateToHabitListScreen) {
                 Assert.assertEquals(
                     SignUpViewEffect.NavigateToHabitListScreen,
-                    viewEffectTurbine.expectMostRecentItem()
+                    viewEffectTurbine.awaitItem()
                 )
             }
             viewEffectTurbine.expectNoEvents()
