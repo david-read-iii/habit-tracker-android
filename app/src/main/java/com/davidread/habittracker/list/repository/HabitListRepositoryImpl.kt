@@ -15,7 +15,11 @@ import com.davidread.habittracker.list.model.DeleteHabitResponse
 import com.davidread.habittracker.list.model.UpdateHabitRequest
 import com.davidread.habittracker.list.model.UpdateHabitResponse
 import com.davidread.habittracker.list.service.HabitListService
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 class HabitListRepositoryImpl @Inject constructor(
@@ -23,21 +27,15 @@ class HabitListRepositoryImpl @Inject constructor(
     private val habitListService: HabitListService
 ) : HabitListRepository {
 
-    @OptIn(ExperimentalPagingApi::class)
+    private val pagingResetTrigger = MutableStateFlow(0)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getHabits(): Flow<PagingData<HabitEntity>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = PAGE_SIZE,
-                enablePlaceholders = false
-            ),
-            remoteMediator = HabitRemoteMediator(
-                database = database,
-                service = habitListService
-            ),
-            pagingSourceFactory = {
-                database.habitDao().pagingSource()
-            }
-        ).flow
+        return pagingResetTrigger.flatMapLatest { createPager().flow }
+    }
+
+    override fun invalidateHabits() {
+        pagingResetTrigger.update { it + 1 }
     }
 
     override suspend fun createHabit(createHabitRequest: CreateHabitRequest): Result<CreateHabitResponse> =
@@ -76,6 +74,23 @@ class HabitListRepositoryImpl @Inject constructor(
         Result.Success(response)
     } catch (e: Exception) {
         Result.Error(e)
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
+    private fun createPager(): Pager<Int, HabitEntity> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                enablePlaceholders = false
+            ),
+            remoteMediator = HabitRemoteMediator(
+                database = database,
+                service = habitListService
+            ),
+            pagingSourceFactory = {
+                database.habitDao().pagingSource()
+            }
+        )
     }
 
     private fun CreateHabitResponse?.toEntityOrNull(): HabitEntity? {

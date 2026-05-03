@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.davidread.habittracker.common.model.Screen
 import com.davidread.habittracker.list.composable.HabitListScreen
 import com.davidread.habittracker.login.composable.LoginScreen
+import com.davidread.habittracker.settings.composable.SettingsScreen
 import com.davidread.habittracker.signup.composable.SignUpScreen
 
 @Composable
@@ -46,8 +47,17 @@ fun HabitTrackerApp() {
         composable(route = Screen.HabitList.route) {
             HabitListScreen(
                 onNavigateToSettingsScreen = {
-                    // TODO: Define this when settings screen is available.
+                    navController.navigate(Screen.Settings.route)
                 },
+                onNavigateToLoginScreen = {
+                    navController.popBackStack(Screen.Login.route, inclusive = false)
+                }
+            )
+        }
+
+        composable(route = Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onNavigateToLoginScreen = {
                     navController.popBackStack(Screen.Login.route, inclusive = false)
                 }

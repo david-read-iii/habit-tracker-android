@@ -48,6 +48,8 @@ class FakeHabitListRepositoryImpl : HabitListRepository {
         )
     )
 
+    override fun invalidateHabits() = Unit
+
     override suspend fun createHabit(createHabitRequest: CreateHabitRequest) =
         when (createHabitResponseType) {
             CreateHabitResponseType.SUCCESS -> Result.Success(

@@ -11,7 +11,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,6 +85,7 @@ import androidx.paging.compose.itemKey
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
+import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
@@ -335,7 +335,7 @@ fun HabitListContent(
     }
 
     if (viewState.showLogoutDialog) {
-        LogoutConfirmationDialog(
+        HabitTrackerLogoutConfirmationDialog(
             onDismiss = onDismissLogoutDialog,
             onConfirm = onConfirmLogout
         )
@@ -451,8 +451,6 @@ fun HabitListItem(
                     )
                 }
                 .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
                     onClick = onClick,
                     enabled = !isCheckingIn && offsetX.value == 0f
                 )
@@ -697,11 +695,7 @@ fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
         modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            ),
+            .clickable(onClick = onClick),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -864,24 +858,6 @@ private fun DeleteHabitConfirmationDialog(
         } else {
             HabitTrackerAlertDialogMode.Default
         }
-    )
-}
-
-@Composable
-private fun LogoutConfirmationDialog(
-    onDismiss: () -> Unit = {},
-    onConfirm: () -> Unit = {}
-) {
-    HabitTrackerAlertDialog(
-        title = stringResource(R.string.habit_list_logout_dialog_title),
-        message = stringResource(R.string.habit_list_logout_dialog_message),
-        primaryButtonText = stringResource(R.string.yes),
-        onPrimaryButtonClick = onConfirm,
-        negativeButtonText = stringResource(R.string.no),
-        onNegativeButtonClick = onDismiss,
-        dismissOnBackPress = true,
-        dismissOnClickOutside = true,
-        onDismissRequest = onDismiss
     )
 }
 
