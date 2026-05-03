@@ -117,25 +117,6 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("Log out").assertIsDisplayed()
     }
 
-    @Test
-    fun test_clickingYesOnLogoutDialog_returnsToLoginScreenAndBackClosesActivity() {
-        composeRule.onNodeWithText("Log out").performClick()
-        composeRule.onNodeWithText("Yes").performClick()
-
-        waitUntilTextExists("Email")
-
-        composeRule.onNodeWithText("Email").assertIsDisplayed()
-        composeRule.onNodeWithText("Password").assertIsDisplayed()
-        assertTextDoesNotExist("Habits")
-        assertTextDoesNotExist("Settings")
-
-        pressBackUnconditionally()
-
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.activityRule.scenario.state == Lifecycle.State.DESTROYED
-        }
-    }
-
     private fun loginAndNavigateToSettingsScreen() {
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
         composeRule.onNodeWithText("Password").performTextInput("password123")

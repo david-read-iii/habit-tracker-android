@@ -4,6 +4,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -67,11 +68,15 @@ class SignUpScreenTest {
         composeRule.onNodeWithText("Confirm Password").performTextInput("123")
         composeRule.onNodeWithTag(SIGN_UP_BUTTON_TEST_TAG).performClick()
 
-        composeRule.onNodeWithText("Please enter a valid email address (e.g. name@example.com)")
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("Please enter a password with at least 8 characters")
-            .assertIsDisplayed()
-        composeRule.onNodeWithText("Please make sure your passwords match").assertIsDisplayed()
+        waitUntilTextExists("Please enter a valid email address (e.g. name@example.com)")
+        waitUntilTextExists("Please enter a password with at least 8 characters")
+        waitUntilTextExists("Please make sure your passwords match")
+
+        composeRule.onAllNodesWithText("Please enter a valid email address (e.g. name@example.com)")
+            .assertCountEquals(1)
+        composeRule.onAllNodesWithText("Please enter a password with at least 8 characters")
+            .assertCountEquals(1)
+        composeRule.onAllNodesWithText("Please make sure your passwords match").assertCountEquals(1)
     }
 
     @Test
@@ -109,5 +114,11 @@ class SignUpScreenTest {
         composeRule.onNodeWithTag(SIGN_UP_BUTTON_TEST_TAG).performClick()
 
         composeRule.onNodeWithText("Habits").assertIsDisplayed()
+    }
+
+    private fun waitUntilTextExists(text: String) {
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+        }
     }
 }
