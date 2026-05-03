@@ -26,6 +26,7 @@ import com.davidread.habittracker.list.usecase.GetHabitsUseCase
 import com.davidread.habittracker.list.usecase.UpdateHabitUseCase
 import com.davidread.habittracker.common.usecase.LogoutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -196,6 +197,7 @@ class HabitListViewModel @Inject constructor(
                         deleteHabitDialogViewState = DeleteHabitDialogViewState(
                             showDialog = true,
                             habitId = intent.habitId,
+                            habitName = intent.habitName,
                             isSubmitting = false
                         )
                     )
@@ -265,6 +267,7 @@ class HabitListViewModel @Inject constructor(
             HabitListViewIntent.ConfirmDeleteHabit -> {
                 val currentDeleteDialogState = _viewState.value.deleteHabitDialogViewState
                 val habitId = currentDeleteDialogState.habitId
+                val habitName = currentDeleteDialogState.habitName
                 if (currentDeleteDialogState.isSubmitting || habitId == null) return
 
                 viewModelScope.launch {
@@ -275,11 +278,27 @@ class HabitListViewModel @Inject constructor(
                             )
                         )
                     }
+                    if (habitName.isNotBlank()) {
+                        _viewEffect.emit(
+                            HabitListViewEffect.AnnounceForAccessibility(
+                                application.getString(R.string.habit_list_deleting_announcement, habitName)
+                            )
+                        )
+                    }
+
+                    delay(10000)
 
                     when (deleteHabitUseCase(habitId)) {
                         is DeleteHabitResult.Success -> {
                             _viewState.update {
                                 it.copy(deleteHabitDialogViewState = DeleteHabitDialogViewState())
+                            }
+                            if (habitName.isNotBlank()) {
+                                _viewEffect.emit(
+                                    HabitListViewEffect.AnnounceForAccessibility(
+                                        application.getString(R.string.habit_list_delete_success_announcement, habitName)
+                                    )
+                                )
                             }
                         }
 

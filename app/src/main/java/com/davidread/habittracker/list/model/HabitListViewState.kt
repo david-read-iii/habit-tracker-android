@@ -26,6 +26,7 @@ data class HabitListTextFieldViewState(
 data class DeleteHabitDialogViewState(
     val showDialog: Boolean = false,
     val habitId: String? = null,
+    val habitName: String = "",
     val isSubmitting: Boolean = false
 )
 

@@ -65,6 +65,12 @@ class HabitListViewModelTest {
         every {
             application.getString(R.string.habit_list_check_in_success_announcement, HABIT_NAME)
         } returns CHECK_IN_SUCCESS_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_deleting_announcement, HABIT_NAME)
+        } returns DELETING_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_delete_success_announcement, HABIT_NAME)
+        } returns DELETE_SUCCESS_ANNOUNCEMENT
         every { application.getString(R.string.habit_list_add_habit_sheet_title) } returns
             ADD_HABIT_SHEET_TITLE
         every { application.getString(R.string.habit_list_edit_habit_sheet_title) } returns
@@ -428,18 +434,19 @@ class HabitListViewModelTest {
 
     @Test
     fun test_processIntent_ClickDeleteHabitButton_showsDeleteDialog() {
-        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
 
         val deleteDialogViewState = viewModel.viewState.value.deleteHabitDialogViewState
 
         Assert.assertTrue(deleteDialogViewState.showDialog)
         Assert.assertEquals(HABIT_ID, deleteDialogViewState.habitId)
+        Assert.assertEquals(HABIT_NAME, deleteDialogViewState.habitName)
         Assert.assertFalse(deleteDialogViewState.isSubmitting)
     }
 
     @Test
     fun test_processIntent_DismissDeleteHabitDialog() {
-        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
 
         viewModel.processIntent(HabitListViewIntent.DismissDeleteHabitDialog)
 
@@ -455,7 +462,7 @@ class HabitListViewModelTest {
         val deleteHabitResultDeferred = CompletableDeferred<DeleteHabitResult>()
         coEvery { deleteHabitUseCase(HABIT_ID) } coAnswers { deleteHabitResultDeferred.await() }
 
-        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
         viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
         advanceUntilIdle()
 
@@ -480,7 +487,7 @@ class HabitListViewModelTest {
             val deleteHabitResultDeferred = CompletableDeferred<DeleteHabitResult>()
             coEvery { deleteHabitUseCase(HABIT_ID) } coAnswers { deleteHabitResultDeferred.await() }
 
-            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
             viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
             advanceUntilIdle()
 
@@ -488,6 +495,10 @@ class HabitListViewModelTest {
             Assert.assertTrue(deletingState.showDialog)
             Assert.assertEquals(HABIT_ID, deletingState.habitId)
             Assert.assertTrue(deletingState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(DELETING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
 
             viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
             coVerify(exactly = 1) { deleteHabitUseCase(HABIT_ID) }
@@ -499,7 +510,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.showDialog)
             Assert.assertEquals(null, completedState.habitId)
             Assert.assertFalse(completedState.isSubmitting)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(DELETE_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
         }
     }
 
@@ -510,13 +524,17 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { deleteHabitUseCase(HABIT_ID) } returns DeleteHabitResult.Error
 
-            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
             viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
 
             val deleteDialogViewState = viewStateTurbine.expectMostRecentItem().deleteHabitDialogViewState
             Assert.assertFalse(deleteDialogViewState.showDialog)
             Assert.assertEquals(null, deleteDialogViewState.habitId)
             Assert.assertFalse(deleteDialogViewState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(DELETING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(DELETE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -736,6 +754,8 @@ class HabitListViewModelTest {
         private const val GENERIC_ERROR_MESSAGE = "Unable to check in right now. Please try again."
         private const val CHECKING_IN_ANNOUNCEMENT = "Read for 20 minutes. Checking in."
         private const val CHECK_IN_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes checked in."
+        private const val DELETING_ANNOUNCEMENT = "Deleting Read for 20 minutes."
+        private const val DELETE_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes deleted."
         private const val INVALID_HABIT_NAME_MESSAGE = "Please enter a habit name"
         private const val CREATE_HABIT_SUCCESS_MESSAGE = "Habit added successfully."
         private const val CREATE_HABIT_ERROR_MESSAGE = "Failed to add habit. Please try again."

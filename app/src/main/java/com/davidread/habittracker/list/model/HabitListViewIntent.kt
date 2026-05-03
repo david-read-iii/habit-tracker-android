@@ -8,7 +8,7 @@ sealed class HabitListViewIntent {
     class ClickHabit(val habitId: String, val habitName: String = "") : HabitListViewIntent()
     class ClickCheckInHabitButton(val habitId: String, val habitName: String = "") : HabitListViewIntent()
     class ClickEditHabitButton(val habitId: String, val currentName: String = "") : HabitListViewIntent()
-    class ClickDeleteHabitButton(val habitId: String) : HabitListViewIntent()
+    class ClickDeleteHabitButton(val habitId: String, val habitName: String = "") : HabitListViewIntent()
     data class ChangeHabitEditorNameValue(val value: String) : HabitListViewIntent()
     object DismissHabitEditorBottomSheet : HabitListViewIntent()
     object SubmitHabitEditorChanges : HabitListViewIntent()

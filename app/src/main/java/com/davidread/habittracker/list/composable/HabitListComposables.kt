@@ -194,7 +194,7 @@ fun HabitListScreen(
         onHabitRenameClick = { id, currentName ->
             viewModel.processIntent(HabitListViewIntent.ClickEditHabitButton(id, currentName))
         },
-        onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it)) },
+        onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it.first, it.second)) },
         onDismissDeleteHabitDialog = {
             viewModel.processIntent(HabitListViewIntent.DismissDeleteHabitDialog)
         },
@@ -228,7 +228,7 @@ fun HabitListContent(
     onHabitClick: (String, String) -> Unit = { _, _ -> },
     onHabitCheckInClick: (Pair<String, String>) -> Unit = {},
     onHabitRenameClick: (String, String) -> Unit = { _, _ -> },
-    onHabitDeleteClick: (String) -> Unit = {},
+    onHabitDeleteClick: (Pair<String, String>) -> Unit = {},
     onDismissDeleteHabitDialog: () -> Unit = {},
     onConfirmDeleteHabit: () -> Unit = {},
     onRefresh: () -> Unit = {},
@@ -335,7 +335,7 @@ fun HabitListContent(
                                                 habit.name
                                             )
                                         },
-                                        onDeleteClick = { onHabitDeleteClick(habit.id) }
+                                        onDeleteClick = { onHabitDeleteClick(habit.id to habit.name) }
                                     )
                                     HorizontalDivider()
                                 }
