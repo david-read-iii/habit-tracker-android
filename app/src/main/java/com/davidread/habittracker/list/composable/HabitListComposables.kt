@@ -27,9 +27,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -72,9 +74,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -108,6 +112,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.Color as ComposeColor
+
+internal const val CLEAR_HABIT_NAME_BUTTON_TEST_TAG = "clear_habit_name_button"
 
 @Composable
 fun HabitListScreen(
@@ -819,8 +825,29 @@ private fun HabitEditorBottomSheet(
                 errorMessage = viewState.textFieldViewState.errorMessage,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                )
+                    imeAction = ImeAction.Done,
+                    capitalization = KeyboardCapitalization.Words
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (!viewState.isSubmitting) {
+                            onSubmit()
+                        }
+                    }
+                ),
+                trailingIcon = {
+                    if (viewState.textFieldViewState.value.isNotBlank() && !viewState.isSubmitting) {
+                        IconButton(
+                            modifier = Modifier.testTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG),
+                            onClick = { onNameChange("") }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(R.string.clear_habit_name)
+                            )
+                        }
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(

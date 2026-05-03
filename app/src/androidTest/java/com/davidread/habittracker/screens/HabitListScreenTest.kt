@@ -2,6 +2,7 @@ package com.davidread.habittracker.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -13,6 +14,7 @@ import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.davidread.habittracker.common.ui.activity.MainActivity
 import com.davidread.habittracker.fakes.FakeHabitListRepositoryImpl
+import com.davidread.habittracker.list.composable.CLEAR_HABIT_NAME_BUTTON_TEST_TAG
 import com.davidread.habittracker.list.repository.HabitListRepository
 import com.davidread.habittracker.login.composable.LOGIN_BUTTON_TEST_TAG
 import com.davidread.habittracker.login.repository.LoginRepository
@@ -96,6 +98,21 @@ class HabitListScreenTest {
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("Failed to add habit. Please try again.").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_addHabitBottomSheetClearButtonClearsTextField() {
+        composeRule.onNodeWithContentDescription("Add habit").performClick()
+        composeRule.onNodeWithText("Habit name").performTextInput("Read every day")
+
+        composeRule.onNodeWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Read every day").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).fetchSemanticsNodes().isEmpty()
+        }
     }
 
     private fun loginAndNavigateToHabitListScreen() {
