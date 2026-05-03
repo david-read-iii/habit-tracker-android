@@ -80,6 +80,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -789,6 +791,25 @@ private fun HabitEditorBottomSheet(
         confirmValueChange = confirmValueChange
     )
     val focusRequester = remember { FocusRequester() }
+    var textFieldValue by remember(viewState.editorState) {
+        val initialText = viewState.textFieldViewState.value
+        mutableStateOf(
+            TextFieldValue(
+                text = initialText,
+                selection = TextRange(initialText.length)
+            )
+        )
+    }
+
+    LaunchedEffect(viewState.textFieldViewState.value) {
+        if (viewState.textFieldViewState.value != textFieldValue.text) {
+            val updatedText = viewState.textFieldViewState.value
+            textFieldValue = textFieldValue.copy(
+                text = updatedText,
+                selection = TextRange(updatedText.length)
+            )
+        }
+    }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -814,8 +835,11 @@ private fun HabitEditorBottomSheet(
             )
             Spacer(modifier = Modifier.height(12.dp))
             HabitTrackerTextField(
-                value = viewState.textFieldViewState.value,
-                onValueChange = onNameChange,
+                value = textFieldValue,
+                onValueChange = {
+                    textFieldValue = it
+                    onNameChange(it.text)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
@@ -836,10 +860,13 @@ private fun HabitEditorBottomSheet(
                     }
                 ),
                 trailingIcon = {
-                    if (viewState.textFieldViewState.value.isNotBlank() && !viewState.isSubmitting) {
+                    if (textFieldValue.text.isNotBlank() && !viewState.isSubmitting) {
                         IconButton(
                             modifier = Modifier.testTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG),
-                            onClick = { onNameChange("") }
+                            onClick = {
+                                textFieldValue = TextFieldValue("")
+                                onNameChange("")
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Clear,

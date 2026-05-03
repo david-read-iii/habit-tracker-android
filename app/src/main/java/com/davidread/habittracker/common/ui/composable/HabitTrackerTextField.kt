@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,43 @@ fun HabitTrackerTextField(
     modifier: Modifier = Modifier,
     value: String = "",
     onValueChange: (String) -> Unit = {},
+    labelText: String = "",
+    isError: Boolean = false,
+    errorMessage: String = "",
+    enabled: Boolean = true,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier.fillMaxWidth(),
+        enabled = enabled,
+        label = { Text(labelText) },
+        isError = isError,
+        visualTransformation = visualTransformation,
+        trailingIcon = trailingIcon,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        singleLine = true
+    )
+    if (isError && errorMessage.isNotBlank()) {
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = errorMessage,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+@Composable
+fun HabitTrackerTextField(
+    modifier: Modifier = Modifier,
+    value: TextFieldValue = TextFieldValue(""),
+    onValueChange: (TextFieldValue) -> Unit = {},
     labelText: String = "",
     isError: Boolean = false,
     errorMessage: String = "",
