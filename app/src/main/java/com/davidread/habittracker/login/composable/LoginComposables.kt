@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -195,7 +197,10 @@ fun LoginCredentialsCard(
                 isError = viewState.emailTextFieldViewState.isError,
                 errorMessage = viewState.emailTextFieldViewState.errorMessage,
                 enabled = !viewState.showLoading,
-                keyboardType = KeyboardType.Email,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next
+                ),
                 trailingIcon = {
                     if (viewState.emailTextFieldViewState.value.isNotBlank() && !viewState.showLoading) {
                         IconButton(
@@ -223,7 +228,10 @@ fun LoginCredentialsCard(
                 } else {
                     PasswordVisualTransformation()
                 },
-                keyboardType = KeyboardType.Password,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
                 trailingIcon = {
                     IconButton(
                         modifier = Modifier.testTag(TOGGLE_PASSWORD_VISIBILITY_BUTTON_TEST_TAG),

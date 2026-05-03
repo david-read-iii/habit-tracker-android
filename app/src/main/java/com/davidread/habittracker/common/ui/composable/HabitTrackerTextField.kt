@@ -9,8 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,7 +24,7 @@ fun HabitTrackerTextField(
     errorMessage: String = "",
     enabled: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardType: KeyboardType = KeyboardType.Unspecified,
+    keyboardOptions: KeyboardOptions,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     TextField(
@@ -38,10 +36,7 @@ fun HabitTrackerTextField(
         isError = isError,
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType,
-            imeAction = ImeAction.Done
-        ),
+        keyboardOptions = keyboardOptions,
         singleLine = true
     )
     if (isError && errorMessage.isNotBlank()) {
@@ -58,7 +53,11 @@ fun HabitTrackerTextField(
 @Composable
 private fun HabitTrackerTextFieldPreview_Default() {
     HabitTrackerTheme {
-        HabitTrackerTextField(value = "Value", labelText = "Label")
+        HabitTrackerTextField(
+            value = "Value",
+            labelText = "Label",
+            keyboardOptions = KeyboardOptions.Default
+        )
     }
 }
 
@@ -70,7 +69,8 @@ private fun HabitTrackerTextFieldPreview_Error() {
             value = "Invalid value",
             labelText = "Label",
             isError = true,
-            errorMessage = "Error message"
+            errorMessage = "Error message",
+            keyboardOptions = KeyboardOptions.Default
         )
     }
 }
