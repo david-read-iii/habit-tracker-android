@@ -17,6 +17,8 @@ class HabitRemoteMediator(
     private val service: HabitListService
 ) : RemoteMediator<Int, HabitEntity>() {
 
+    var times = 0
+
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, HabitEntity>
@@ -26,12 +28,14 @@ class HabitRemoteMediator(
                 val remoteKeys = getRemoteKeyClosestToCurrentPosition(state)
                 remoteKeys?.nextKey?.minus(1) ?: 1
             }
+
             LoadType.PREPEND -> {
                 val remoteKeys = getRemoteKeyForFirstItem(state)
                 val prevKey = remoteKeys?.prevKey
                     ?: return MediatorResult.Success(endOfPaginationReached = remoteKeys != null)
                 prevKey
             }
+
             LoadType.APPEND -> {
                 val remoteKeys = getRemoteKeyForLastItem(state)
                 val nextKey = remoteKeys?.nextKey
@@ -45,7 +49,8 @@ class HabitRemoteMediator(
             val habits = response.habits?.filter {
                 it.id != null && it.name != null && it.streak != null && it.createdAt != null
             } ?: emptyList()
-            val endOfPaginationReached = (response.habits ?: emptyList()).isEmpty() || response.nextPage == null
+            val endOfPaginationReached =
+                (response.habits ?: emptyList()).isEmpty() || response.nextPage == null
 
             database.withTransaction {
                 if (loadType == LoadType.REFRESH) {

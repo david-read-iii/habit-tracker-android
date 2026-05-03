@@ -83,6 +83,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -134,12 +136,14 @@ fun HabitListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var accessibilityAnnouncement by remember { mutableStateOf("") }
     var accessibilityAnnouncementId by remember { mutableIntStateOf(0) }
+    var isViewEffectCollectorReady by remember { mutableStateOf(false) }
 
     BackHandler {
         viewModel.processIntent(HabitListViewIntent.ClickBackButton)
     }
 
     LaunchedEffect(Unit) {
+        isViewEffectCollectorReady = true
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
                 is HabitListViewEffect.NavigateToSettingsScreen -> onNavigateToSettingsScreen()
@@ -161,6 +165,25 @@ fun HabitListScreen(
 
     val habits = viewModel.habitsPagingDataFlow.collectAsLazyPagingItems()
     val viewState by viewModel.viewState.collectAsState()
+
+    LaunchedEffect(
+        isViewEffectCollectorReady,
+        habits.loadState.refresh,
+        habits.loadState.prepend,
+        habits.loadState.append,
+        habits.itemCount
+    ) {
+        if (!isViewEffectCollectorReady) return@LaunchedEffect
+
+        viewModel.processIntent(
+            HabitListViewIntent.ReportPagingLoadStates(
+                isRefreshLoading = habits.loadState.refresh is LoadState.Loading,
+                isPrependLoading = habits.loadState.prepend is LoadState.Loading,
+                isAppendLoading = habits.loadState.append is LoadState.Loading,
+                itemCount = habits.itemCount
+            )
+        )
+    }
 
     HabitListContent(
         modifier = modifier,
@@ -247,19 +270,26 @@ fun HabitListContent(
             onRefreshComplete()
         }
     }
+
     Scaffold(
         modifier = modifier,
         topBar = {
             HabitTrackerTopAppBar(
                 title = stringResource(R.string.habit_list_title),
                 actions = {
-                    IconButton(onClick = onClickAddHabit) {
+                    IconButton(
+                        modifier = Modifier.semantics { traversalIndex = 1f },
+                        onClick = onClickAddHabit
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Add,
                             contentDescription = stringResource(R.string.habit_list_add_habit)
                         )
                     }
-                    IconButton(onClick = onClickSettings) {
+                    IconButton(
+                        modifier = Modifier.semantics { traversalIndex = 2f },
+                        onClick = onClickSettings
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = stringResource(R.string.habit_list_open_settings)
@@ -708,6 +738,7 @@ private fun SwipeActionButton(
 
 @Composable
 fun LoadingListItem(modifier: Modifier = Modifier) {
+    val loadingContentDescription = stringResource(R.string.loading)
     val transition = rememberInfiniteTransition()
     val shimmerTranslate by transition.animateFloat(
         initialValue = -600f,
@@ -731,6 +762,9 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
     )
     Column(
         modifier = modifier
+            .clearAndSetSemantics {
+                contentDescription = loadingContentDescription
+            }
             .padding(16.dp)
             .fillMaxWidth()
     ) {

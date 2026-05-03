@@ -33,6 +33,11 @@
     <string name="habit_list_add_success_announcement">%1$s added.</string>
     <string name="habit_list_updating_announcement">Saving %1$s.</string>
     <string name="habit_list_update_success_announcement">%1$s updated.</string>
+    <string name="habit_list_initial_loading_announcement">Loading habits.</string>
+    <string name="habit_list_prepend_loading_announcement">Loading earlier habits.</string>
+    <string name="habit_list_prepend_success_announcement">Earlier habits loaded.</string>
+    <string name="habit_list_append_loading_announcement">Loading more habits.</string>
+    <string name="habit_list_append_success_announcement">More habits loaded.</string>
     <string name="check_in_already_checked_in">Already checked in today.</string>
     <string name="check_in_generic_error">Failed to check in. Please try again.</string>
     <string name="created_at_just_now">Just now</string>

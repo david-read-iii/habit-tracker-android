@@ -61,6 +61,11 @@ class HabitListViewModel @Inject constructor(
             .map { pagingData -> pagingData.map { habitMapper.map(it) } }
             .cachedIn(viewModelScope)
 
+    private var wasRefreshLoading = false
+    private var wasPrependLoading = false
+    private var wasAppendLoading = false
+    private var previousPagingItemCount = 0
+
     fun processIntent(intent: HabitListViewIntent) {
         when (intent) {
             HabitListViewIntent.ClickAddHabitButton, is HabitListViewIntent.ClickEditHabitButton -> {
@@ -316,6 +321,55 @@ class HabitListViewModel @Inject constructor(
                             )
                         }
                     }
+                }
+            }
+
+            is HabitListViewIntent.ReportPagingLoadStates -> {
+                viewModelScope.launch {
+                    if (!wasRefreshLoading && intent.isRefreshLoading && intent.itemCount == 0) {
+                        _viewEffect.emit(
+                            HabitListViewEffect.AnnounceForAccessibility(
+                                application.getString(R.string.habit_list_initial_loading_announcement)
+                            )
+                        )
+                    }
+
+                    if (!wasPrependLoading && intent.isPrependLoading) {
+                        _viewEffect.emit(
+                            HabitListViewEffect.AnnounceForAccessibility(
+                                application.getString(R.string.habit_list_prepend_loading_announcement)
+                            )
+                        )
+                    }
+
+                    if (wasPrependLoading && !intent.isPrependLoading && intent.itemCount > previousPagingItemCount) {
+                        _viewEffect.emit(
+                            HabitListViewEffect.AnnounceForAccessibility(
+                                application.getString(R.string.habit_list_prepend_success_announcement)
+                            )
+                        )
+                    }
+
+                    if (!wasAppendLoading && intent.isAppendLoading) {
+                        _viewEffect.emit(
+                            HabitListViewEffect.AnnounceForAccessibility(
+                                application.getString(R.string.habit_list_append_loading_announcement)
+                            )
+                        )
+                    }
+
+                    if (wasAppendLoading && !intent.isAppendLoading && intent.itemCount > previousPagingItemCount) {
+                        _viewEffect.emit(
+                            HabitListViewEffect.AnnounceForAccessibility(
+                                application.getString(R.string.habit_list_append_success_announcement)
+                            )
+                        )
+                    }
+
+                    wasRefreshLoading = intent.isRefreshLoading
+                    wasPrependLoading = intent.isPrependLoading
+                    wasAppendLoading = intent.isAppendLoading
+                    previousPagingItemCount = intent.itemCount
                 }
             }
 

@@ -83,6 +83,16 @@ class HabitListViewModelTest {
         every {
             application.getString(R.string.habit_list_update_success_announcement, UPDATED_HABIT_NAME)
         } returns UPDATE_SUCCESS_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_initial_loading_announcement) } returns
+            INITIAL_LOADING_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_prepend_loading_announcement) } returns
+            PREPEND_LOADING_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_prepend_success_announcement) } returns
+            PREPEND_SUCCESS_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_append_loading_announcement) } returns
+            APPEND_LOADING_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_append_success_announcement) } returns
+            APPEND_SUCCESS_ANNOUNCEMENT
         every { application.getString(R.string.habit_list_add_habit_sheet_title) } returns
             ADD_HABIT_SHEET_TITLE
         every { application.getString(R.string.habit_list_edit_habit_sheet_title) } returns
@@ -146,6 +156,199 @@ class HabitListViewModelTest {
 
         Assert.assertFalse(actual.isRefreshing)
         Assert.assertTrue(actual.checkingInHabitIds.isEmpty())
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_initialLoadingWithNoItems_emitsAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 0
+                )
+            )
+            expectNoEvents()
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = true,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 0
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(INITIAL_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_refreshLoadingWithExistingItems_doesNotEmitAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = true,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 5
+                )
+            )
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_appendLoading_emitsAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            expectNoEvents()
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = true,
+                    itemCount = 10
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_appendLoadingThenNotLoadingWithMoreItems_emitsSuccessAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = true,
+                    itemCount = 10
+                )
+            )
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 15
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_SUCCESS_ANNOUNCEMENT),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_appendLoadingThenNotLoadingWithoutNewItems_doesNotEmitSuccessAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = true,
+                    itemCount = 10
+                )
+            )
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_prependLoadingThenNotLoadingWithMoreItems_emitsLoadingAndSuccessAnnouncements() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = true,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(PREPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 15
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(PREPEND_SUCCESS_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            expectNoEvents()
+        }
     }
 
     @Test
@@ -795,6 +998,11 @@ class HabitListViewModelTest {
         private const val ADD_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes added."
         private const val UPDATING_ANNOUNCEMENT = "Saving Read for 30 minutes."
         private const val UPDATE_SUCCESS_ANNOUNCEMENT = "Read for 30 minutes updated."
+        private const val INITIAL_LOADING_ANNOUNCEMENT = "Loading habits."
+        private const val PREPEND_LOADING_ANNOUNCEMENT = "Loading earlier habits."
+        private const val PREPEND_SUCCESS_ANNOUNCEMENT = "Earlier habits loaded."
+        private const val APPEND_LOADING_ANNOUNCEMENT = "Loading more habits."
+        private const val APPEND_SUCCESS_ANNOUNCEMENT = "More habits loaded."
         private const val INVALID_HABIT_NAME_MESSAGE = "Please enter a habit name"
         private const val CREATE_HABIT_SUCCESS_MESSAGE = "Habit added successfully."
         private const val CREATE_HABIT_ERROR_MESSAGE = "Failed to add habit. Please try again."

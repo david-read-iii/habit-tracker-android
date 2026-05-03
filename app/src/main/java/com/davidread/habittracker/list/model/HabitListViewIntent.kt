@@ -14,6 +14,12 @@ sealed class HabitListViewIntent {
     object SubmitHabitEditorChanges : HabitListViewIntent()
     object DismissDeleteHabitDialog : HabitListViewIntent()
     object ConfirmDeleteHabit : HabitListViewIntent()
+    data class ReportPagingLoadStates(
+        val isRefreshLoading: Boolean,
+        val isPrependLoading: Boolean,
+        val isAppendLoading: Boolean,
+        val itemCount: Int
+    ) : HabitListViewIntent()
     object ClickBackButton : HabitListViewIntent()
     object DismissLogoutDialog : HabitListViewIntent()
     object ConfirmLogout : HabitListViewIntent()
