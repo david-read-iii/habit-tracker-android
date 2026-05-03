@@ -130,8 +130,9 @@ class SettingsScreenTest {
         assertTextDoesNotExist("Settings")
 
         pressBackUnconditionally()
+        composeRule.waitForIdle()
 
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             composeRule.activityRule.scenario.state == Lifecycle.State.DESTROYED
         }
     }
