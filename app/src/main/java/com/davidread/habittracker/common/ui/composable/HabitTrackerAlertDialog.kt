@@ -96,16 +96,17 @@ fun HabitTrackerAlertDialog(
                         onClick = onPrimaryButtonClick,
                         enabled = mode == HabitTrackerAlertDialogMode.Default
                     ) {
-                        when (mode) {
-                            HabitTrackerAlertDialogMode.Default -> Text(
-                                text = primaryButtonText ?: stringResource(R.string.ok)
-                            )
-                            HabitTrackerAlertDialogMode.Loading -> CircularProgressIndicator(
+                        if (mode == HabitTrackerAlertDialogMode.Loading) {
+                            CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
+                        Text(
+                            text = primaryButtonText ?: stringResource(R.string.ok)
+                        )
                     }
                 }
             }
