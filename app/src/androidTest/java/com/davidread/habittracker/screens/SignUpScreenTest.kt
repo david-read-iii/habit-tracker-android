@@ -1,8 +1,10 @@
 package com.davidread.habittracker.screens
 
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -12,6 +14,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.davidread.habittracker.common.ui.activity.MainActivity
 import com.davidread.habittracker.fakes.FakeSignUpRepositoryImpl
 import com.davidread.habittracker.login.composable.SIGN_UP_LINK_TEST_TAG
+import com.davidread.habittracker.signup.composable.CLEAR_SIGN_UP_EMAIL_BUTTON_TEST_TAG
 import com.davidread.habittracker.signup.composable.SIGN_UP_BUTTON_TEST_TAG
 import com.davidread.habittracker.signup.repository.SignUpRepository
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -47,6 +50,14 @@ class SignUpScreenTest {
         composeRule.onNodeWithText("Email").assertIsDisplayed()
         composeRule.onNodeWithText("Password").assertIsDisplayed()
         composeRule.onNodeWithText("Confirm Password").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_clearEmailButtonClearsEmailField() {
+        composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
+        composeRule.onNodeWithTag(CLEAR_SIGN_UP_EMAIL_BUTTON_TEST_TAG).performClick()
+
+        composeRule.onAllNodesWithTag(CLEAR_SIGN_UP_EMAIL_BUTTON_TEST_TAG).assertCountEquals(0)
     }
 
     @Test

@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +33,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,8 +44,8 @@ import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerButton
 import com.davidread.habittracker.common.ui.composable.HabitTrackerCard
-import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
+import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.signup.model.SignUpTextFieldViewState
 import com.davidread.habittracker.signup.model.SignUpViewEffect
@@ -47,6 +54,7 @@ import com.davidread.habittracker.signup.model.SignUpViewState
 import com.davidread.habittracker.signup.viewmodel.SignUpViewModel
 
 internal const val SIGN_UP_BUTTON_TEST_TAG = "sign_up_button"
+internal const val CLEAR_SIGN_UP_EMAIL_BUTTON_TEST_TAG = "clear_sign_up_email_button"
 
 @Composable
 fun SignUpScreen(
@@ -77,6 +85,15 @@ fun SignUpScreen(
         onConfirmPasswordValueChange = {
             viewModel.processIntent(SignUpViewIntent.ChangeConfirmPasswordValue(newValue = it))
         },
+        onClearEmailButtonClick = {
+            viewModel.processIntent(SignUpViewIntent.ClickClearEmailButton)
+        },
+        onTogglePasswordVisibilityButtonClick = {
+            viewModel.processIntent(SignUpViewIntent.ClickTogglePasswordVisibilityButton)
+        },
+        onToggleConfirmPasswordVisibilityButtonClick = {
+            viewModel.processIntent(SignUpViewIntent.ClickToggleConfirmPasswordVisibilityButton)
+        },
         onSignUpButtonClick = {
             viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
         },
@@ -94,6 +111,9 @@ fun SignUpScreenContent(
     onEmailValueChange: (String) -> Unit = {},
     onPasswordValueChange: (String) -> Unit = {},
     onConfirmPasswordValueChange: (String) -> Unit = {},
+    onClearEmailButtonClick: () -> Unit = {},
+    onTogglePasswordVisibilityButtonClick: () -> Unit = {},
+    onToggleConfirmPasswordVisibilityButtonClick: () -> Unit = {},
     onSignUpButtonClick: () -> Unit = {},
     onAlertDialogButtonClick: () -> Unit = {}
 ) {
@@ -137,6 +157,9 @@ fun SignUpScreenContent(
                 onEmailValueChange = onEmailValueChange,
                 onPasswordValueChange = onPasswordValueChange,
                 onConfirmPasswordValueChange = onConfirmPasswordValueChange,
+                onClearEmailButtonClick = onClearEmailButtonClick,
+                onTogglePasswordVisibilityButtonClick = onTogglePasswordVisibilityButtonClick,
+                onToggleConfirmPasswordVisibilityButtonClick = onToggleConfirmPasswordVisibilityButtonClick,
                 onSignUpButtonClick = onSignUpButtonClick
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -158,6 +181,9 @@ fun SignUpCredentialsCard(
     onEmailValueChange: (String) -> Unit = {},
     onPasswordValueChange: (String) -> Unit = {},
     onConfirmPasswordValueChange: (String) -> Unit = {},
+    onClearEmailButtonClick: () -> Unit = {},
+    onTogglePasswordVisibilityButtonClick: () -> Unit = {},
+    onToggleConfirmPasswordVisibilityButtonClick: () -> Unit = {},
     onSignUpButtonClick: () -> Unit = {}
 ) {
     HabitTrackerCard(modifier = modifier) {
@@ -171,8 +197,23 @@ fun SignUpCredentialsCard(
                 enabled = !viewState.showLoading,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
+                    imeAction = ImeAction.Next,
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false
                 ),
+                trailingIcon = {
+                    if (viewState.emailTextFieldViewState.value.isNotBlank() && !viewState.showLoading) {
+                        IconButton(
+                            modifier = Modifier.testTag(CLEAR_SIGN_UP_EMAIL_BUTTON_TEST_TAG),
+                            onClick = onClearEmailButtonClick
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(R.string.clear_email)
+                            )
+                        }
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             HabitTrackerTextField(
@@ -182,10 +223,38 @@ fun SignUpCredentialsCard(
                 isError = viewState.passwordTextFieldViewState.isError,
                 errorMessage = viewState.passwordTextFieldViewState.errorMessage,
                 enabled = !viewState.showLoading,
+                visualTransformation = if (viewState.isPasswordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Next
+                    imeAction = ImeAction.Next,
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false
                 ),
+                trailingIcon = {
+                    IconButton(
+                        onClick = onTogglePasswordVisibilityButtonClick,
+                        enabled = !viewState.showLoading
+                    ) {
+                        Icon(
+                            imageVector = if (viewState.isPasswordVisible) {
+                                Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
+                            },
+                            contentDescription = stringResource(
+                                if (viewState.isPasswordVisible) {
+                                    R.string.hide_password
+                                } else {
+                                    R.string.show_password
+                                }
+                            )
+                        )
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             HabitTrackerTextField(
@@ -195,10 +264,45 @@ fun SignUpCredentialsCard(
                 isError = viewState.confirmPasswordTextFieldViewState.isError,
                 errorMessage = viewState.confirmPasswordTextFieldViewState.errorMessage,
                 enabled = !viewState.showLoading,
+                visualTransformation = if (viewState.isConfirmPasswordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
+                    imeAction = ImeAction.Done,
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrectEnabled = false
                 ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (!viewState.showLoading) {
+                            onSignUpButtonClick()
+                        }
+                    }
+                ),
+                trailingIcon = {
+                    IconButton(
+                        onClick = onToggleConfirmPasswordVisibilityButtonClick,
+                        enabled = !viewState.showLoading
+                    ) {
+                        Icon(
+                            imageVector = if (viewState.isConfirmPasswordVisible) {
+                                Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
+                            },
+                            contentDescription = stringResource(
+                                if (viewState.isConfirmPasswordVisible) {
+                                    R.string.hide_password
+                                } else {
+                                    R.string.show_password
+                                }
+                            )
+                        )
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(

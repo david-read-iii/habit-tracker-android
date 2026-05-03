@@ -66,6 +66,26 @@ class SignUpViewModel @Inject constructor(
             }
         }
 
+        is SignUpViewIntent.ClickClearEmailButton -> {
+            _viewState.update {
+                it.copy(
+                    emailTextFieldViewState = it.emailTextFieldViewState.copy(value = "")
+                )
+            }
+        }
+
+        is SignUpViewIntent.ClickTogglePasswordVisibilityButton -> {
+            _viewState.update {
+                it.copy(isPasswordVisible = !it.isPasswordVisible)
+            }
+        }
+
+        is SignUpViewIntent.ClickToggleConfirmPasswordVisibilityButton -> {
+            _viewState.update {
+                it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible)
+            }
+        }
+
         is SignUpViewIntent.ClickSignUpButton -> handleClickSignUpButton()
 
         is SignUpViewIntent.ClickAlertDialogButton -> {
