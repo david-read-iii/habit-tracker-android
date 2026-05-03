@@ -59,6 +59,12 @@ class HabitListViewModelTest {
         coEvery { logoutUseCase() } returns Unit
         every { application.getString(R.string.check_in_already_checked_in) } returns ALREADY_CHECKED_IN_MESSAGE
         every { application.getString(R.string.check_in_generic_error) } returns GENERIC_ERROR_MESSAGE
+        every {
+            application.getString(R.string.habit_list_checking_in_announcement, HABIT_NAME)
+        } returns CHECKING_IN_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_check_in_success_announcement, HABIT_NAME)
+        } returns CHECK_IN_SUCCESS_ANNOUNCEMENT
         every { application.getString(R.string.habit_list_add_habit_sheet_title) } returns
             ADD_HABIT_SHEET_TITLE
         every { application.getString(R.string.habit_list_edit_habit_sheet_title) } returns
@@ -574,8 +580,12 @@ class HabitListViewModelTest {
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
 
-            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID, HABIT_NAME))
 
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 setOf(HABIT_ID),
                 viewStateTurbine.expectMostRecentItem().checkingInHabitIds
@@ -584,7 +594,10 @@ class HabitListViewModelTest {
             checkInResultDeferred.complete(CheckInResult.Success)
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECK_IN_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { checkInUseCase(HABIT_ID) }
         }
     }
@@ -596,9 +609,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.AlreadyCheckedInError
 
-            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(ALREADY_CHECKED_IN_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -614,9 +631,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.GenericError
 
-            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(GENERIC_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -635,8 +656,12 @@ class HabitListViewModelTest {
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
 
-            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID, HABIT_NAME))
 
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 setOf(HABIT_ID),
                 viewStateTurbine.expectMostRecentItem().checkingInHabitIds
@@ -645,7 +670,10 @@ class HabitListViewModelTest {
             checkInResultDeferred.complete(CheckInResult.Success)
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECK_IN_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { checkInUseCase(HABIT_ID) }
         }
     }
@@ -657,9 +685,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.AlreadyCheckedInError
 
-            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(ALREADY_CHECKED_IN_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -675,9 +707,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.GenericError
 
-            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(GENERIC_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -698,6 +734,8 @@ class HabitListViewModelTest {
         private const val ALREADY_CHECKED_IN_MESSAGE =
             "You've already checked in for this habit today."
         private const val GENERIC_ERROR_MESSAGE = "Unable to check in right now. Please try again."
+        private const val CHECKING_IN_ANNOUNCEMENT = "Read for 20 minutes. Checking in."
+        private const val CHECK_IN_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes checked in."
         private const val INVALID_HABIT_NAME_MESSAGE = "Please enter a habit name"
         private const val CREATE_HABIT_SUCCESS_MESSAGE = "Habit added successfully."
         private const val CREATE_HABIT_ERROR_MESSAGE = "Failed to add habit. Please try again."

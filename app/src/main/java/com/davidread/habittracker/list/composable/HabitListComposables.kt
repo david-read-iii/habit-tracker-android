@@ -58,6 +58,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,11 +83,11 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -99,6 +100,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.AccessibilityAnnouncementHost
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
@@ -130,6 +132,8 @@ fun HabitListScreen(
     onNavigateToLoginScreen: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var accessibilityAnnouncement by remember { mutableStateOf("") }
+    var accessibilityAnnouncementId by remember { mutableIntStateOf(0) }
 
     BackHandler {
         viewModel.processIntent(HabitListViewIntent.ClickBackButton)
@@ -145,6 +149,11 @@ fun HabitListScreen(
                         message = viewEffect.message,
                         duration = SnackbarDuration.Short
                     )
+                }
+
+                is HabitListViewEffect.AnnounceForAccessibility -> {
+                    accessibilityAnnouncement = viewEffect.message
+                    accessibilityAnnouncementId += 1
                 }
             }
         }
@@ -171,11 +180,14 @@ fun HabitListScreen(
         },
         onHabitEditorSubmit = { viewModel.processIntent(HabitListViewIntent.SubmitHabitEditorChanges) },
         onClickSettings = { viewModel.processIntent(HabitListViewIntent.ClickSettingsButton) },
-        onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) },
+        onHabitClick = { habitId, habitName ->
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(habitId, habitName))
+        },
         onHabitCheckInClick = {
             viewModel.processIntent(
                 HabitListViewIntent.ClickCheckInHabitButton(
-                    it
+                    it.first,
+                    it.second
                 )
             )
         },
@@ -194,6 +206,11 @@ fun HabitListScreen(
         onDismissLogoutDialog = { viewModel.processIntent(HabitListViewIntent.DismissLogoutDialog) },
         onConfirmLogout = { viewModel.processIntent(HabitListViewIntent.ConfirmLogout) }
     )
+
+    AccessibilityAnnouncementHost(
+        message = accessibilityAnnouncement,
+        announcementId = accessibilityAnnouncementId
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -208,8 +225,8 @@ fun HabitListContent(
     onHabitEditorNameChange: (String) -> Unit = {},
     onHabitEditorSubmit: () -> Unit = {},
     onClickSettings: () -> Unit = {},
-    onHabitClick: (String) -> Unit = {},
-    onHabitCheckInClick: (String) -> Unit = {},
+    onHabitClick: (String, String) -> Unit = { _, _ -> },
+    onHabitCheckInClick: (Pair<String, String>) -> Unit = {},
     onHabitRenameClick: (String, String) -> Unit = { _, _ -> },
     onHabitDeleteClick: (String) -> Unit = {},
     onDismissDeleteHabitDialog: () -> Unit = {},
@@ -310,8 +327,8 @@ fun HabitListContent(
                                                 openSwipeHabitId = null
                                             }
                                         },
-                                        onClick = { onHabitClick(habit.id) },
-                                        onCheckInClick = { onHabitCheckInClick(habit.id) },
+                                        onClick = { onHabitClick(habit.id, habit.name) },
+                                        onCheckInClick = { onHabitCheckInClick(habit.id to habit.name) },
                                         onRenameClick = {
                                             onHabitRenameClick(
                                                 habit.id,

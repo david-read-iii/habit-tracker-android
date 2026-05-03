@@ -25,6 +25,8 @@
     <string name="habit_list_end_of_pagination_message">No more habits to show</string>
     <string name="habit_list_empty_message">No habits yet. Tap + to add your first habit.</string>
     <string name="habit_list_item_accessibility_readout">%1$s. Streak %2$s. Created %3$s.</string>
+    <string name="habit_list_checking_in_announcement">%1$s. Checking in.</string>
+    <string name="habit_list_check_in_success_announcement">%1$s checked in.</string>
     <string name="check_in_already_checked_in">Already checked in today.</string>
     <string name="check_in_generic_error">Failed to check in. Please try again.</string>
     <string name="created_at_just_now">Just now</string>

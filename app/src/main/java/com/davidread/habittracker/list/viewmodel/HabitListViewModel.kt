@@ -129,6 +129,21 @@ class HabitListViewModel @Inject constructor(
                         is HabitListViewIntent.ClickCheckInHabitButton -> intent.habitId
                         else -> ""
                     }
+                    val habitName = when (intent) {
+                        is HabitListViewIntent.ClickHabit -> intent.habitName
+                        is HabitListViewIntent.ClickCheckInHabitButton -> intent.habitName
+                        else -> ""
+                    }
+                    if (habitName.isNotBlank()) {
+                        _viewEffect.emit(
+                            HabitListViewEffect.AnnounceForAccessibility(
+                                application.getString(
+                                    R.string.habit_list_checking_in_announcement,
+                                    habitName
+                                )
+                            )
+                        )
+                    }
                     _viewState.update {
                         it.copy(checkingInHabitIds = it.checkingInHabitIds + habitId)
                     }
@@ -137,6 +152,19 @@ class HabitListViewModel @Inject constructor(
                         it.copy(checkingInHabitIds = it.checkingInHabitIds - habitId)
                     }
                     when (result) {
+                        is CheckInResult.Success -> {
+                            if (habitName.isNotBlank()) {
+                                _viewEffect.emit(
+                                    HabitListViewEffect.AnnounceForAccessibility(
+                                        application.getString(
+                                            R.string.habit_list_check_in_success_announcement,
+                                            habitName
+                                        )
+                                    )
+                                )
+                            }
+                        }
+
                         is CheckInResult.AlreadyCheckedInError -> {
                             _viewEffect.emit(
                                 HabitListViewEffect.ShowSnackbar(
