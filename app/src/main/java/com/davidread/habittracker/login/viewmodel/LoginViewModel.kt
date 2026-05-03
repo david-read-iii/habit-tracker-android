@@ -73,6 +73,12 @@ class LoginViewModel @Inject constructor(
         is LoginViewIntent.ClickLoginButton -> handleLoginButtonClick()
 
         is LoginViewIntent.ClickSignUpLink -> {
+            _viewState.update {
+                it.copy(
+                    emailTextFieldViewState = LoginTextFieldViewState(),
+                    passwordTextFieldViewState = LoginTextFieldViewState()
+                )
+            }
             viewModelScope.launch {
                 _viewEffect.emit(LoginViewEffect.NavigateToSignUpScreen)
             }

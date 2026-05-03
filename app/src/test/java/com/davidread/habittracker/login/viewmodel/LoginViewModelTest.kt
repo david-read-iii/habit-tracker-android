@@ -97,14 +97,22 @@ class LoginViewModelTest {
     @Test
     fun test_processIntent_ClickSignUpLink() = runTest {
         turbineScope {
-            val turbine = viewModel.viewEffect.testIn(backgroundScope)
+            val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
+            val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+
+            viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = EMAIL))
+            viewModel.processIntent(LoginViewIntent.ChangePasswordValue(newValue = PASSWORD))
             viewModel.processIntent(LoginViewIntent.ClickSignUpLink)
+
+            val state = viewStateTurbine.expectMostRecentItem()
+            Assert.assertEquals("", state.emailTextFieldViewState.value)
+            Assert.assertEquals("", state.passwordTextFieldViewState.value)
 
             Assert.assertEquals(
                 LoginViewEffect.NavigateToSignUpScreen,
-                turbine.expectMostRecentItem()
+                viewEffectTurbine.expectMostRecentItem()
             )
-            turbine.expectNoEvents()
+            viewEffectTurbine.expectNoEvents()
         }
     }
 
