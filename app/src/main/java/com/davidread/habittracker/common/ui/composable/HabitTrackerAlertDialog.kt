@@ -42,7 +42,8 @@ fun HabitTrackerAlertDialog(
     onDismissRequest: () -> Unit = {},
     dismissOnBackPress: Boolean = false,
     dismissOnClickOutside: Boolean = false,
-    mode: HabitTrackerAlertDialogMode = HabitTrackerAlertDialogMode.Default
+    mode: HabitTrackerAlertDialogMode = HabitTrackerAlertDialogMode.Default,
+    content: @Composable () -> Unit = {}
 ) {
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
@@ -110,6 +111,7 @@ fun HabitTrackerAlertDialog(
                     }
                 }
             }
+            content()
         }
     }
 }

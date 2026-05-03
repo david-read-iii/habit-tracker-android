@@ -167,6 +167,8 @@ fun HabitListScreen(
         habits = habits,
         viewState = viewState,
         snackbarHostState = snackbarHostState,
+        accessibilityAnnouncement = accessibilityAnnouncement,
+        accessibilityAnnouncementId = accessibilityAnnouncementId,
         onClickAddHabit = { viewModel.processIntent(HabitListViewIntent.ClickAddHabitButton) },
         onDismissHabitEditorBottomSheet = {
             viewModel.processIntent(HabitListViewIntent.DismissHabitEditorBottomSheet)
@@ -220,6 +222,8 @@ fun HabitListContent(
     habits: LazyPagingItems<HabitViewState>,
     viewState: HabitListViewState = HabitListViewState(),
     snackbarHostState: SnackbarHostState,
+    accessibilityAnnouncement: String = "",
+    accessibilityAnnouncementId: Int = 0,
     onClickAddHabit: () -> Unit = {},
     onDismissHabitEditorBottomSheet: () -> Unit = {},
     onHabitEditorNameChange: (String) -> Unit = {},
@@ -360,6 +364,8 @@ fun HabitListContent(
     if (viewState.habitEditorBottomSheetViewState.showBottomSheet) {
         HabitEditorBottomSheet(
             viewState = viewState.habitEditorBottomSheetViewState,
+            accessibilityAnnouncement = accessibilityAnnouncement,
+            accessibilityAnnouncementId = accessibilityAnnouncementId,
             onNameChange = onHabitEditorNameChange,
             onDismiss = onDismissHabitEditorBottomSheet,
             onSubmit = onHabitEditorSubmit
@@ -369,6 +375,8 @@ fun HabitListContent(
     if (viewState.deleteHabitDialogViewState.showDialog) {
         DeleteHabitConfirmationDialog(
             viewState = viewState.deleteHabitDialogViewState,
+            accessibilityAnnouncement = accessibilityAnnouncement,
+            accessibilityAnnouncementId = accessibilityAnnouncementId,
             onDismiss = onDismissDeleteHabitDialog,
             onConfirm = onConfirmDeleteHabit
         )
@@ -831,6 +839,8 @@ fun HabitListEmptyStateItem(modifier: Modifier = Modifier) {
 @Composable
 private fun HabitEditorBottomSheet(
     viewState: HabitEditorBottomSheetViewState,
+    accessibilityAnnouncement: String = "",
+    accessibilityAnnouncementId: Int = 0,
     onNameChange: (String) -> Unit = {},
     onDismiss: () -> Unit = {},
     onSubmit: () -> Unit = {}
@@ -963,6 +973,10 @@ private fun HabitEditorBottomSheet(
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
+        AccessibilityAnnouncementHost(
+            message = accessibilityAnnouncement,
+            announcementId = accessibilityAnnouncementId
+        )
     }
 }
 
@@ -970,6 +984,8 @@ private fun HabitEditorBottomSheet(
 @Composable
 private fun DeleteHabitConfirmationDialog(
     viewState: DeleteHabitDialogViewState,
+    accessibilityAnnouncement: String = "",
+    accessibilityAnnouncementId: Int = 0,
     onDismiss: () -> Unit = {},
     onConfirm: () -> Unit = {}
 ) {
@@ -988,7 +1004,12 @@ private fun DeleteHabitConfirmationDialog(
         } else {
             HabitTrackerAlertDialogMode.Default
         }
-    )
+    ) {
+        AccessibilityAnnouncementHost(
+            message = accessibilityAnnouncement,
+            announcementId = accessibilityAnnouncementId
+        )
+    }
 }
 
 @Preview(showBackground = true)
