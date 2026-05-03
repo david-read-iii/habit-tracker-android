@@ -42,7 +42,6 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-metrics
           emulator-boot-timeout: 900
           script: |
-            bash -c '
             set -eu
 
             wait_for_android_ready() {
@@ -99,4 +98,3 @@ jobs:
               wait_for_android_ready
               attempt=$((attempt + 1))
             done
-            '
