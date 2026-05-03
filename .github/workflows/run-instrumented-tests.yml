@@ -42,22 +42,23 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-metrics
           emulator-boot-timeout: 900
           script: |
+            bash -c '
             set -eu
 
             wait_for_android_ready() {
               adb wait-for-device
 
               echo "Waiting for boot completion props..."
-              until adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' | grep -q '^1$'; do sleep 3; done
-              until adb shell getprop dev.bootcomplete 2>/dev/null | tr -d '\r' | grep -q '^1$'; do sleep 3; done
-              until adb shell getprop init.svc.bootanim 2>/dev/null | tr -d '\r' | grep -q '^stopped$'; do sleep 3; done
+              until adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r" | grep -q "^1$"; do sleep 3; done
+              until adb shell getprop dev.bootcomplete 2>/dev/null | tr -d "\r" | grep -q "^1$"; do sleep 3; done
+              until adb shell getprop init.svc.bootanim 2>/dev/null | tr -d "\r" | grep -q "^stopped$"; do sleep 3; done
 
               echo "Waiting for framework services..."
-              until adb shell service check package 2>/dev/null | grep -q 'Service package: found'; do sleep 3; done
-              until adb shell service check activity 2>/dev/null | grep -q 'Service activity: found'; do sleep 3; done
+              until adb shell service check package 2>/dev/null | grep -q "Service package: found"; do sleep 3; done
+              until adb shell service check activity 2>/dev/null | grep -q "Service activity: found"; do sleep 3; done
 
               echo "Verifying PackageManager command path..."
-              until adb shell pm path android 2>/dev/null | grep -q 'package:'; do sleep 3; done
+              until adb shell pm path android 2>/dev/null | grep -q "package:"; do sleep 3; done
             }
 
             dump_diagnostics() {
@@ -98,3 +99,4 @@ jobs:
               wait_for_android_ready
               attempt=$((attempt + 1))
             done
+            '
