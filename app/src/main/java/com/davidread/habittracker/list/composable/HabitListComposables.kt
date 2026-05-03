@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -71,6 +72,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -297,7 +299,12 @@ fun HabitListContent(
                                         },
                                         onClick = { onHabitClick(habit.id) },
                                         onCheckInClick = { onHabitCheckInClick(habit.id) },
-                                        onRenameClick = { onHabitRenameClick(habit.id, habit.name) },
+                                        onRenameClick = {
+                                            onHabitRenameClick(
+                                                habit.id,
+                                                habit.name
+                                            )
+                                        },
                                         onDeleteClick = { onHabitDeleteClick(habit.id) }
                                     )
                                     HorizontalDivider()
@@ -735,12 +742,19 @@ fun EndOfPaginationListItem(modifier: Modifier = Modifier) {
 
 @Composable
 fun HabitListEmptyStateItem(modifier: Modifier = Modifier) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.undraw_empty_4zx0),
+            contentDescription = null,
+            modifier = Modifier.size(192.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.habit_list_empty_message),
             style = MaterialTheme.typography.titleMedium,
@@ -1104,8 +1118,8 @@ private fun HabitListContentPreview_EmptyList() {
         PagingData.from(
             emptyList<HabitViewState>(),
             sourceLoadStates = LoadStates(
-                refresh = LoadState.NotLoading(false),
-                prepend = LoadState.NotLoading(false),
+                refresh = LoadState.NotLoading(true),
+                prepend = LoadState.NotLoading(true),
                 append = LoadState.NotLoading(true)
             )
         )
