@@ -7,6 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.usecase.LogoutUseCase
 import com.davidread.habittracker.list.mapper.HabitMapper
 import com.davidread.habittracker.list.model.CheckInResult
 import com.davidread.habittracker.list.model.CreateHabitResult
@@ -24,9 +25,7 @@ import com.davidread.habittracker.list.usecase.CreateHabitUseCase
 import com.davidread.habittracker.list.usecase.DeleteHabitUseCase
 import com.davidread.habittracker.list.usecase.GetHabitsUseCase
 import com.davidread.habittracker.list.usecase.UpdateHabitUseCase
-import com.davidread.habittracker.common.usecase.LogoutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -281,7 +280,10 @@ class HabitListViewModel @Inject constructor(
                     if (habitName.isNotBlank()) {
                         _viewEffect.emit(
                             HabitListViewEffect.AnnounceForAccessibility(
-                                application.getString(R.string.habit_list_deleting_announcement, habitName)
+                                application.getString(
+                                    R.string.habit_list_deleting_announcement,
+                                    habitName
+                                )
                             )
                         )
                     }
@@ -294,7 +296,10 @@ class HabitListViewModel @Inject constructor(
                             if (habitName.isNotBlank()) {
                                 _viewEffect.emit(
                                     HabitListViewEffect.AnnounceForAccessibility(
-                                        application.getString(R.string.habit_list_delete_success_announcement, habitName)
+                                        application.getString(
+                                            R.string.habit_list_delete_success_announcement,
+                                            habitName
+                                        )
                                     )
                                 )
                             }
@@ -333,7 +338,16 @@ class HabitListViewModel @Inject constructor(
     }
 
     private suspend fun handleSubmitAddHabit(currentState: HabitListViewState) {
-        when (createHabitUseCase(currentState.habitEditorBottomSheetViewState.textFieldViewState.value)) {
+        val habitName = currentState.habitEditorBottomSheetViewState.textFieldViewState.value
+        if (habitName.isNotBlank()) {
+            _viewEffect.emit(
+                HabitListViewEffect.AnnounceForAccessibility(
+                    application.getString(R.string.habit_list_adding_announcement, habitName)
+                )
+            )
+        }
+
+        when (createHabitUseCase(habitName)) {
             is CreateHabitResult.Success -> {
                 _viewState.update {
                     it.copy(
@@ -342,6 +356,16 @@ class HabitListViewModel @Inject constructor(
                             textFieldViewState = HabitListTextFieldViewState(),
                             isSubmitting = false,
                             editorState = EditorState.Add
+                        )
+                    )
+                }
+                if (habitName.isNotBlank()) {
+                    _viewEffect.emit(
+                        HabitListViewEffect.AnnounceForAccessibility(
+                            application.getString(
+                                R.string.habit_list_add_success_announcement,
+                                habitName
+                            )
                         )
                     )
                 }
@@ -382,10 +406,19 @@ class HabitListViewModel @Inject constructor(
     }
 
     private suspend fun handleSubmitEditHabit(currentState: HabitListViewState, habitId: String) {
+        val habitName = currentState.habitEditorBottomSheetViewState.textFieldViewState.value
+        if (habitName.isNotBlank()) {
+            _viewEffect.emit(
+                HabitListViewEffect.AnnounceForAccessibility(
+                    application.getString(R.string.habit_list_updating_announcement, habitName)
+                )
+            )
+        }
+
         when (
             updateHabitUseCase(
                 id = habitId,
-                name = currentState.habitEditorBottomSheetViewState.textFieldViewState.value
+                name = habitName
             )
         ) {
             is UpdateHabitResult.Success -> {
@@ -395,6 +428,16 @@ class HabitListViewModel @Inject constructor(
                             showBottomSheet = false,
                             textFieldViewState = HabitListTextFieldViewState(),
                             isSubmitting = false
+                        )
+                    )
+                }
+                if (habitName.isNotBlank()) {
+                    _viewEffect.emit(
+                        HabitListViewEffect.AnnounceForAccessibility(
+                            application.getString(
+                                R.string.habit_list_update_success_announcement,
+                                habitName
+                            )
                         )
                     )
                 }

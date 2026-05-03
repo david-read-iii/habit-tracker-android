@@ -29,6 +29,10 @@
     <string name="habit_list_check_in_success_announcement">%1$s checked in.</string>
     <string name="habit_list_deleting_announcement">Deleting %1$s.</string>
     <string name="habit_list_delete_success_announcement">%1$s deleted.</string>
+    <string name="habit_list_adding_announcement">Adding %1$s.</string>
+    <string name="habit_list_add_success_announcement">%1$s added.</string>
+    <string name="habit_list_updating_announcement">Saving %1$s.</string>
+    <string name="habit_list_update_success_announcement">%1$s updated.</string>
     <string name="check_in_already_checked_in">Already checked in today.</string>
     <string name="check_in_generic_error">Failed to check in. Please try again.</string>
     <string name="created_at_just_now">Just now</string>

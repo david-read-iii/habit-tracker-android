@@ -71,6 +71,18 @@ class HabitListViewModelTest {
         every {
             application.getString(R.string.habit_list_delete_success_announcement, HABIT_NAME)
         } returns DELETE_SUCCESS_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_adding_announcement, HABIT_NAME)
+        } returns ADDING_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_add_success_announcement, HABIT_NAME)
+        } returns ADD_SUCCESS_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_updating_announcement, UPDATED_HABIT_NAME)
+        } returns UPDATING_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_update_success_announcement, UPDATED_HABIT_NAME)
+        } returns UPDATE_SUCCESS_ANNOUNCEMENT
         every { application.getString(R.string.habit_list_add_habit_sheet_title) } returns
             ADD_HABIT_SHEET_TITLE
         every { application.getString(R.string.habit_list_edit_habit_sheet_title) } returns
@@ -223,6 +235,10 @@ class HabitListViewModelTest {
             Assert.assertTrue(creatingHabitState.showBottomSheet)
             Assert.assertEquals(HABIT_NAME, creatingHabitState.textFieldViewState.value)
             Assert.assertTrue(creatingHabitState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(ADDING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
 
             createHabitResultDeferred.complete(CreateHabitResult.Success)
             advanceUntilIdle()
@@ -234,6 +250,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
             Assert.assertFalse(completedState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(ADD_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { createHabitUseCase(HABIT_NAME) }
         }
     }
@@ -287,6 +307,10 @@ class HabitListViewModelTest {
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(ADDING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
+            Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(CREATE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
             )
@@ -339,6 +363,10 @@ class HabitListViewModelTest {
             Assert.assertEquals(UPDATED_HABIT_NAME, editingState.textFieldViewState.value)
             Assert.assertTrue(editingState.isSubmitting)
             Assert.assertEquals(EditorState.Edit(HABIT_ID), editingState.editorState)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(UPDATING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
 
             updateHabitResultDeferred.complete(UpdateHabitResult.Success)
             advanceUntilIdle()
@@ -349,7 +377,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
             Assert.assertFalse(completedState.isSubmitting)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(UPDATE_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify {
                 updateHabitUseCase(
                     id = HABIT_ID,
@@ -419,6 +450,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(habitEditorBottomSheetViewState.textFieldViewState.isError)
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(UPDATING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(UPDATE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -756,6 +791,10 @@ class HabitListViewModelTest {
         private const val CHECK_IN_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes checked in."
         private const val DELETING_ANNOUNCEMENT = "Deleting Read for 20 minutes."
         private const val DELETE_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes deleted."
+        private const val ADDING_ANNOUNCEMENT = "Adding Read for 20 minutes."
+        private const val ADD_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes added."
+        private const val UPDATING_ANNOUNCEMENT = "Saving Read for 30 minutes."
+        private const val UPDATE_SUCCESS_ANNOUNCEMENT = "Read for 30 minutes updated."
         private const val INVALID_HABIT_NAME_MESSAGE = "Please enter a habit name"
         private const val CREATE_HABIT_SUCCESS_MESSAGE = "Habit added successfully."
         private const val CREATE_HABIT_ERROR_MESSAGE = "Failed to add habit. Please try again."
