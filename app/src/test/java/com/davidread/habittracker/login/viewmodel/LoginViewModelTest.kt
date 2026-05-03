@@ -38,6 +38,7 @@ class LoginViewModelTest {
             every { getString(R.string.email_validation_error_message) } returns EMAIL_ERROR_MESSAGE
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
             every { getString(R.string.login_credentials_incorrect_error_message) } returns INCORRECT_CREDENTIALS_ERROR_MESSAGE
+            every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
         }
     }
 
@@ -50,9 +51,21 @@ class LoginViewModelTest {
     fun test_processIntent_ChangeEmailValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
+
+            coEvery {
+                loginFlowUseCase.invoke(any(), any())
+            } returns LoginFlowResult.ValidationError(
+                emailValidationResult = ValidationResult.Invalid,
+                passwordValidationResult = ValidationResult.Invalid
+            )
+            viewModel.processIntent(LoginViewIntent.ClickLoginButton)
+
             viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = EMAIL))
 
-            Assert.assertEquals(EMAIL, turbine.expectMostRecentItem().emailTextFieldViewState.value)
+            val state = turbine.expectMostRecentItem()
+            Assert.assertEquals(EMAIL, state.emailTextFieldViewState.value)
+            Assert.assertEquals(false, state.emailTextFieldViewState.isError)
+            Assert.assertEquals("", state.emailTextFieldViewState.errorMessage)
         }
     }
 
@@ -60,12 +73,21 @@ class LoginViewModelTest {
     fun test_processIntent_ChangePasswordValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
+
+            coEvery {
+                loginFlowUseCase.invoke(any(), any())
+            } returns LoginFlowResult.ValidationError(
+                emailValidationResult = ValidationResult.Invalid,
+                passwordValidationResult = ValidationResult.Invalid
+            )
+            viewModel.processIntent(LoginViewIntent.ClickLoginButton)
+
             viewModel.processIntent(LoginViewIntent.ChangePasswordValue(newValue = PASSWORD))
 
-            Assert.assertEquals(
-                PASSWORD,
-                turbine.expectMostRecentItem().passwordTextFieldViewState.value
-            )
+            val state = turbine.expectMostRecentItem()
+            Assert.assertEquals(PASSWORD, state.passwordTextFieldViewState.value)
+            Assert.assertEquals(false, state.passwordTextFieldViewState.isError)
+            Assert.assertEquals("", state.passwordTextFieldViewState.errorMessage)
         }
     }
 
@@ -73,11 +95,20 @@ class LoginViewModelTest {
     fun test_processIntent_ClickClearEmailButton() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
-            viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = EMAIL))
-            Assert.assertEquals(EMAIL, turbine.expectMostRecentItem().emailTextFieldViewState.value)
+
+            coEvery {
+                loginFlowUseCase.invoke(any(), any())
+            } returns LoginFlowResult.ValidationError(
+                emailValidationResult = ValidationResult.Invalid,
+                passwordValidationResult = ValidationResult.Invalid
+            )
+            viewModel.processIntent(LoginViewIntent.ClickLoginButton)
 
             viewModel.processIntent(LoginViewIntent.ClickClearEmailButton)
-            Assert.assertEquals("", turbine.expectMostRecentItem().emailTextFieldViewState.value)
+            val state = turbine.expectMostRecentItem()
+            Assert.assertEquals("", state.emailTextFieldViewState.value)
+            Assert.assertEquals(false, state.emailTextFieldViewState.isError)
+            Assert.assertEquals("", state.emailTextFieldViewState.errorMessage)
         }
     }
 
@@ -151,5 +182,6 @@ class LoginViewModelTest {
             "Please enter a password with at least 8 characters"
         private const val INCORRECT_CREDENTIALS_ERROR_MESSAGE =
             "Incorrect email or password. Please try again."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT = "Please check the form and try again"
     }
 }

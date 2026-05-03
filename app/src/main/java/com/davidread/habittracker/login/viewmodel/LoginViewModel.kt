@@ -40,7 +40,9 @@ class LoginViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     emailTextFieldViewState = it.emailTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -50,7 +52,9 @@ class LoginViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     passwordTextFieldViewState = it.passwordTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -59,7 +63,11 @@ class LoginViewModel @Inject constructor(
         is LoginViewIntent.ClickClearEmailButton -> {
             _viewState.update {
                 it.copy(
-                    emailTextFieldViewState = it.emailTextFieldViewState.copy(value = "")
+                    emailTextFieldViewState = it.emailTextFieldViewState.copy(
+                        value = "",
+                        isError = false,
+                        errorMessage = ""
+                    )
                 )
             }
         }

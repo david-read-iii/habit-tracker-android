@@ -40,7 +40,9 @@ class SignUpViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     emailTextFieldViewState = it.emailTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -50,7 +52,9 @@ class SignUpViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     passwordTextFieldViewState = it.passwordTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -60,7 +64,9 @@ class SignUpViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     confirmPasswordTextFieldViewState = it.confirmPasswordTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -69,7 +75,11 @@ class SignUpViewModel @Inject constructor(
         is SignUpViewIntent.ClickClearEmailButton -> {
             _viewState.update {
                 it.copy(
-                    emailTextFieldViewState = it.emailTextFieldViewState.copy(value = "")
+                    emailTextFieldViewState = it.emailTextFieldViewState.copy(
+                        value = "",
+                        isError = false,
+                        errorMessage = ""
+                    )
                 )
             }
         }
