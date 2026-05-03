@@ -286,8 +286,6 @@ class HabitListViewModel @Inject constructor(
                         )
                     }
 
-                    delay(10000)
-
                     when (deleteHabitUseCase(habitId)) {
                         is DeleteHabitResult.Success -> {
                             _viewState.update {
