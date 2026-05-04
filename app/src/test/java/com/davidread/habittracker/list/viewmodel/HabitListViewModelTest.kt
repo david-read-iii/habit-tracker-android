@@ -98,6 +98,8 @@ class HabitListViewModelTest {
             ADD_HABIT_SUBMIT_TEXT
         every { application.getString(R.string.habit_list_edit_habit_submit) } returns
             EDIT_HABIT_SUBMIT_TEXT
+        every { application.getString(R.string.form_validation_error_announcement) } returns
+            FORM_VALIDATION_ERROR_ANNOUNCEMENT
         every { application.getString(R.string.habit_list_add_habit_name_error) } returns INVALID_HABIT_NAME_MESSAGE
         every { application.getString(R.string.create_habit_success) } returns CREATE_HABIT_SUCCESS_MESSAGE
         every { application.getString(R.string.create_habit_error) } returns CREATE_HABIT_ERROR_MESSAGE
@@ -483,7 +485,10 @@ class HabitListViewModelTest {
                 habitEditorBottomSheetViewState.textFieldViewState.errorMessage
             )
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(FORM_VALIDATION_ERROR_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { createHabitUseCase(INVALID_HABIT_NAME) }
         }
     }
@@ -617,7 +622,10 @@ class HabitListViewModelTest {
             )
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             Assert.assertEquals(EditorState.Edit(HABIT_ID), habitEditorBottomSheetViewState.editorState)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(FORM_VALIDATION_ERROR_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify {
                 updateHabitUseCase(
                     id = HABIT_ID,
@@ -991,6 +999,7 @@ class HabitListViewModelTest {
         private const val PREPEND_SUCCESS_ANNOUNCEMENT = "Earlier habits loaded."
         private const val APPEND_LOADING_ANNOUNCEMENT = "Loading more habits."
         private const val APPEND_SUCCESS_ANNOUNCEMENT = "More habits loaded."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT = "Please fix the errors in the form."
         private const val INVALID_HABIT_NAME_MESSAGE = "Please enter a habit name"
         private const val CREATE_HABIT_SUCCESS_MESSAGE = "Habit added successfully."
         private const val CREATE_HABIT_ERROR_MESSAGE = "Failed to add habit. Please try again."

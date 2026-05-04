@@ -427,6 +427,11 @@ class HabitListViewModel @Inject constructor(
                         )
                     )
                 }
+                _viewEffect.emit(
+                    HabitListViewEffect.AnnounceForAccessibility(
+                        application.getString(R.string.form_validation_error_announcement)
+                    )
+                )
             }
 
             is CreateHabitResult.Error -> {
@@ -499,6 +504,11 @@ class HabitListViewModel @Inject constructor(
                         )
                     )
                 }
+                _viewEffect.emit(
+                    HabitListViewEffect.AnnounceForAccessibility(
+                        application.getString(R.string.form_validation_error_announcement)
+                    )
+                )
             }
 
             is UpdateHabitResult.Error -> {
