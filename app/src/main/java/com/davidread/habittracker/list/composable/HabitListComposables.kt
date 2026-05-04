@@ -112,6 +112,7 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
 import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.common.ui.theme.HabitTrackerThemeExtras
 import com.davidread.habittracker.list.model.DeleteHabitDialogViewState
 import com.davidread.habittracker.list.model.EditorState
 import com.davidread.habittracker.list.model.HabitEditorBottomSheetViewState
@@ -598,22 +599,22 @@ private fun HabitListItemSwipeActions(
         SwipeActionButton(
             icon = Icons.Filled.Delete,
             label = stringResource(R.string.habit_list_delete_action),
-            containerColor = Color.SwipeDeleteContainer,
-            contentColor = Color.SwipeDeleteContent,
+            containerColor = HabitTrackerThemeExtras.colors.swipeDeleteContainer,
+            contentColor = HabitTrackerThemeExtras.colors.swipeDeleteContent,
             onClick = onDeleteClick
         )
         SwipeActionButton(
             icon = Icons.Filled.Edit,
             label = stringResource(R.string.habit_list_rename_action),
-            containerColor = Color.SwipeRenameContainer,
-            contentColor = Color.SwipeRenameContent,
+            containerColor = HabitTrackerThemeExtras.colors.swipeRenameContainer,
+            contentColor = HabitTrackerThemeExtras.colors.swipeRenameContent,
             onClick = onRenameClick
         )
         SwipeActionButton(
             icon = Icons.Filled.Whatshot,
             label = stringResource(R.string.habit_list_check_in_action),
-            containerColor = Color.SwipeCheckInContainer,
-            contentColor = Color.SwipeCheckInContent,
+            containerColor = HabitTrackerThemeExtras.colors.swipeCheckInContainer,
+            contentColor = HabitTrackerThemeExtras.colors.swipeCheckInContent,
             onClick = onCheckInClick
         )
     }

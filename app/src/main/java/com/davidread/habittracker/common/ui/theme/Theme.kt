@@ -7,6 +7,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 private val LightColorScheme = lightColorScheme(
     primary = Color.GreenPrimary,
@@ -40,15 +41,20 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun HabitTrackerTheme(content: @Composable () -> Unit) {
-    val colorScheme = if (isSystemInDarkTheme()) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val colorScheme = if (isDarkTheme) {
         DarkColorScheme
     } else {
         LightColorScheme
     }
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography(),
-        shapes = Shapes(),
-        content = content
-    )
+    val extendedColors = if (isDarkTheme) DarkExtendedColors else LightExtendedColors
+
+    CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography(),
+            shapes = Shapes(),
+            content = content
+        )
+    }
 }
