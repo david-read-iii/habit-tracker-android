@@ -405,8 +405,6 @@ fun HabitListContent(
     if (viewState.deleteHabitDialogViewState.showDialog) {
         DeleteHabitConfirmationDialog(
             viewState = viewState.deleteHabitDialogViewState,
-            accessibilityAnnouncement = accessibilityAnnouncement,
-            accessibilityAnnouncementId = accessibilityAnnouncementId,
             onDismiss = onDismissDeleteHabitDialog,
             onConfirm = onConfirmDeleteHabit
         )
@@ -1018,8 +1016,6 @@ private fun HabitEditorBottomSheet(
 @Composable
 private fun DeleteHabitConfirmationDialog(
     viewState: DeleteHabitDialogViewState,
-    accessibilityAnnouncement: String = "",
-    accessibilityAnnouncementId: Int = 0,
     onDismiss: () -> Unit = {},
     onConfirm: () -> Unit = {}
 ) {
@@ -1034,16 +1030,16 @@ private fun DeleteHabitConfirmationDialog(
         dismissOnClickOutside = !viewState.isSubmitting,
         onDismissRequest = onDismiss,
         mode = if (viewState.isSubmitting) {
-            HabitTrackerAlertDialogMode.Loading
+            HabitTrackerAlertDialogMode.Loading(
+                accessibilityAnnouncementOnLoading = stringResource(
+                    R.string.habit_list_deleting_announcement,
+                    viewState.habitName
+                )
+            )
         } else {
             HabitTrackerAlertDialogMode.Default
         }
-    ) {
-        AccessibilityAnnouncementHost(
-            message = accessibilityAnnouncement,
-            announcementId = accessibilityAnnouncementId
-        )
-    }
+    )
 }
 
 @Preview(showBackground = true)

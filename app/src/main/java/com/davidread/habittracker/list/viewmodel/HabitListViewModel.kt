@@ -282,16 +282,6 @@ class HabitListViewModel @Inject constructor(
                             )
                         )
                     }
-                    if (habitName.isNotBlank()) {
-                        _viewEffect.emit(
-                            HabitListViewEffect.AnnounceForAccessibility(
-                                application.getString(
-                                    R.string.habit_list_deleting_announcement,
-                                    habitName
-                                )
-                            )
-                        )
-                    }
 
                     when (deleteHabitUseCase(habitId)) {
                         is DeleteHabitResult.Success -> {

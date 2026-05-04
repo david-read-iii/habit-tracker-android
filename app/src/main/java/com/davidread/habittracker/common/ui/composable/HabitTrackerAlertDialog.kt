@@ -19,6 +19,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,9 +48,23 @@ fun HabitTrackerAlertDialog(
     onDismissRequest: () -> Unit = {},
     dismissOnBackPress: Boolean = false,
     dismissOnClickOutside: Boolean = false,
-    mode: HabitTrackerAlertDialogMode = HabitTrackerAlertDialogMode.Default,
-    content: @Composable () -> Unit = {}
+    mode: HabitTrackerAlertDialogMode = HabitTrackerAlertDialogMode.Default
 ) {
+    val isLoading = mode is HabitTrackerAlertDialogMode.Loading
+    var accessibilityAnnouncement by remember { mutableStateOf("") }
+    var accessibilityAnnouncementId by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(mode) {
+        if (mode is HabitTrackerAlertDialogMode.Loading) {
+            mode.accessibilityAnnouncementOnLoading
+                ?.takeIf { it.isNotBlank() }
+                ?.let {
+                    accessibilityAnnouncement = it
+                    accessibilityAnnouncementId += 1
+                }
+        }
+    }
+
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
         modifier = modifier,
@@ -87,7 +107,7 @@ fun HabitTrackerAlertDialog(
                     negativeButtonText?.let {
                         TextButton(
                             onClick = onNegativeButtonClick,
-                            enabled = mode == HabitTrackerAlertDialogMode.Default
+                            enabled = !isLoading
                         ) {
                             Text(text = it)
                         }
@@ -95,9 +115,9 @@ fun HabitTrackerAlertDialog(
                     }
                     TextButton(
                         onClick = onPrimaryButtonClick,
-                        enabled = mode == HabitTrackerAlertDialogMode.Default
+                        enabled = !isLoading
                     ) {
-                        if (mode == HabitTrackerAlertDialogMode.Loading) {
+                        if (isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
@@ -111,14 +131,18 @@ fun HabitTrackerAlertDialog(
                     }
                 }
             }
-            content()
+            AccessibilityAnnouncementHost(
+                message = accessibilityAnnouncement,
+                announcementId = accessibilityAnnouncementId
+            )
         }
     }
 }
 
 sealed class HabitTrackerAlertDialogMode {
     object Default : HabitTrackerAlertDialogMode()
-    object Loading : HabitTrackerAlertDialogMode()
+    data class Loading(val accessibilityAnnouncementOnLoading: String? = null) :
+        HabitTrackerAlertDialogMode()
 }
 
 @Preview
@@ -151,8 +175,7 @@ private fun HabitTrackerAlertDialogPreview_LoadingMode() {
             message = "Are you sure you want to delete this habit?",
             negativeButtonText = "No",
             primaryButtonText = "Yes",
-            mode = HabitTrackerAlertDialogMode.Loading
+            mode = HabitTrackerAlertDialogMode.Loading()
         )
     }
 }
-

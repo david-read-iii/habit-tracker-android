@@ -178,7 +178,11 @@ fun ResetTimezoneConfirmationDialog(
         dismissOnClickOutside = !isSubmitting,
         onDismissRequest = onDismiss,
         mode = when (isSubmitting) {
-            true -> HabitTrackerAlertDialogMode.Loading
+            true -> HabitTrackerAlertDialogMode.Loading(
+                accessibilityAnnouncementOnLoading = stringResource(
+                    R.string.settings_reset_timezone_loading_announcement
+                )
+            )
             false -> HabitTrackerAlertDialogMode.Default
         }
     )

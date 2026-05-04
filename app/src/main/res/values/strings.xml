@@ -77,6 +77,7 @@
     <string name="settings_reset_timezone">Reset timezone</string>
     <string name="settings_reset_timezone_dialog_title">Reset timezone?</string>
     <string name="settings_reset_timezone_dialog_message">Are you sure you want to reset your timezone? This will reset all your streaks.</string>
+    <string name="settings_reset_timezone_loading_announcement">Resetting timezone.</string>
     <string name="settings_reset_timezone_success">Timezone reset successfully. Streaks have been reset.</string>
     <string name="settings_reset_timezone_error">Failed to reset timezone. Please try again.</string>
     <string name="settings_log_out">Log out</string>
