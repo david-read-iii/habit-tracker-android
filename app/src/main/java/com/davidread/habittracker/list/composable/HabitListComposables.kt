@@ -79,10 +79,12 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.TextRange
@@ -711,7 +713,15 @@ private fun SwipeActionButton(
             .width(60.dp)
             .fillMaxHeight()
             .background(color = containerColor)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = label
+                role = Role.Button
+                onClick {
+                    onClick()
+                    true
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         Column(
