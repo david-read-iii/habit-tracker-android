@@ -7,6 +7,8 @@ object Color {
     val AmberSecondary = Color(0xFFFFC107)
     val TealTertiary = Color(0xFF009688)
     val LightGrayBackground = Color(0xFFF5F5F5)
+    val DarkGrayBackground = Color(0xFF121212)
+    val DarkGraySurface = Color(0xFF1E1E1E)
     val White = Color(0xFFFFFFFF)
     val Black = Color(0xFF000000)
     val RedError = Color(0xFFB00020)

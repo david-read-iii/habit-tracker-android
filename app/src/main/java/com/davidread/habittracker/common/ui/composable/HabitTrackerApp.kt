@@ -4,7 +4,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -18,50 +22,55 @@ import com.davidread.habittracker.signup.composable.SignUpScreen
 fun HabitTrackerApp() {
     val navController = rememberNavController()
 
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Login.route,
-        enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
-        exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) + fadeOut() },
-        popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) + fadeIn() },
-        popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() }
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        composable(route = Screen.Login.route) {
-            LoginScreen(
-                onNavigateToHabitListScreen = { navController.navigate(Screen.HabitList.route) },
-                onNavigateToSignUpScreen = { navController.navigate(Screen.SignUp.route) }
-            )
-        }
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Login.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }) + fadeOut() },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }) + fadeIn() },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() }
+        ) {
+            composable(route = Screen.Login.route) {
+                LoginScreen(
+                    onNavigateToHabitListScreen = { navController.navigate(Screen.HabitList.route) },
+                    onNavigateToSignUpScreen = { navController.navigate(Screen.SignUp.route) }
+                )
+            }
 
-        composable(route = Screen.SignUp.route) {
-            SignUpScreen(
-                onNavigateToHabitListScreen = {
-                    navController.navigate(Screen.HabitList.route) {
-                        popUpTo(Screen.SignUp.route) { inclusive = true }
+            composable(route = Screen.SignUp.route) {
+                SignUpScreen(
+                    onNavigateToHabitListScreen = {
+                        navController.navigate(Screen.HabitList.route) {
+                            popUpTo(Screen.SignUp.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(route = Screen.HabitList.route) {
+                HabitListScreen(
+                    onNavigateToSettingsScreen = {
+                        navController.navigate(Screen.Settings.route)
+                    },
+                    onNavigateToLoginScreen = {
+                        navController.popBackStack(Screen.Login.route, inclusive = false)
                     }
-                },
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
+                )
+            }
 
-        composable(route = Screen.HabitList.route) {
-            HabitListScreen(
-                onNavigateToSettingsScreen = {
-                    navController.navigate(Screen.Settings.route)
-                },
-                onNavigateToLoginScreen = {
-                    navController.popBackStack(Screen.Login.route, inclusive = false)
-                }
-            )
-        }
-
-        composable(route = Screen.Settings.route) {
-            SettingsScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToLoginScreen = {
-                    navController.popBackStack(Screen.Login.route, inclusive = false)
-                }
-            )
+            composable(route = Screen.Settings.route) {
+                SettingsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToLoginScreen = {
+                        navController.popBackStack(Screen.Login.route, inclusive = false)
+                    }
+                )
+            }
         }
     }
 }
