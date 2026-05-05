@@ -35,8 +35,8 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = Color.White,
     surface = Color.DarkGraySurface,
     onSurface = Color.White,
-    error = Color.RedError,
-    onError = Color.White
+    error = Color.RedErrorDark,
+    onError = Color.Black
 )
 
 @Composable

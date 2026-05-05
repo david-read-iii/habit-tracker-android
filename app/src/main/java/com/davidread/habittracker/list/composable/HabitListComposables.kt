@@ -110,7 +110,6 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMo
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
-import com.davidread.habittracker.common.ui.theme.Color
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.common.ui.theme.HabitTrackerThemeExtras
 import com.davidread.habittracker.list.model.DeleteHabitDialogViewState
@@ -667,7 +666,7 @@ private fun HabitListItemMetaRow(
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp,
-                    color = Color.FireRed
+                    color = HabitTrackerThemeExtras.colors.streakAccent
                 )
             } else {
                 Icon(
@@ -679,7 +678,7 @@ private fun HabitListItemMetaRow(
                             scaleX = fireIconScale
                             scaleY = fireIconScale
                         },
-                    tint = Color.FireRed
+                    tint = HabitTrackerThemeExtras.colors.streakAccent
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -827,7 +826,7 @@ fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
             imageVector = Icons.Filled.ErrorOutline,
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = Color.RedError
+            tint = MaterialTheme.colorScheme.error
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(

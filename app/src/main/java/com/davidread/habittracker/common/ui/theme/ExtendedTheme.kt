@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Immutable
 data class HabitTrackerExtendedColors(
+    val streakAccent: ComposeColor,
     val swipeDeleteContainer: ComposeColor,
     val swipeDeleteContent: ComposeColor,
     val swipeRenameContainer: ComposeColor,
@@ -16,6 +17,7 @@ data class HabitTrackerExtendedColors(
 )
 
 internal val LightExtendedColors = HabitTrackerExtendedColors(
+    streakAccent = Color.StreakAccent,
     swipeDeleteContainer = Color.SwipeDeleteContainer,
     swipeDeleteContent = Color.SwipeDeleteContent,
     swipeRenameContainer = Color.SwipeRenameContainer,
@@ -25,6 +27,7 @@ internal val LightExtendedColors = HabitTrackerExtendedColors(
 )
 
 internal val DarkExtendedColors = HabitTrackerExtendedColors(
+    streakAccent = Color.StreakAccentDark,
     swipeDeleteContainer = Color.SwipeDeleteContainerDark,
     swipeDeleteContent = Color.SwipeDeleteContentDark,
     swipeRenameContainer = Color.SwipeRenameContainerDark,
@@ -40,3 +43,4 @@ object HabitTrackerThemeExtras {
         @Composable
         get() = LocalExtendedColors.current
 }
+
