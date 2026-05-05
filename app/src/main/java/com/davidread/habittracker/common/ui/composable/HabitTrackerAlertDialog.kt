@@ -1,6 +1,5 @@
 package com.davidread.habittracker.common.ui.composable
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +15,7 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -73,11 +73,9 @@ fun HabitTrackerAlertDialog(
             dismissOnClickOutside = dismissOnClickOutside
         )
     ) {
-        Box(
-            modifier = Modifier.background(
-                color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(8.dp)
-            )
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,
@@ -87,7 +85,7 @@ fun HabitTrackerAlertDialog(
                     Text(
                         text = it,
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Left
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -95,7 +93,7 @@ fun HabitTrackerAlertDialog(
                 Text(
                     text = message ?: stringResource(R.string.generic_error_message),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Left
                 )
                 Spacer(modifier = Modifier.height(16.dp))

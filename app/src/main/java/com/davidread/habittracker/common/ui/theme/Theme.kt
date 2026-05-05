@@ -20,6 +20,12 @@ private val LightColorScheme = lightColorScheme(
     onBackground = Color.Black,
     surface = Color.White,
     onSurface = Color.Black,
+    surfaceVariant = Color.LightSurfaceVariant,
+    onSurfaceVariant = Color.LightOnSurfaceVariant,
+    outline = Color.LightOutline,
+    outlineVariant = Color.LightOutlineVariant,
+    inverseSurface = Color.LightInverseSurface,
+    inverseOnSurface = Color.LightInverseOnSurface,
     error = Color.RedError,
     onError = Color.White
 )
@@ -35,6 +41,12 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = Color.White,
     surface = Color.DarkGraySurface,
     onSurface = Color.White,
+    surfaceVariant = Color.DarkSurfaceVariant,
+    onSurfaceVariant = Color.DarkOnSurfaceVariant,
+    outline = Color.DarkOutline,
+    outlineVariant = Color.DarkOutlineVariant,
+    inverseSurface = Color.DarkInverseSurface,
+    inverseOnSurface = Color.DarkInverseOnSurface,
     error = Color.RedErrorDark,
     onError = Color.Black
 )
