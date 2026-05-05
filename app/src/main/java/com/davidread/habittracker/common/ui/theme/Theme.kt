@@ -15,7 +15,7 @@ private val LightColorScheme = lightColorScheme(
     secondary = Color.AmberSecondary,
     onSecondary = Color.Black,
     tertiary = Color.TealTertiary,
-    onTertiary = Color.White,
+    onTertiary = Color.Black,
     background = Color.LightGrayBackground,
     onBackground = Color.Black,
     surface = Color.White,
@@ -26,7 +26,7 @@ private val LightColorScheme = lightColorScheme(
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color.GreenPrimary,
-    onPrimary = Color.Black,
+    onPrimary = Color.White,
     secondary = Color.AmberSecondary,
     onSecondary = Color.Black,
     tertiary = Color.TealTertiary,
