@@ -1,7 +1,6 @@
 package com.davidread.habittracker.common.ui.composable
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.theme.HabitTrackerElevation
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,7 +75,9 @@ fun HabitTrackerAlertDialog(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = HabitTrackerElevation.raisedSurfaceTonal,
+            shadowElevation = HabitTrackerElevation.raisedSurfaceShadow
         ) {
             Column(
                 verticalArrangement = Arrangement.Center,

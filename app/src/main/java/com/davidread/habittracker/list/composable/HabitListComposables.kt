@@ -110,6 +110,7 @@ import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMo
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
+import com.davidread.habittracker.common.ui.theme.HabitTrackerElevation
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 import com.davidread.habittracker.common.ui.theme.HabitTrackerThemeExtras
 import com.davidread.habittracker.list.model.DeleteHabitDialogViewState
@@ -928,7 +929,8 @@ private fun HabitEditorBottomSheet(
                 onDismiss()
             }
         },
-        sheetState = sheetState
+        sheetState = sheetState,
+        tonalElevation = HabitTrackerElevation.raisedSurfaceTonal
     ) {
         Column(
             modifier = Modifier
