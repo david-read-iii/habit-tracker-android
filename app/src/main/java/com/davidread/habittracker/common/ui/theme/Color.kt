@@ -3,7 +3,7 @@ package com.davidread.habittracker.common.ui.theme
 import androidx.compose.ui.graphics.Color
 
 object Color {
-    val GreenPrimary = Color(0xFF4CAF50)
+    val GreenPrimary = Color(0xFF2E7D32)
     val AmberSecondary = Color(0xFFFFC107)
     val TealTertiary = Color(0xFF009688)
     val LightGrayBackground = Color(0xFFF5F5F5)
