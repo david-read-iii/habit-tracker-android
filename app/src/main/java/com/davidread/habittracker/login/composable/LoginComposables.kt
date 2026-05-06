@@ -291,7 +291,7 @@ fun LoginCredentialsCard(
             ) {
                 HabitTrackerButton(
                     modifier = Modifier.testTag(LOGIN_BUTTON_TEST_TAG),
-                    label = stringResource(R.string.login),
+                    label = stringResource(R.string.sign_in),
                     enabled = !viewState.showLoading,
                     isLoading = viewState.showLoading,
                     onClick = onLoginButtonClick
