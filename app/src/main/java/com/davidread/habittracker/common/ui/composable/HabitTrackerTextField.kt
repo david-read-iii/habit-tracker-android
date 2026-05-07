@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.error
@@ -32,6 +35,8 @@ fun HabitTrackerTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
+    val textFieldColors = habitTrackerTextFieldColors()
+
     TextField(
         value = value,
         onValueChange = onValueChange,
@@ -43,6 +48,7 @@ fun HabitTrackerTextField(
         trailingIcon = trailingIcon,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
+        colors = textFieldColors,
         singleLine = true
     )
     if (isError && errorMessage.isNotBlank()) {
@@ -72,6 +78,8 @@ fun HabitTrackerTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
+    val textFieldColors = habitTrackerTextFieldColors()
+
     TextField(
         value = value,
         onValueChange = onValueChange,
@@ -83,6 +91,7 @@ fun HabitTrackerTextField(
         trailingIcon = trailingIcon,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
+        colors = textFieldColors,
         singleLine = true
     )
     if (isError && errorMessage.isNotBlank()) {
@@ -96,6 +105,46 @@ fun HabitTrackerTextField(
             }
         )
     }
+}
+
+@Composable
+private fun habitTrackerTextFieldColors(): TextFieldColors {
+    val colorScheme = MaterialTheme.colorScheme
+    val disabledContentColor = colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+    val disabledTextColor = colorScheme.onSurface.copy(alpha = 0.38f)
+
+    return TextFieldDefaults.colors(
+        focusedTextColor = colorScheme.onSurface,
+        unfocusedTextColor = colorScheme.onSurface,
+        disabledTextColor = disabledTextColor,
+        errorTextColor = colorScheme.onSurface,
+        focusedContainerColor = colorScheme.surfaceVariant,
+        unfocusedContainerColor = colorScheme.surfaceVariant,
+        disabledContainerColor = colorScheme.surfaceVariant,
+        errorContainerColor = colorScheme.surfaceVariant,
+        focusedLabelColor = colorScheme.onSurfaceVariant,
+        unfocusedLabelColor = colorScheme.onSurfaceVariant,
+        disabledLabelColor = disabledContentColor,
+        errorLabelColor = colorScheme.error,
+        focusedIndicatorColor = colorScheme.onSurfaceVariant,
+        unfocusedIndicatorColor = colorScheme.onSurfaceVariant,
+        disabledIndicatorColor = disabledContentColor,
+        errorIndicatorColor = colorScheme.error,
+        focusedLeadingIconColor = colorScheme.onSurfaceVariant,
+        unfocusedLeadingIconColor = colorScheme.onSurfaceVariant,
+        disabledLeadingIconColor = disabledContentColor,
+        errorLeadingIconColor = colorScheme.error,
+        focusedTrailingIconColor = colorScheme.onSurfaceVariant,
+        unfocusedTrailingIconColor = colorScheme.onSurfaceVariant,
+        disabledTrailingIconColor = disabledContentColor,
+        errorTrailingIconColor = colorScheme.error,
+        cursorColor = colorScheme.onSurface,
+        errorCursorColor = colorScheme.error,
+        selectionColors = TextSelectionColors(
+            handleColor = colorScheme.onSurfaceVariant,
+            backgroundColor = colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+        )
+    )
 }
 
 @Preview(showBackground = true)
