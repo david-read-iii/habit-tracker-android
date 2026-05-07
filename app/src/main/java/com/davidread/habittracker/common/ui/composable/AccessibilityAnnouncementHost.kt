@@ -1,35 +1,19 @@
 package com.davidread.habittracker.common.ui.composable
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalView
 
 @Composable
 fun AccessibilityAnnouncementHost(
     message: String,
-    announcementId: Int,
-    modifier: Modifier = Modifier
+    announcementId: Int
 ) {
-    if (message.isBlank()) {
-        return
-    }
+    val view = LocalView.current
 
-    key(announcementId) {
-        Box(
-            modifier = modifier
-                .size(1.dp)
-                .semantics {
-                    liveRegion = LiveRegionMode.Assertive
-                    contentDescription = message
-                }
-        )
+    LaunchedEffect(announcementId, message, view) {
+        if (message.isNotBlank()) {
+            view.announceForAccessibility(message)
+        }
     }
 }
-
