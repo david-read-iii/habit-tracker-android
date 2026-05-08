@@ -86,4 +86,7 @@
     <string name="clear_habit_name">Clear habit name</string>
     <string name="show_password">Show password</string>
     <string name="hide_password">Hide password</string>
+    <string name="show_confirm_password">Show confirm password</string>
+    <string name="hide_confirm_password">Hide confirm password</string>
+    <string name="create_an_account">Create an account</string>
 </resources>

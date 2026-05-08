@@ -138,7 +138,7 @@ fun SignUpScreenContent(
         modifier = modifier,
         topBar = {
             HabitTrackerTopAppBar(
-                title = stringResource(R.string.sign_up),
+                title = stringResource(R.string.create_an_account),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -311,9 +311,9 @@ fun SignUpCredentialsCard(
                             },
                             contentDescription = stringResource(
                                 if (viewState.isConfirmPasswordVisible) {
-                                    R.string.hide_password
+                                    R.string.hide_confirm_password
                                 } else {
-                                    R.string.show_password
+                                    R.string.show_confirm_password
                                 }
                             )
                         )

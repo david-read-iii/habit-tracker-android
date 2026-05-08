@@ -153,7 +153,7 @@ fun LoginScreenContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            HabitTrackerTopAppBar(title = stringResource(R.string.login))
+            HabitTrackerTopAppBar(title = stringResource(R.string.app_name))
         }
     ) { paddingValues ->
         Column(
