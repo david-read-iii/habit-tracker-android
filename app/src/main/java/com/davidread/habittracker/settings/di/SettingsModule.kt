@@ -1,7 +1,9 @@
 package com.davidread.habittracker.settings.di
 
+import com.davidread.habittracker.common.constant.BuildVariant
 import com.davidread.habittracker.settings.repository.SettingsRepository
 import com.davidread.habittracker.settings.repository.SettingsRepositoryImpl
+import com.davidread.habittracker.settings.service.MockSettingsService
 import com.davidread.habittracker.settings.service.SettingsService
 import dagger.Module
 import dagger.Provides
@@ -17,7 +19,11 @@ class SettingsModule {
     @Provides
     @Singleton
     fun providesSettingsService(retrofit: Retrofit): SettingsService {
-        return retrofit.create(SettingsService::class.java)
+        return if (BuildVariant.current() == BuildVariant.MOCK_IN_APP_DEBUG) {
+            MockSettingsService()
+        } else {
+            retrofit.create(SettingsService::class.java)
+        }
     }
 
     @Provides

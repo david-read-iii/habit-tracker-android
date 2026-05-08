@@ -17,14 +17,22 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "com.davidread.habittracker.HabitTrackerTestRunner"
+        manifestPlaceholders["CLEAR_TEXT_TRAFFIC"] = "false"
     }
 
     buildTypes {
-        debug {
+        create("localHostDebug") {
+            initWith(getByName("debug"))
+            matchingFallbacks += listOf("debug")
             manifestPlaceholders["CLEAR_TEXT_TRAFFIC"] = "true"
         }
+
+        create("mockInAppDebug") {
+            initWith(getByName("debug"))
+            matchingFallbacks += listOf("debug")
+        }
+
         release {
-            manifestPlaceholders["CLEAR_TEXT_TRAFFIC"] = "false"
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -44,6 +52,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -76,23 +85,35 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.tink.android)
     implementation(libs.security.crypto)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.room.paging)
-    kapt(libs.room.compiler)
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
-    debugImplementation(libs.ui.tooling)
-    debugImplementation(libs.leakcanary.android)
-    debugImplementation(libs.compose.ui.test.manifest)
+
+    kapt(libs.hilt.android.compiler)
+    kapt(libs.room.compiler)
+
+    val debugLikeBuildTypes = listOf("debug", "localHostDebug", "mockInAppDebug")
+    val debugOnlyDeps = listOf(
+        libs.ui.tooling,
+        libs.leakcanary.android,
+        libs.compose.ui.test.manifest
+    )
+    debugLikeBuildTypes.forEach { buildType ->
+        debugOnlyDeps.forEach { dep ->
+            add("${buildType}Implementation", dep)
+        }
+    }
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
+
     androidTestImplementation(libs.compose.ui.test)
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.espresso.core)

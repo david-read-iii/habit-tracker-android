@@ -1,9 +1,11 @@
 package com.davidread.habittracker.list.di
 
+import com.davidread.habittracker.common.constant.BuildVariant
 import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.list.repository.HabitListRepository
 import com.davidread.habittracker.list.repository.HabitListRepositoryImpl
 import com.davidread.habittracker.list.service.HabitListService
+import com.davidread.habittracker.list.service.MockHabitListService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,7 +20,11 @@ class HabitListModule {
     @Provides
     @Singleton
     fun providesHabitListService(retrofit: Retrofit): HabitListService {
-        return retrofit.create(HabitListService::class.java)
+        return if (BuildVariant.current() == BuildVariant.MOCK_IN_APP_DEBUG) {
+            MockHabitListService()
+        } else {
+            retrofit.create(HabitListService::class.java)
+        }
     }
 
     @Provides

@@ -1,6 +1,14 @@
 package com.davidread.habittracker.common.constant
 
 object BaseUrl {
-    const val ANDROID_EMULATOR_DEBUG = "http://10.0.2.2:3000/"
-    const val ANDROID_PHYSICAL_DEVICE_DEBUG = "http://10.0.1.150:3000/"
+    private const val QA_DEBUG = "https://qa-api.example.com/"
+    private const val LOCALHOST_EMULATOR = "http://10.0.2.2:3000/"
+
+    fun current(): String {
+        return if (BuildVariant.current() == BuildVariant.LOCAL_HOST_DEBUG) {
+            LOCALHOST_EMULATOR
+        } else {
+            QA_DEBUG
+        }
+    }
 }

@@ -32,7 +32,7 @@ class CommonModule {
     @Singleton
     fun providesRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BaseUrl.ANDROID_EMULATOR_DEBUG)
+            .baseUrl(BaseUrl.current())
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
