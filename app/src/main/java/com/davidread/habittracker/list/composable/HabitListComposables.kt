@@ -93,6 +93,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -440,7 +441,8 @@ fun HabitListItem(
     val density = LocalDensity.current
     var itemHeightPx by remember(viewState.id) { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
-    val actionButtonWidth = 60.dp
+    val baseActionButtonWidth = 60.dp
+    val actionButtonWidth = baseActionButtonWidth * density.fontScale
     val totalActionsWidth = actionButtonWidth * 3
     val totalActionsWidthPx = with(density) { totalActionsWidth.toPx() }
     val isHabitClickable = !isCheckingIn && offsetX.value == 0f
@@ -709,9 +711,13 @@ private fun SwipeActionButton(
     contentColor: ComposeColor,
     onClick: () -> Unit = {}
 ) {
+    val density = LocalDensity.current
+    val baseWidth = 60.dp
+    val scaledWidth = baseWidth * density.fontScale
+
     Box(
         modifier = Modifier
-            .width(60.dp)
+            .width(scaledWidth)
             .fillMaxHeight()
             .background(color = containerColor)
             .clickable(onClick = onClick)
@@ -739,7 +745,8 @@ private fun SwipeActionButton(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = contentColor,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
