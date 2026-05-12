@@ -41,6 +41,10 @@ android {
         }
     }
 
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -59,6 +63,8 @@ android {
         kotlinCompilerExtensionVersion = "1.5.15"
     }
 
+    testBuildType = "debug"
+
     packaging {
         resources {
             excludes += setOf(
@@ -69,6 +75,12 @@ android {
                 "META-INF/DEPENDENCIES",
                 "META-INF/LICENSE-notice.md"
             )
+        }
+    }
+
+    sourceSets {
+        getByName("test") {
+            resources.srcDirs("src/test/resources")
         }
     }
 }
@@ -118,4 +130,17 @@ dependencies {
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.hilt.android.testing)
+}
+
+afterEvaluate {
+    listOf("localHostDebug", "mockInAppDebug").forEach { buildType ->
+        val testTaskName = "test${buildType.replaceFirstChar { it.uppercase() }}UnitTest"
+        val debugTestTaskName = "testDebugUnitTest"
+
+        if (tasks.findByName(debugTestTaskName) != null && tasks.findByName(testTaskName) == null) {
+            tasks.register(testTaskName) {
+                dependsOn(debugTestTaskName)
+            }
+        }
+    }
 }
