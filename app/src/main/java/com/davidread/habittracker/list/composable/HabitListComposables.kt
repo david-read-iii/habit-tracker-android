@@ -849,7 +849,7 @@ fun EndOfPaginationListItem(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(R.string.habit_list_end_of_pagination_message),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
