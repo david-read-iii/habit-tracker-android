@@ -183,7 +183,7 @@ fun LoginScreenContent(
                 onLoginButtonClick = onLoginButtonClick
             )
             Spacer(modifier = Modifier.height(64.dp))
-            SignUpText(onSignUpLinkClick = onSignUpLinkClick)
+            SignUpText(modifier = Modifier.padding(horizontal = 16.dp), onSignUpLinkClick = onSignUpLinkClick)
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
