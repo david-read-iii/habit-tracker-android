@@ -686,7 +686,7 @@ private fun HabitListItemMetaRow(
             Text(
                 text = streak,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.outline
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
         Text(
@@ -695,7 +695,7 @@ private fun HabitListItemMetaRow(
                 .padding(start = 4.dp)
                 .weight(1f),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.End
         )
     }
