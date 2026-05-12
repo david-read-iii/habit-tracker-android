@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 object Color {
     val GreenPrimary = Color(0xFF2E7D32)
+    val GreenPrimaryDark = Color(0xFF81C784)
     val AmberSecondary = Color(0xFFFFC107)
     val TealTertiary = Color(0xFF009688)
     val LightGrayBackground = Color(0xFFF5F5F5)
