@@ -2,6 +2,7 @@ package com.davidread.habittracker.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -58,22 +59,25 @@ class HabitListScreenTest {
     @Test
     fun test_seededHabitIsDisplayed() {
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Drink water").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
         }
-        composeRule.onNodeWithText("Drink water").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Drink water", substring = true).assertIsDisplayed()
     }
 
     @Test
     fun test_swipeLeftOnHabitRevealsSwipeActions() {
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Drink water").fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeRule.onNodeWithText("Drink water").performTouchInput { swipeLeft() }
+        composeRule.onNodeWithContentDescription("Drink water", substring = true)
+            .performTouchInput { swipeLeft() }
 
-        composeRule.onNodeWithText("Delete").assertIsDisplayed()
-        composeRule.onNodeWithText("Rename").assertIsDisplayed()
-        composeRule.onNodeWithText("Check In").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Delete").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Rename").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Check In").assertIsDisplayed()
     }
 
     @Test
