@@ -872,7 +872,7 @@ fun HabitListEmptyStateItem(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(R.string.habit_list_empty_message),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
         )
     }
