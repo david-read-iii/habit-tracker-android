@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.davidread.habittracker"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.davidread.habittracker"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "com.davidread.habittracker.HabitTrackerTestRunner"
