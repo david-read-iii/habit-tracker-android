@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.jetbrains.kotlin.kapt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
 }
 
@@ -88,6 +88,12 @@ kotlin {
     jvmToolchain(17)
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.generateKotlin", "true")
+}
+
 dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.google.material)
@@ -109,8 +115,8 @@ dependencies {
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
 
-    kapt(libs.hilt.android.compiler)
-    kapt(libs.room.compiler)
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.room.compiler)
 
     val debugLikeBuildTypes = listOf("debug", "localHostDebug", "mockInAppDebug")
     val debugOnlyDeps = listOf(
