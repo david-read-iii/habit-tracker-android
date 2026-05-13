@@ -309,6 +309,69 @@ class HabitListScreenTest {
         composeRule.onNodeWithText(errorMessage).assertIsDisplayed()
     }
 
+    @Test
+    fun test_updateHabitValidationErrorIsDisplayed() {
+        loginAndNavigateToHabitListScreen()
+        openRenameBottomSheetForDrinkWater()
+
+        composeRule.onNodeWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).performClick()
+        composeRule.onNodeWithText("Save").performClick()
+
+        composeRule.onNodeWithText("Please enter a habit name").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_updateHabitSuccess_dismissesBottomSheet() {
+        loginAndNavigateToHabitListScreen()
+        openRenameBottomSheetForDrinkWater()
+
+        composeRule.onNodeWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).performClick()
+        composeRule.onNodeWithText("Habit name").performTextInput("Drink more water")
+        composeRule.onNodeWithText("Save").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Habit name").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Failed to update habit. Please try again.")
+                .fetchSemanticsNodes().isEmpty()
+        }
+    }
+
+    @Test
+    fun test_updateHabitGenericErrorSnackbarIsDisplayed() {
+        loginAndNavigateToHabitListScreen()
+
+        (habitListRepository as FakeHabitListRepositoryImpl).updateHabitResponseType =
+            FakeHabitListRepositoryImpl.UpdateHabitResponseType.GENERIC_ERROR
+
+        openRenameBottomSheetForDrinkWater()
+        composeRule.onNodeWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).performClick()
+        composeRule.onNodeWithText("Habit name").performTextInput("Drink more water")
+        composeRule.onNodeWithText("Save").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Failed to update habit. Please try again.")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Failed to update habit. Please try again.").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_updateHabitBottomSheetClearButtonClearsTextField() {
+        loginAndNavigateToHabitListScreen()
+        openRenameBottomSheetForDrinkWater()
+
+        composeRule.onNodeWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Drink water").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).fetchSemanticsNodes().isEmpty()
+        }
+    }
+
 
     private fun loginAndNavigateToHabitListScreen() {
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
@@ -320,5 +383,17 @@ class HabitListScreenTest {
         }
         composeRule.onNodeWithText("Habits").assertIsDisplayed()
     }
-}
 
+    private fun openRenameBottomSheetForDrinkWater() {
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithContentDescription("Drink water", substring = true)
+            .performTouchInput { swipeLeft() }
+        composeRule.onNodeWithContentDescription("Rename").performClick()
+
+        composeRule.onNodeWithText("Edit habit").assertIsDisplayed()
+    }
+}
