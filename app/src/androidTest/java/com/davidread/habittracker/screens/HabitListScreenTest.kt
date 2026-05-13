@@ -81,6 +81,79 @@ class HabitListScreenTest {
     }
 
     @Test
+    fun test_deleteDialogIsDisplayedAfterClickingDeleteSwipeAction() {
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithContentDescription("Drink water", substring = true)
+            .performTouchInput { swipeLeft() }
+        composeRule.onNodeWithContentDescription("Delete").performClick()
+
+        composeRule.onNodeWithText("Delete habit?").assertIsDisplayed()
+        composeRule.onNodeWithText("Are you sure you want to delete this habit?").assertIsDisplayed()
+        composeRule.onNodeWithText("Yes").assertIsDisplayed()
+        composeRule.onNodeWithText("No").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_deleteDialogDismissesWhenNoIsClicked() {
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithContentDescription("Drink water", substring = true)
+            .performTouchInput { swipeLeft() }
+        composeRule.onNodeWithContentDescription("Delete").performClick()
+        composeRule.onNodeWithText("No").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Delete habit?").fetchSemanticsNodes().isEmpty()
+        }
+    }
+
+    @Test
+    fun test_deleteDialogDismissesOnSuccessfulDelete() {
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithContentDescription("Drink water", substring = true)
+            .performTouchInput { swipeLeft() }
+        composeRule.onNodeWithContentDescription("Delete").performClick()
+        composeRule.onNodeWithText("Yes").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Delete habit?").fetchSemanticsNodes().isEmpty()
+        }
+    }
+
+    @Test
+    fun test_deleteGenericErrorSnackbarIsDisplayed() {
+        (habitListRepository as FakeHabitListRepositoryImpl).deleteHabitResponseType =
+            FakeHabitListRepositoryImpl.DeleteHabitResponseType.GENERIC_ERROR
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithContentDescription("Drink water", substring = true)
+            .performTouchInput { swipeLeft() }
+        composeRule.onNodeWithContentDescription("Delete").performClick()
+        composeRule.onNodeWithText("Yes").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Failed to delete habit. Please try again.")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Failed to delete habit. Please try again.").assertIsDisplayed()
+    }
+
+    @Test
     fun test_addHabitBottomSheetValidationErrorIsDisplayed() {
         composeRule.onNodeWithContentDescription("Add habit").performClick()
         composeRule.onNodeWithText("Add").performClick()
