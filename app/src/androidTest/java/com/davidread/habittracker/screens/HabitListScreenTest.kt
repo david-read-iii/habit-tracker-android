@@ -310,6 +310,59 @@ class HabitListScreenTest {
     }
 
     @Test
+    fun test_checkInSuccess_showsNoErrorSnackbar() {
+        loginAndNavigateToHabitListScreen()
+
+        performCheckInForDrinkWater()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Drink water", substring = true).assertIsDisplayed()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Already checked in today.").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Failed to check in. Please try again.")
+                .fetchSemanticsNodes().isEmpty()
+        }
+    }
+
+    @Test
+    fun test_checkInError400_showsAlreadyCheckedInSnackbar() {
+        loginAndNavigateToHabitListScreen()
+
+        (habitListRepository as FakeHabitListRepositoryImpl).checkInResponseType =
+            FakeHabitListRepositoryImpl.CheckInResponseType.ERROR_400
+
+        performCheckInForDrinkWater()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Already checked in today.")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Already checked in today.").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_checkInGenericError_showsGenericErrorSnackbar() {
+        loginAndNavigateToHabitListScreen()
+
+        (habitListRepository as FakeHabitListRepositoryImpl).checkInResponseType =
+            FakeHabitListRepositoryImpl.CheckInResponseType.GENERIC_ERROR
+
+        performCheckInForDrinkWater()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Failed to check in. Please try again.")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Failed to check in. Please try again.").assertIsDisplayed()
+    }
+
+    @Test
     fun test_updateHabitValidationErrorIsDisplayed() {
         loginAndNavigateToHabitListScreen()
         openRenameBottomSheetForDrinkWater()
@@ -395,5 +448,16 @@ class HabitListScreenTest {
         composeRule.onNodeWithContentDescription("Rename").performClick()
 
         composeRule.onNodeWithText("Edit habit").assertIsDisplayed()
+    }
+
+    private fun performCheckInForDrinkWater() {
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithContentDescription("Drink water", substring = true)
+            .performTouchInput { swipeLeft() }
+        composeRule.onNodeWithContentDescription("Check In").performClick()
     }
 }
