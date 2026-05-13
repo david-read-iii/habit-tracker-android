@@ -1,15 +1,11 @@
-import com.android.build.api.dsl.ApplicationExtension
-import org.gradle.kotlin.dsl.configure
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
 }
 
-extensions.configure<ApplicationExtension> {
+android {
     namespace = "com.davidread.habittracker"
     compileSdk = 37
 
@@ -58,9 +54,6 @@ extensions.configure<ApplicationExtension> {
         buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
 
     testBuildType = "debug"
 
@@ -84,9 +77,6 @@ extensions.configure<ApplicationExtension> {
     }
 }
 
-kotlin {
-    jvmToolchain(17)
-}
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
