@@ -32,20 +32,68 @@ class FakeHabitListRepositoryImpl : HabitListRepository {
         )
     )
 
+    var getHabitsResponseType = GetHabitsResponseType.SUCCESS
     var createHabitResponseType = CreateHabitResponseType.SUCCESS
     var deleteHabitResponseType = DeleteHabitResponseType.SUCCESS
     var updateHabitResponseType = UpdateHabitResponseType.SUCCESS
     var checkInResponseType = CheckInResponseType.SUCCESS
 
     override fun getHabits(): Flow<PagingData<HabitEntity>> = flowOf(
-        PagingData.from(
-            data = habits,
-            sourceLoadStates = LoadStates(
-                refresh = LoadState.NotLoading(false),
-                prepend = LoadState.NotLoading(false),
-                append = LoadState.NotLoading(true)
+        when (getHabitsResponseType) {
+            GetHabitsResponseType.SUCCESS_EMPTY -> PagingData.from(
+                data = emptyList(),
+                sourceLoadStates = LoadStates(
+                    refresh = LoadState.NotLoading(endOfPaginationReached = true),
+                    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+                    append = LoadState.NotLoading(endOfPaginationReached = true)
+                )
             )
-        )
+
+            GetHabitsResponseType.LOADING -> PagingData.from(
+                data = emptyList(),
+                sourceLoadStates = LoadStates(
+                    refresh = LoadState.Loading,
+                    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+                    append = LoadState.NotLoading(endOfPaginationReached = true)
+                )
+            )
+
+            GetHabitsResponseType.ERROR -> PagingData.from(
+                data = emptyList(),
+                sourceLoadStates = LoadStates(
+                    refresh = LoadState.Error(Exception()),
+                    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+                    append = LoadState.NotLoading(endOfPaginationReached = true)
+                )
+            )
+
+            GetHabitsResponseType.SUCCESS -> PagingData.from(
+                data = habits,
+                sourceLoadStates = LoadStates(
+                    refresh = LoadState.NotLoading(endOfPaginationReached = true),
+                    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+                    append = LoadState.NotLoading(endOfPaginationReached = true)
+                )
+            )
+
+            GetHabitsResponseType.PAGINATION_LOADING -> PagingData.from(
+                data = habits,
+                sourceLoadStates = LoadStates(
+                    refresh = LoadState.NotLoading(endOfPaginationReached = false),
+                    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+                    append = LoadState.Loading
+                )
+            )
+
+            GetHabitsResponseType.PAGINATION_ERROR -> PagingData.from(
+                data = habits,
+                sourceLoadStates = LoadStates(
+                    refresh = LoadState.NotLoading(endOfPaginationReached = false),
+                    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+                    append = LoadState.Error(Exception())
+                )
+            )
+        }
     )
 
     override fun invalidateHabits() = Unit
@@ -109,6 +157,15 @@ class FakeHabitListRepositoryImpl : HabitListRepository {
 
     private fun badRequestException(): HttpException = mockk {
         every { code() } returns 400
+    }
+
+    enum class GetHabitsResponseType {
+        SUCCESS_EMPTY,
+        LOADING,
+        ERROR,
+        SUCCESS,
+        PAGINATION_LOADING,
+        PAGINATION_ERROR
     }
 
     enum class CreateHabitResponseType { SUCCESS, GENERIC_ERROR }

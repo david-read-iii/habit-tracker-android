@@ -13,6 +13,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.activity.MainActivity
 import com.davidread.habittracker.fakes.FakeHabitListRepositoryImpl
 import com.davidread.habittracker.list.composable.CLEAR_HABIT_NAME_BUTTON_TEST_TAG
@@ -46,27 +48,24 @@ class HabitListScreenTest {
     @Before
     fun setUp() {
         hiltRule.inject()
-        loginAndNavigateToHabitListScreen()
     }
+
+    private val context
+        get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Test
     fun test_habitListTopBarAndActionsAreDisplayed() {
+        loginAndNavigateToHabitListScreen()
+
         composeRule.onNodeWithText("Habits").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Add habit").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Open settings").assertIsDisplayed()
     }
 
     @Test
-    fun test_seededHabitIsDisplayed() {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithContentDescription("Drink water", substring = true).assertIsDisplayed()
-    }
-
-    @Test
     fun test_swipeLeftOnHabitRevealsSwipeActions() {
+        loginAndNavigateToHabitListScreen()
+
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
                 .fetchSemanticsNodes().isNotEmpty()
@@ -82,6 +81,8 @@ class HabitListScreenTest {
 
     @Test
     fun test_deleteDialogIsDisplayedAfterClickingDeleteSwipeAction() {
+        loginAndNavigateToHabitListScreen()
+
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
                 .fetchSemanticsNodes().isNotEmpty()
@@ -99,6 +100,8 @@ class HabitListScreenTest {
 
     @Test
     fun test_deleteDialogDismissesWhenNoIsClicked() {
+        loginAndNavigateToHabitListScreen()
+
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
                 .fetchSemanticsNodes().isNotEmpty()
@@ -116,6 +119,8 @@ class HabitListScreenTest {
 
     @Test
     fun test_deleteDialogDismissesOnSuccessfulDelete() {
+        loginAndNavigateToHabitListScreen()
+
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
                 .fetchSemanticsNodes().isNotEmpty()
@@ -133,6 +138,8 @@ class HabitListScreenTest {
 
     @Test
     fun test_deleteGenericErrorSnackbarIsDisplayed() {
+        loginAndNavigateToHabitListScreen()
+
         (habitListRepository as FakeHabitListRepositoryImpl).deleteHabitResponseType =
             FakeHabitListRepositoryImpl.DeleteHabitResponseType.GENERIC_ERROR
 
@@ -155,6 +162,8 @@ class HabitListScreenTest {
 
     @Test
     fun test_addHabitBottomSheetValidationErrorIsDisplayed() {
+        loginAndNavigateToHabitListScreen()
+
         composeRule.onNodeWithContentDescription("Add habit").performClick()
         composeRule.onNodeWithText("Add").performClick()
 
@@ -163,6 +172,8 @@ class HabitListScreenTest {
 
     @Test
     fun test_addHabitGenericErrorSnackbarIsDisplayed() {
+        loginAndNavigateToHabitListScreen()
+
         (habitListRepository as FakeHabitListRepositoryImpl).createHabitResponseType =
             FakeHabitListRepositoryImpl.CreateHabitResponseType.GENERIC_ERROR
 
@@ -179,6 +190,8 @@ class HabitListScreenTest {
 
     @Test
     fun test_addHabitBottomSheetClearButtonClearsTextField() {
+        loginAndNavigateToHabitListScreen()
+
         composeRule.onNodeWithContentDescription("Add habit").performClick()
         composeRule.onNodeWithText("Habit name").performTextInput("Read every day")
 
@@ -191,6 +204,94 @@ class HabitListScreenTest {
             composeRule.onAllNodesWithTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG).fetchSemanticsNodes().isEmpty()
         }
     }
+
+    @Test
+    fun test_getHabitsSuccessEmpty_showsEmptyState() {
+        (habitListRepository as FakeHabitListRepositoryImpl).getHabitsResponseType =
+            FakeHabitListRepositoryImpl.GetHabitsResponseType.SUCCESS_EMPTY
+        loginAndNavigateToHabitListScreen()
+
+        val emptyMessage = context.getString(R.string.habit_list_empty_message)
+        composeRule.onNodeWithText(emptyMessage).assertIsDisplayed()
+    }
+
+    @Test
+    fun test_getHabitsLoading_showsLoadingState() {
+        (habitListRepository as FakeHabitListRepositoryImpl).getHabitsResponseType =
+            FakeHabitListRepositoryImpl.GetHabitsResponseType.LOADING
+        loginAndNavigateToHabitListScreen()
+
+        val loadingContentDescription = context.getString(R.string.loading)
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription(loadingContentDescription)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription(loadingContentDescription).assertIsDisplayed()
+    }
+
+    @Test
+    fun test_getHabitsError_showsErrorState() {
+        (habitListRepository as FakeHabitListRepositoryImpl).getHabitsResponseType =
+            FakeHabitListRepositoryImpl.GetHabitsResponseType.ERROR
+        loginAndNavigateToHabitListScreen()
+
+        val errorMessage = context.getString(R.string.habit_list_error_message)
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText(errorMessage).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText(errorMessage).assertIsDisplayed()
+    }
+
+    @Test
+    fun test_getHabitsSuccessAppend_showsPopulatedList() {
+        loginAndNavigateToHabitListScreen()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription("Drink water", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun test_getHabitsAppendLoading_showsListAndAppendLoading() {
+        (habitListRepository as FakeHabitListRepositoryImpl).getHabitsResponseType =
+            FakeHabitListRepositoryImpl.GetHabitsResponseType.PAGINATION_LOADING
+        loginAndNavigateToHabitListScreen()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription("Drink water", substring = true).assertIsDisplayed()
+
+        val loadingContentDescription = context.getString(R.string.loading)
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription(loadingContentDescription)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription(loadingContentDescription).assertIsDisplayed()
+    }
+
+    @Test
+    fun test_getHabitsAppendError_showsListAndAppendError() {
+        (habitListRepository as FakeHabitListRepositoryImpl).getHabitsResponseType =
+            FakeHabitListRepositoryImpl.GetHabitsResponseType.PAGINATION_ERROR
+        loginAndNavigateToHabitListScreen()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Drink water", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription("Drink water", substring = true).assertIsDisplayed()
+
+        val errorMessage = context.getString(R.string.habit_list_error_message)
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText(errorMessage).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText(errorMessage).assertIsDisplayed()
+    }
+
 
     private fun loginAndNavigateToHabitListScreen() {
         composeRule.onNodeWithText("Email").performTextInput("david.read@gmail.com")
