@@ -114,6 +114,8 @@ dependencies {
     implementation(libs.room.paging)
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
+    implementation(libs.concurrent.futures)
+    implementation(libs.concurrent.futures.ktx)
 
     ksp(libs.hilt.android.compiler)
     ksp(libs.room.compiler)
