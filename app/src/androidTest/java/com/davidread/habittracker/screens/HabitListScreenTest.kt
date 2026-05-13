@@ -171,6 +171,23 @@ class HabitListScreenTest {
     }
 
     @Test
+    fun test_addHabitSuccess_dismissesBottomSheet() {
+        loginAndNavigateToHabitListScreen()
+
+        composeRule.onNodeWithContentDescription("Add habit").performClick()
+        composeRule.onNodeWithText("Habit name").performTextInput("Read every day")
+        composeRule.onNodeWithText("Add").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Habit name").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Failed to add habit. Please try again.")
+                .fetchSemanticsNodes().isEmpty()
+        }
+    }
+
+    @Test
     fun test_addHabitGenericErrorSnackbarIsDisplayed() {
         loginAndNavigateToHabitListScreen()
 
