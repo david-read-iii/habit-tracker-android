@@ -1,6 +1,6 @@
 package com.davidread.habittracker.login.di
 
-import com.davidread.habittracker.common.constant.BuildVariant
+import com.davidread.habittracker.common.config.BuildVariant
 import com.davidread.habittracker.login.repository.LoginRepository
 import com.davidread.habittracker.login.repository.LoginRepositoryImpl
 import com.davidread.habittracker.login.service.LoginService

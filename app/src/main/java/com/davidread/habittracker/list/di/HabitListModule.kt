@@ -1,6 +1,6 @@
 package com.davidread.habittracker.list.di
 
-import com.davidread.habittracker.common.constant.BuildVariant
+import com.davidread.habittracker.common.config.BuildVariant
 import com.davidread.habittracker.common.database.HabitTrackerDatabase
 import com.davidread.habittracker.list.repository.HabitListRepository
 import com.davidread.habittracker.list.repository.HabitListRepositoryImpl

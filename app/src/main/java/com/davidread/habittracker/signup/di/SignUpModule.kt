@@ -1,6 +1,6 @@
 package com.davidread.habittracker.signup.di
 
-import com.davidread.habittracker.common.constant.BuildVariant
+import com.davidread.habittracker.common.config.BuildVariant
 import com.davidread.habittracker.signup.repository.SignUpRepository
 import com.davidread.habittracker.signup.repository.SignUpRepositoryImpl
 import com.davidread.habittracker.signup.service.MockSignUpService

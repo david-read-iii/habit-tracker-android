@@ -1,4 +1,4 @@
-package com.davidread.habittracker.common.constant
+package com.davidread.habittracker.common.config
 
 import com.davidread.habittracker.BuildConfig
 

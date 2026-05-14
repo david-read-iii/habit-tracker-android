@@ -1,6 +1,6 @@
 package com.davidread.habittracker.settings.di
 
-import com.davidread.habittracker.common.constant.BuildVariant
+import com.davidread.habittracker.common.config.BuildVariant
 import com.davidread.habittracker.settings.repository.SettingsRepository
 import com.davidread.habittracker.settings.repository.SettingsRepositoryImpl
 import com.davidread.habittracker.settings.service.MockSettingsService

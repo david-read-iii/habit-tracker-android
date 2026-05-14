@@ -1,4 +1,4 @@
-package com.davidread.habittracker.common.constant
+package com.davidread.habittracker.common.config
 
 object BaseUrl {
     private const val QA_DEBUG = "https://qa-api.example.com/"
