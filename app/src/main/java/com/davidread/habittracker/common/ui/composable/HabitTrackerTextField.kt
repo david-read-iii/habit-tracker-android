@@ -153,8 +153,7 @@ private fun HabitTrackerTextFieldPreview_Default() {
     HabitTrackerTheme {
         HabitTrackerTextField(
             value = "Value",
-            labelText = "Label",
-            keyboardOptions = KeyboardOptions.Default
+            labelText = "Label"
         )
     }
 }
@@ -167,8 +166,7 @@ private fun HabitTrackerTextFieldPreview_Error() {
             value = "Invalid value",
             labelText = "Label",
             isError = true,
-            errorMessage = "Error message",
-            keyboardOptions = KeyboardOptions.Default
+            errorMessage = "Error message"
         )
     }
 }

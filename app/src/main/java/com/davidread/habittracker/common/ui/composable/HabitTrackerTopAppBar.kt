@@ -8,6 +8,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,4 +32,12 @@ fun HabitTrackerTopAppBar(
             navigationIconContentColor = MaterialTheme.colorScheme.onSurface
         )
     )
+}
+
+@Preview
+@Composable
+private fun HabitTrackerTopAppBarPreview() {
+    HabitTrackerTheme {
+        HabitTrackerTopAppBar(title = "Habit Tracker")
+    }
 }

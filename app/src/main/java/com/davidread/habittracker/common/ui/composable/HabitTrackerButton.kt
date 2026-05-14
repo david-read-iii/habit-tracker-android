@@ -43,8 +43,16 @@ fun HabitTrackerButton(
 
 @Preview
 @Composable
-private fun HabitTrackerButtonPreview() {
+private fun HabitTrackerButtonPreview_Default() {
     HabitTrackerTheme {
         HabitTrackerButton(label = "Click Me")
+    }
+}
+
+@Preview
+@Composable
+private fun HabitTrackerButtonPreview_Loading() {
+    HabitTrackerTheme {
+        HabitTrackerButton(label = "Click Me", isLoading = true)
     }
 }
