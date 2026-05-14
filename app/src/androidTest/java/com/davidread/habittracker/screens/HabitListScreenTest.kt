@@ -65,6 +65,19 @@ class HabitListScreenTest {
     }
 
     @Test
+    fun test_clickSettingsButton_navigatesToSettingsScreen() {
+        loginAndNavigateToHabitListScreen()
+
+        composeRule.onNodeWithContentDescription("Open settings").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Settings").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Settings").assertIsDisplayed()
+        composeRule.onNodeWithText("Reset timezone").assertIsDisplayed()
+    }
+
+    @Test
     fun test_swipeLeftOnHabitRevealsSwipeActions() {
         loginAndNavigateToHabitListScreen()
 
