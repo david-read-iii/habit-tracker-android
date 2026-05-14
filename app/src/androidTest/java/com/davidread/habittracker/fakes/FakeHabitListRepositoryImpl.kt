@@ -37,6 +37,7 @@ class FakeHabitListRepositoryImpl : HabitListRepository {
     var deleteHabitResponseType = DeleteHabitResponseType.SUCCESS
     var updateHabitResponseType = UpdateHabitResponseType.SUCCESS
     var checkInResponseType = CheckInResponseType.SUCCESS
+    val checkInRequests = mutableListOf<CheckInRequest>()
 
     override fun getHabits(): Flow<PagingData<HabitEntity>> = flowOf(
         when (getHabitsResponseType) {
@@ -138,7 +139,9 @@ class FakeHabitListRepositoryImpl : HabitListRepository {
             UpdateHabitResponseType.GENERIC_ERROR -> Result.Error(Exception())
         }
 
-    override suspend fun checkIn(checkInRequest: CheckInRequest) = when (checkInResponseType) {
+    override suspend fun checkIn(checkInRequest: CheckInRequest): Result<CheckInResponse> {
+        checkInRequests.add(checkInRequest)
+        return when (checkInResponseType) {
         CheckInResponseType.SUCCESS -> Result.Success(
             CheckInResponse(
                 message = "Checked in",
@@ -153,6 +156,7 @@ class FakeHabitListRepositoryImpl : HabitListRepository {
         CheckInResponseType.ERROR_400 -> Result.Error(badRequestException())
 
         CheckInResponseType.GENERIC_ERROR -> Result.Error(Exception())
+        }
     }
 
     private fun badRequestException(): HttpException = mockk {

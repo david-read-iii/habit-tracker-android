@@ -1,6 +1,7 @@
 package com.davidread.habittracker.screens
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -23,6 +24,7 @@ import com.davidread.habittracker.login.composable.LOGIN_BUTTON_TEST_TAG
 import com.davidread.habittracker.login.repository.LoginRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -158,6 +160,44 @@ class HabitListScreenTest {
                 .fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("Failed to delete habit. Please try again.").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_clickBack_showsLogoutDialog() {
+        loginAndNavigateToHabitListScreen()
+
+        pressBackFromHabitList()
+
+        composeRule.onNodeWithText("Log out?").assertIsDisplayed()
+        composeRule.onNodeWithText("Are you sure you want to log out?").assertIsDisplayed()
+        composeRule.onNodeWithText("Yes").assertIsDisplayed()
+        composeRule.onNodeWithText("No").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_clickNoOnLogoutDialog_dismissesDialog() {
+        loginAndNavigateToHabitListScreen()
+
+        pressBackFromHabitList()
+        composeRule.onNodeWithText("No").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Log out?").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.onNodeWithText("Habits").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_clickYesOnLogoutDialog_navigatesToLoginScreen() {
+        loginAndNavigateToHabitListScreen()
+
+        pressBackFromHabitList()
+        composeRule.onNodeWithText("Yes").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText("Email").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Email").assertIsDisplayed()
     }
 
     @Test
@@ -313,21 +353,17 @@ class HabitListScreenTest {
     fun test_checkInSuccess_showsNoErrorSnackbar() {
         loginAndNavigateToHabitListScreen()
 
+        val fakeRepo = habitListRepository as FakeHabitListRepositoryImpl
+        fakeRepo.checkInResponseType = FakeHabitListRepositoryImpl.CheckInResponseType.SUCCESS
+
         performCheckInForDrinkWater()
 
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Drink water", substring = true)
-                .fetchSemanticsNodes().isNotEmpty()
+            fakeRepo.checkInRequests.isNotEmpty()
         }
-        composeRule.onNodeWithText("Drink water", substring = true).assertIsDisplayed()
-
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Already checked in today.").fetchSemanticsNodes().isEmpty()
-        }
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Failed to check in. Please try again.")
-                .fetchSemanticsNodes().isEmpty()
-        }
+        assertEquals("habit-id-1", fakeRepo.checkInRequests.last().habitId)
+        composeRule.onAllNodesWithText("Already checked in today.").assertCountEquals(0)
+        composeRule.onAllNodesWithText("Failed to check in. Please try again.").assertCountEquals(0)
     }
 
     @Test
@@ -459,5 +495,11 @@ class HabitListScreenTest {
         composeRule.onNodeWithContentDescription("Drink water", substring = true)
             .performTouchInput { swipeLeft() }
         composeRule.onNodeWithContentDescription("Check In").performClick()
+    }
+
+    private fun pressBackFromHabitList() {
+        composeRule.activity.runOnUiThread {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
     }
 }
