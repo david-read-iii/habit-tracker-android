@@ -6,21 +6,19 @@ retrofit = "3.0.0"
 hiltAndroid = "2.59.2"
 hiltNavigationCompose = "1.3.0"
 tinkAndroid = "1.21.0"
-securityCrypto = "1.1.0"
 leakcanaryAndroid = "2.14"
 junit = "4.13.2"
 kotlinxCoroutinesTest = "1.11.0"
 composeUiTest = "1.11.1"
 mockk = "1.14.9"
 turbine = "1.2.1"
-espressoCore = "3.7.0"
 agp = "9.2.1"
 kotlin = "2.3.21"
 ksp = "2.3.7"
 room = "2.8.4"
 paging = "3.5.0"
 material = "1.13.0"
-concurrentFutures = "1.3.0"
+runner = "1.7.0"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -36,7 +34,6 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltAndroid" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 tink-android = { group = "com.google.crypto.tink", name = "tink-android", version.ref = "tinkAndroid" }
-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 leakcanary-android = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanaryAndroid" }
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "composeUiTest" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -45,7 +42,6 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "composeUiTest" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hiltAndroid" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -53,10 +49,8 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 room-paging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
 paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-concurrent-futures = { group = "androidx.concurrent", name = "concurrent-futures", version.ref = "concurrentFutures" }
-concurrent-futures-ktx = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version.ref = "concurrentFutures" }
 google-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-compose-material = { group = "androidx.compose.material", name = "material" }
+runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

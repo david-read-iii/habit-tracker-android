@@ -89,7 +89,6 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.material3)
     implementation(libs.material.icons.extended)
-    implementation(libs.compose.material)
     implementation(libs.ui.tooling.preview)
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
@@ -98,14 +97,11 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.tink.android)
-    implementation(libs.security.crypto)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.room.paging)
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
-    implementation(libs.concurrent.futures)
-    implementation(libs.concurrent.futures.ktx)
 
     ksp(libs.hilt.android.compiler)
     ksp(libs.room.compiler)
@@ -129,7 +125,7 @@ dependencies {
 
     androidTestImplementation(libs.compose.ui.test)
     androidTestImplementation(libs.mockk.android)
-    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.runner)
     androidTestImplementation(libs.hilt.android.testing)
 }
 
