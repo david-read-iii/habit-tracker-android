@@ -17,8 +17,6 @@ class HabitRemoteMediator(
     private val service: HabitListService
 ) : RemoteMediator<Int, HabitEntity>() {
 
-    var times = 0
-
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, HabitEntity>
