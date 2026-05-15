@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package com.davidread.habittracker.signup.viewmodel
 
 import android.app.Application
@@ -29,6 +31,7 @@ import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
 class ClickSignUpButtonTest(
+    @Suppress("UNUSED_PARAMETER") caseName: String,
     private val signUpFlowResult: SignUpFlowResult,
     private val emailValue: String,
     private val passwordValue: String,
@@ -49,9 +52,10 @@ class ClickSignUpButtonTest(
 
     companion object {
         @JvmStatic
-        @Parameterized.Parameters
+        @Parameterized.Parameters(name = "{0}")
         fun data(): Collection<Array<Any?>> = listOf(
             arrayOf(
+                "successful sign up navigates to habit list",
                 SignUpFlowResult.Success(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -69,6 +73,7 @@ class ClickSignUpButtonTest(
                 null
             ),
             arrayOf(
+                "invalid form shows field errors and announcement",
                 SignUpFlowResult.ValidationError(
                     emailValidationResult = ValidationResult.Invalid,
                     passwordValidationResult = ValidationResult.Invalid,
@@ -98,6 +103,7 @@ class ClickSignUpButtonTest(
                 FORM_VALIDATION_ERROR_ANNOUNCEMENT
             ),
             arrayOf(
+                "timezone lookup failure shows generic alert",
                 SignUpFlowResult.GetTimezoneError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -116,6 +122,7 @@ class ClickSignUpButtonTest(
                 GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "email already used shows specific alert message",
                 SignUpFlowResult.EmailAlreadyUsedError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -137,6 +144,7 @@ class ClickSignUpButtonTest(
                 EMAIL_ALREADY_USED_ERROR_MESSAGE
             ),
             arrayOf(
+                "sign up service generic failure shows generic alert",
                 SignUpFlowResult.SignUpServiceGenericError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -155,6 +163,7 @@ class ClickSignUpButtonTest(
                 GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "missing auth token shows generic alert",
                 SignUpFlowResult.NullTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -173,6 +182,7 @@ class ClickSignUpButtonTest(
                 GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "saving auth token failure shows generic alert",
                 SignUpFlowResult.SaveAuthenticationTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,

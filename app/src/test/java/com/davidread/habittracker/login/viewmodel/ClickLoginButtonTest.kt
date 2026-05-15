@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package com.davidread.habittracker.login.viewmodel
 
 import android.app.Application
@@ -17,7 +19,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -29,7 +31,9 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
+@ExperimentalCoroutinesApi
 class ClickLoginButtonTest(
+    @Suppress("UNUSED_PARAMETER") caseName: String,
     private val loginFlowResult: LoginFlowResult,
     private val emailValue: String,
     private val passwordValue: String,
@@ -49,9 +53,10 @@ class ClickLoginButtonTest(
 
     companion object {
         @JvmStatic
-        @Parameterized.Parameters
+        @Parameterized.Parameters(name = "{0}")
         fun data(): Collection<Array<Any?>> = listOf(
             arrayOf(
+                "successful login navigates to habit list",
                 LoginFlowResult.Success(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -63,6 +68,7 @@ class ClickLoginButtonTest(
                 null
             ),
             arrayOf(
+                "invalid login form shows validation errors",
                 LoginFlowResult.ValidationError(
                     emailValidationResult = ValidationResult.Invalid,
                     passwordValidationResult = ValidationResult.Invalid
@@ -85,6 +91,7 @@ class ClickLoginButtonTest(
                 FORM_VALIDATION_ERROR_ANNOUNCEMENT
             ),
             arrayOf(
+                "incorrect credentials show specific alert",
                 LoginFlowResult.IncorrectLoginCredentialsError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -103,6 +110,7 @@ class ClickLoginButtonTest(
                 INCORRECT_LOGIN_CREDENTIALS
             ),
             arrayOf(
+                "login service generic failure shows generic alert",
                 LoginFlowResult.LoginServiceGenericError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -118,6 +126,7 @@ class ClickLoginButtonTest(
                 GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "missing auth token shows generic alert",
                 LoginFlowResult.NullTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -133,6 +142,7 @@ class ClickLoginButtonTest(
                 GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "saving auth token failure shows generic alert",
                 LoginFlowResult.SaveAuthenticationTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -166,6 +176,7 @@ class ClickLoginButtonTest(
     }
 
     @Before
+    @ExperimentalCoroutinesApi
     fun setUp() {
         application.apply {
             every { getString(R.string.email_validation_error_message) } returns EMAIL_ERROR_MESSAGE
@@ -183,6 +194,7 @@ class ClickLoginButtonTest(
     }
 
     @Test
+    @ExperimentalCoroutinesApi
     fun test_processIntent_ClickLoginButton() = runTest {
         turbineScope {
             val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
@@ -194,7 +206,7 @@ class ClickLoginButtonTest(
             viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = emailValue))
             viewModel.processIntent(LoginViewIntent.ChangePasswordValue(newValue = passwordValue))
             viewModel.processIntent(LoginViewIntent.ClickLoginButton)
-            advanceUntilIdle()
+            runCurrent()
 
             coVerify(exactly = 1) {
                 loginFlowUseCase.invoke(email = emailValue, password = passwordValue)
