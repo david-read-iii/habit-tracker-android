@@ -3,6 +3,7 @@
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="login">Login</string>
+    <string name="sign_in">Sign in</string>
     <string name="sign_up_prompt">Don\'t have an account?</string>
     <string name="sign_up_whitespace">\u00A0</string>
     <string name="sign_up_link_text">Sign up here</string>
@@ -14,6 +15,7 @@
     <string name="loading">Loading&#8230;</string>
     <string name="confirm_password_validation_error_message">Please make sure your passwords match</string>
     <string name="email_already_used_error_message">This email address is already in use. Please try another one.</string>
+    <string name="form_validation_error_announcement">Please fix the errors in the form.</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="sign_up">Sign up</string>
     <string name="navigate_back">Navigate back</string>
@@ -23,6 +25,20 @@
     <string name="habit_list_error_message">An error occurred. Tap to retry.</string>
     <string name="habit_list_end_of_pagination_message">No more habits to show</string>
     <string name="habit_list_empty_message">No habits yet. Tap + to add your first habit.</string>
+    <string name="habit_list_item_accessibility_readout">%1$s. Streak %2$s. Created %3$s.</string>
+    <string name="habit_list_checking_in_announcement">%1$s. Checking in.</string>
+    <string name="habit_list_check_in_success_announcement">%1$s checked in.</string>
+    <string name="habit_list_deleting_announcement">Deleting %1$s.</string>
+    <string name="habit_list_delete_success_announcement">%1$s deleted.</string>
+    <string name="habit_list_adding_announcement">Adding %1$s.</string>
+    <string name="habit_list_add_success_announcement">%1$s added.</string>
+    <string name="habit_list_updating_announcement">Saving %1$s.</string>
+    <string name="habit_list_update_success_announcement">%1$s updated.</string>
+    <string name="habit_list_initial_loading_announcement">Loading habits.</string>
+    <string name="habit_list_prepend_loading_announcement">Loading earlier habits.</string>
+    <string name="habit_list_prepend_success_announcement">Earlier habits loaded.</string>
+    <string name="habit_list_append_loading_announcement">Loading more habits.</string>
+    <string name="habit_list_append_success_announcement">More habits loaded.</string>
     <string name="check_in_already_checked_in">Already checked in today.</string>
     <string name="check_in_generic_error">Failed to check in. Please try again.</string>
     <string name="created_at_just_now">Just now</string>
@@ -62,7 +78,15 @@
     <string name="settings_reset_timezone">Reset timezone</string>
     <string name="settings_reset_timezone_dialog_title">Reset timezone?</string>
     <string name="settings_reset_timezone_dialog_message">Are you sure you want to reset your timezone? This will reset all your streaks.</string>
+    <string name="settings_reset_timezone_loading_announcement">Resetting timezone.</string>
     <string name="settings_reset_timezone_success">Timezone reset successfully. Streaks have been reset.</string>
     <string name="settings_reset_timezone_error">Failed to reset timezone. Please try again.</string>
     <string name="settings_log_out">Log out</string>
+    <string name="clear_email">Clear email</string>
+    <string name="clear_habit_name">Clear habit name</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="show_confirm_password">Show confirm password</string>
+    <string name="hide_confirm_password">Hide confirm password</string>
+    <string name="create_an_account">Create an account</string>
 </resources>

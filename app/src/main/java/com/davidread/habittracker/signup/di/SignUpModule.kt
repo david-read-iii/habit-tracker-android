@@ -1,7 +1,9 @@
 package com.davidread.habittracker.signup.di
 
+import com.davidread.habittracker.common.config.BuildVariant
 import com.davidread.habittracker.signup.repository.SignUpRepository
 import com.davidread.habittracker.signup.repository.SignUpRepositoryImpl
+import com.davidread.habittracker.signup.service.MockSignUpService
 import com.davidread.habittracker.signup.service.SignUpService
 import dagger.Module
 import dagger.Provides
@@ -17,7 +19,11 @@ class SignUpModule {
     @Provides
     @Singleton
     fun providesSignUpService(retrofit: Retrofit): SignUpService {
-        return retrofit.create(SignUpService::class.java)
+        return if (BuildVariant.current() == BuildVariant.MOCK_IN_APP_DEBUG) {
+            MockSignUpService()
+        } else {
+            retrofit.create(SignUpService::class.java)
+        }
     }
 
     @Provides

@@ -38,6 +38,8 @@ class SignUpViewModelTest {
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
             every { getString(R.string.confirm_password_validation_error_message) } returns CONFIRM_PASSWORD_ERROR_MESSAGE
             every { getString(R.string.email_already_used_error_message) } returns EMAIL_ALREADY_USED_ERROR_MESSAGE
+            every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
+            every { getString(R.string.loading) } returns LOADING_ANNOUNCEMENT
         }
     }
 
@@ -50,9 +52,22 @@ class SignUpViewModelTest {
     fun test_processIntent_ChangeEmailValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
+
+            coEvery {
+                signUpFlowUseCase.invoke(any(), any(), any())
+            } returns SignUpFlowResult.ValidationError(
+                emailValidationResult = ValidationResult.Invalid,
+                passwordValidationResult = ValidationResult.Invalid,
+                confirmPasswordValidationResult = ValidationResult.Invalid
+            )
+            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
+
             viewModel.processIntent(SignUpViewIntent.ChangeEmailValue(newValue = EMAIL))
 
-            Assert.assertEquals(EMAIL, turbine.expectMostRecentItem().emailTextFieldViewState.value)
+            val state = turbine.expectMostRecentItem()
+            Assert.assertEquals(EMAIL, state.emailTextFieldViewState.value)
+            Assert.assertEquals(false, state.emailTextFieldViewState.isError)
+            Assert.assertEquals("", state.emailTextFieldViewState.errorMessage)
         }
     }
 
@@ -60,12 +75,22 @@ class SignUpViewModelTest {
     fun test_processIntent_ChangePasswordValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
+
+            coEvery {
+                signUpFlowUseCase.invoke(any(), any(), any())
+            } returns SignUpFlowResult.ValidationError(
+                emailValidationResult = ValidationResult.Invalid,
+                passwordValidationResult = ValidationResult.Invalid,
+                confirmPasswordValidationResult = ValidationResult.Invalid
+            )
+            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
+
             viewModel.processIntent(SignUpViewIntent.ChangePasswordValue(newValue = PASSWORD))
 
-            Assert.assertEquals(
-                PASSWORD,
-                turbine.expectMostRecentItem().passwordTextFieldViewState.value
-            )
+            val state = turbine.expectMostRecentItem()
+            Assert.assertEquals(PASSWORD, state.passwordTextFieldViewState.value)
+            Assert.assertEquals(false, state.passwordTextFieldViewState.isError)
+            Assert.assertEquals("", state.passwordTextFieldViewState.errorMessage)
         }
     }
 
@@ -73,12 +98,65 @@ class SignUpViewModelTest {
     fun test_processIntent_ChangeConfirmPasswordValue() = runTest {
         turbineScope {
             val turbine = viewModel.viewState.testIn(backgroundScope)
+
+            coEvery {
+                signUpFlowUseCase.invoke(any(), any(), any())
+            } returns SignUpFlowResult.ValidationError(
+                emailValidationResult = ValidationResult.Invalid,
+                passwordValidationResult = ValidationResult.Invalid,
+                confirmPasswordValidationResult = ValidationResult.Invalid
+            )
+            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
+
             viewModel.processIntent(SignUpViewIntent.ChangeConfirmPasswordValue(newValue = PASSWORD))
 
-            Assert.assertEquals(
-                PASSWORD,
-                turbine.expectMostRecentItem().confirmPasswordTextFieldViewState.value
+            val state = turbine.expectMostRecentItem()
+            Assert.assertEquals(PASSWORD, state.confirmPasswordTextFieldViewState.value)
+            Assert.assertEquals(false, state.confirmPasswordTextFieldViewState.isError)
+            Assert.assertEquals("", state.confirmPasswordTextFieldViewState.errorMessage)
+        }
+    }
+
+    @Test
+    fun test_processIntent_ClickClearEmailButton() = runTest {
+        turbineScope {
+            val turbine = viewModel.viewState.testIn(backgroundScope)
+
+            coEvery {
+                signUpFlowUseCase.invoke(any(), any(), any())
+            } returns SignUpFlowResult.ValidationError(
+                emailValidationResult = ValidationResult.Invalid,
+                passwordValidationResult = ValidationResult.Invalid,
+                confirmPasswordValidationResult = ValidationResult.Invalid
             )
+            viewModel.processIntent(SignUpViewIntent.ClickSignUpButton)
+
+            viewModel.processIntent(SignUpViewIntent.ClickClearEmailButton)
+
+            val state = turbine.expectMostRecentItem()
+            Assert.assertEquals("", state.emailTextFieldViewState.value)
+            Assert.assertEquals(false, state.emailTextFieldViewState.isError)
+            Assert.assertEquals("", state.emailTextFieldViewState.errorMessage)
+        }
+    }
+
+    @Test
+    fun test_processIntent_ClickTogglePasswordVisibilityButton() = runTest {
+        turbineScope {
+            val turbine = viewModel.viewState.testIn(backgroundScope)
+            viewModel.processIntent(SignUpViewIntent.ClickTogglePasswordVisibilityButton)
+
+            Assert.assertEquals(true, turbine.expectMostRecentItem().isPasswordVisible)
+        }
+    }
+
+    @Test
+    fun test_processIntent_ClickToggleConfirmPasswordVisibilityButton() = runTest {
+        turbineScope {
+            val turbine = viewModel.viewState.testIn(backgroundScope)
+            viewModel.processIntent(SignUpViewIntent.ClickToggleConfirmPasswordVisibilityButton)
+
+            Assert.assertEquals(true, turbine.expectMostRecentItem().isConfirmPasswordVisible)
         }
     }
 
@@ -117,5 +195,7 @@ class SignUpViewModelTest {
         private const val CONFIRM_PASSWORD_ERROR_MESSAGE = "Please make sure your passwords match"
         private const val EMAIL_ALREADY_USED_ERROR_MESSAGE =
             "This email address is already in use. Please try another one."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT = "Please check the form and try again"
+        private const val LOADING_ANNOUNCEMENT = "Loading..."
     }
 }

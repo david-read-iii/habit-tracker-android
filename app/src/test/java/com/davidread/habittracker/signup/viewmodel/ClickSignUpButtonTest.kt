@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package com.davidread.habittracker.signup.viewmodel
 
 import android.app.Application
@@ -17,6 +19,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -28,12 +31,14 @@ import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
 class ClickSignUpButtonTest(
+    @Suppress("UNUSED_PARAMETER") caseName: String,
     private val signUpFlowResult: SignUpFlowResult,
     private val emailValue: String,
     private val passwordValue: String,
     private val confirmPasswordValue: String,
     private val expectedViewState: SignUpViewState,
-    private val expectedIsNavigateToHabitListScreen: Boolean
+    private val expectedIsNavigateToHabitListScreen: Boolean,
+    private val expectedAnnouncementMessage: String?
 ) {
 
     @get:Rule
@@ -47,9 +52,10 @@ class ClickSignUpButtonTest(
 
     companion object {
         @JvmStatic
-        @Parameterized.Parameters
-        fun data(): Collection<Array<Any>> = listOf(
+        @Parameterized.Parameters(name = "{0}")
+        fun data(): Collection<Array<Any?>> = listOf(
             arrayOf(
+                "successful sign up navigates to habit list",
                 SignUpFlowResult.Success(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -63,9 +69,11 @@ class ClickSignUpButtonTest(
                     passwordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD)
                 ),
-                true
+                true,
+                null
             ),
             arrayOf(
+                "invalid form shows field errors and announcement",
                 SignUpFlowResult.ValidationError(
                     emailValidationResult = ValidationResult.Invalid,
                     passwordValidationResult = ValidationResult.Invalid,
@@ -91,9 +99,11 @@ class ClickSignUpButtonTest(
                         errorMessage = CONFIRM_PASSWORD_ERROR_MESSAGE
                     )
                 ),
-                false
+                false,
+                FORM_VALIDATION_ERROR_ANNOUNCEMENT
             ),
             arrayOf(
+                "timezone lookup failure shows generic alert",
                 SignUpFlowResult.GetTimezoneError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -108,9 +118,11 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "email already used shows specific alert message",
                 SignUpFlowResult.EmailAlreadyUsedError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -128,9 +140,11 @@ class ClickSignUpButtonTest(
                         message = EMAIL_ALREADY_USED_ERROR_MESSAGE
                     )
                 ),
-                false
+                false,
+                EMAIL_ALREADY_USED_ERROR_MESSAGE
             ),
             arrayOf(
+                "sign up service generic failure shows generic alert",
                 SignUpFlowResult.SignUpServiceGenericError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -145,9 +159,11 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "missing auth token shows generic alert",
                 SignUpFlowResult.NullTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -162,9 +178,11 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "saving auth token failure shows generic alert",
                 SignUpFlowResult.SaveAuthenticationTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid,
@@ -179,7 +197,8 @@ class ClickSignUpButtonTest(
                     confirmPasswordTextFieldViewState = SignUpTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             )
         )
 
@@ -194,6 +213,10 @@ class ClickSignUpButtonTest(
         private const val CONFIRM_PASSWORD_ERROR_MESSAGE = "Please make sure your passwords match"
         private const val EMAIL_ALREADY_USED_ERROR_MESSAGE =
             "This email address is already in use. Please try another one."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT =
+            "Please fix the errors in the form."
+        private const val LOADING_ANNOUNCEMENT = "Loading..."
+        private const val GENERIC_ERROR_MESSAGE = "An error occurred. Please try again later."
     }
 
     @Before
@@ -203,6 +226,9 @@ class ClickSignUpButtonTest(
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
             every { getString(R.string.confirm_password_validation_error_message) } returns CONFIRM_PASSWORD_ERROR_MESSAGE
             every { getString(R.string.email_already_used_error_message) } returns EMAIL_ALREADY_USED_ERROR_MESSAGE
+            every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
+            every { getString(R.string.generic_error_message) } returns GENERIC_ERROR_MESSAGE
+            every { getString(R.string.loading) } returns LOADING_ANNOUNCEMENT
         }
     }
 
@@ -216,6 +242,7 @@ class ClickSignUpButtonTest(
         turbineScope {
             val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+            runCurrent()
             coEvery {
                 signUpFlowUseCase.invoke(any(), any(), any())
             } returns signUpFlowResult
@@ -232,10 +259,20 @@ class ClickSignUpButtonTest(
                 )
             }
             Assert.assertEquals(expectedViewState, viewStateTurbine.expectMostRecentItem())
+            Assert.assertEquals(
+                SignUpViewEffect.AnnounceForAccessibility(LOADING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
+            expectedAnnouncementMessage?.let {
+                Assert.assertEquals(
+                    SignUpViewEffect.AnnounceForAccessibility(it),
+                    viewEffectTurbine.awaitItem()
+                )
+            }
             if (expectedIsNavigateToHabitListScreen) {
                 Assert.assertEquals(
                     SignUpViewEffect.NavigateToHabitListScreen,
-                    viewEffectTurbine.expectMostRecentItem()
+                    viewEffectTurbine.awaitItem()
                 )
             }
             viewEffectTurbine.expectNoEvents()

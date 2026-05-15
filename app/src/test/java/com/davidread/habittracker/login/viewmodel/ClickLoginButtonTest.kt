@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package com.davidread.habittracker.login.viewmodel
 
 import android.app.Application
@@ -17,6 +19,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -27,12 +31,15 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
+@ExperimentalCoroutinesApi
 class ClickLoginButtonTest(
+    @Suppress("UNUSED_PARAMETER") caseName: String,
     private val loginFlowResult: LoginFlowResult,
     private val emailValue: String,
     private val passwordValue: String,
     private val expectedViewState: LoginViewState,
-    private val expectedIsNavigateToHabitListScreen: Boolean
+    private val expectedIsNavigateToHabitListScreen: Boolean,
+    private val expectedAnnouncementMessage: String?
 ) {
 
     @get:Rule
@@ -46,9 +53,10 @@ class ClickLoginButtonTest(
 
     companion object {
         @JvmStatic
-        @Parameterized.Parameters
-        fun data(): Collection<Array<Any>> = listOf(
+        @Parameterized.Parameters(name = "{0}")
+        fun data(): Collection<Array<Any?>> = listOf(
             arrayOf(
+                "successful login navigates to habit list",
                 LoginFlowResult.Success(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -56,9 +64,11 @@ class ClickLoginButtonTest(
                 EMAIL,
                 PASSWORD,
                 LoginViewState(),
-                true
+                true,
+                null
             ),
             arrayOf(
+                "invalid login form shows validation errors",
                 LoginFlowResult.ValidationError(
                     emailValidationResult = ValidationResult.Invalid,
                     passwordValidationResult = ValidationResult.Invalid
@@ -77,9 +87,11 @@ class ClickLoginButtonTest(
                         errorMessage = PASSWORD_ERROR_MESSAGE
                     )
                 ),
-                false
+                false,
+                FORM_VALIDATION_ERROR_ANNOUNCEMENT
             ),
             arrayOf(
+                "incorrect credentials show specific alert",
                 LoginFlowResult.IncorrectLoginCredentialsError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -94,9 +106,11 @@ class ClickLoginButtonTest(
                         message = INCORRECT_LOGIN_CREDENTIALS
                     )
                 ),
-                false
+                false,
+                INCORRECT_LOGIN_CREDENTIALS
             ),
             arrayOf(
+                "login service generic failure shows generic alert",
                 LoginFlowResult.LoginServiceGenericError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -108,9 +122,11 @@ class ClickLoginButtonTest(
                     passwordTextFieldViewState = LoginTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "missing auth token shows generic alert",
                 LoginFlowResult.NullTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -122,9 +138,11 @@ class ClickLoginButtonTest(
                     passwordTextFieldViewState = LoginTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
             arrayOf(
+                "saving auth token failure shows generic alert",
                 LoginFlowResult.SaveAuthenticationTokenError(
                     emailValidationResult = ValidationResult.Valid,
                     passwordValidationResult = ValidationResult.Valid
@@ -136,7 +154,8 @@ class ClickLoginButtonTest(
                     passwordTextFieldViewState = LoginTextFieldViewState(value = PASSWORD),
                     alertDialogViewState = AlertDialogViewState(showDialog = true)
                 ),
-                false
+                false,
+                GENERIC_ERROR_MESSAGE
             ),
         )
 
@@ -150,14 +169,22 @@ class ClickLoginButtonTest(
             "Please enter a password with at least 8 characters"
         private const val INCORRECT_LOGIN_CREDENTIALS =
             "Incorrect email or password. Please try again."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT =
+            "Please fix the errors in the form."
+        private const val LOADING_ANNOUNCEMENT = "Loading..."
+        private const val GENERIC_ERROR_MESSAGE = "An error occurred. Please try again later."
     }
 
     @Before
+    @ExperimentalCoroutinesApi
     fun setUp() {
         application.apply {
             every { getString(R.string.email_validation_error_message) } returns EMAIL_ERROR_MESSAGE
             every { getString(R.string.password_validation_error_message) } returns PASSWORD_ERROR_MESSAGE
             every { getString(R.string.login_credentials_incorrect_error_message) } returns INCORRECT_LOGIN_CREDENTIALS
+            every { getString(R.string.form_validation_error_announcement) } returns FORM_VALIDATION_ERROR_ANNOUNCEMENT
+            every { getString(R.string.generic_error_message) } returns GENERIC_ERROR_MESSAGE
+            every { getString(R.string.loading) } returns LOADING_ANNOUNCEMENT
         }
     }
 
@@ -167,25 +194,38 @@ class ClickLoginButtonTest(
     }
 
     @Test
+    @ExperimentalCoroutinesApi
     fun test_processIntent_ClickLoginButton() = runTest {
         turbineScope {
             val viewStateTurbine = viewModel.viewState.testIn(backgroundScope)
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
+            runCurrent()
             coEvery {
                 loginFlowUseCase.invoke(any(), any())
             } returns loginFlowResult
             viewModel.processIntent(LoginViewIntent.ChangeEmailValue(newValue = emailValue))
             viewModel.processIntent(LoginViewIntent.ChangePasswordValue(newValue = passwordValue))
             viewModel.processIntent(LoginViewIntent.ClickLoginButton)
+            runCurrent()
 
             coVerify(exactly = 1) {
                 loginFlowUseCase.invoke(email = emailValue, password = passwordValue)
             }
             Assert.assertEquals(expectedViewState, viewStateTurbine.expectMostRecentItem())
+            Assert.assertEquals(
+                LoginViewEffect.AnnounceForAccessibility(LOADING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
+            expectedAnnouncementMessage?.let {
+                Assert.assertEquals(
+                    LoginViewEffect.AnnounceForAccessibility(it),
+                    viewEffectTurbine.awaitItem()
+                )
+            }
             if (expectedIsNavigateToHabitListScreen) {
                 Assert.assertEquals(
                     LoginViewEffect.NavigateToHabitListScreen,
-                    viewEffectTurbine.expectMostRecentItem()
+                    viewEffectTurbine.awaitItem()
                 )
             }
             viewEffectTurbine.expectNoEvents()

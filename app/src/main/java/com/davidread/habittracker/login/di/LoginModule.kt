@@ -1,8 +1,10 @@
 package com.davidread.habittracker.login.di
 
+import com.davidread.habittracker.common.config.BuildVariant
 import com.davidread.habittracker.login.repository.LoginRepository
 import com.davidread.habittracker.login.repository.LoginRepositoryImpl
 import com.davidread.habittracker.login.service.LoginService
+import com.davidread.habittracker.login.service.MockLoginService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,7 +19,12 @@ class LoginModule {
     @Provides
     @Singleton
     fun providesLoginService(retrofit: Retrofit): LoginService {
-        return retrofit.create(LoginService::class.java)
+        // Use in-app mock services only for the dedicated mock build type.
+        return if (BuildVariant.current() == BuildVariant.MOCK_IN_APP_DEBUG) {
+            MockLoginService()
+        } else {
+            retrofit.create(LoginService::class.java)
+        }
     }
 
     @Provides

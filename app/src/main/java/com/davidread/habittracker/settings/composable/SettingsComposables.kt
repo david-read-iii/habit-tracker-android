@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -28,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.davidread.habittracker.R
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
@@ -107,7 +108,16 @@ fun SettingsContent(
                 }
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    actionColor = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
     ) { paddingValues ->
         val scrollState = rememberScrollState()
         Column(
@@ -178,7 +188,11 @@ fun ResetTimezoneConfirmationDialog(
         dismissOnClickOutside = !isSubmitting,
         onDismissRequest = onDismiss,
         mode = when (isSubmitting) {
-            true -> HabitTrackerAlertDialogMode.Loading
+            true -> HabitTrackerAlertDialogMode.Loading(
+                accessibilityAnnouncementOnLoading = stringResource(
+                    R.string.settings_reset_timezone_loading_announcement
+                )
+            )
             false -> HabitTrackerAlertDialogMode.Default
         }
     )

@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -26,8 +27,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -42,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -54,6 +59,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,12 +76,29 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
@@ -83,13 +106,15 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import com.davidread.habittracker.R
+import com.davidread.habittracker.common.ui.composable.AccessibilityAnnouncementHost
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerAlertDialogMode
 import com.davidread.habittracker.common.ui.composable.HabitTrackerLogoutConfirmationDialog
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTextField
 import com.davidread.habittracker.common.ui.composable.HabitTrackerTopAppBar
-import com.davidread.habittracker.common.ui.theme.Color
+import com.davidread.habittracker.common.ui.theme.HabitTrackerElevation
 import com.davidread.habittracker.common.ui.theme.HabitTrackerTheme
+import com.davidread.habittracker.common.ui.theme.HabitTrackerThemeExtras
 import com.davidread.habittracker.list.model.DeleteHabitDialogViewState
 import com.davidread.habittracker.list.model.EditorState
 import com.davidread.habittracker.list.model.HabitEditorBottomSheetViewState
@@ -104,6 +129,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.Color as ComposeColor
 
+internal const val CLEAR_HABIT_NAME_BUTTON_TEST_TAG = "clear_habit_name_button"
+
 @Composable
 fun HabitListScreen(
     modifier: Modifier = Modifier,
@@ -112,12 +139,16 @@ fun HabitListScreen(
     onNavigateToLoginScreen: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var accessibilityAnnouncement by remember { mutableStateOf("") }
+    var accessibilityAnnouncementId by remember { mutableIntStateOf(0) }
+    var isViewEffectCollectorReady by remember { mutableStateOf(false) }
 
     BackHandler {
         viewModel.processIntent(HabitListViewIntent.ClickBackButton)
     }
 
     LaunchedEffect(Unit) {
+        isViewEffectCollectorReady = true
         viewModel.viewEffect.collect { viewEffect ->
             when (viewEffect) {
                 is HabitListViewEffect.NavigateToSettingsScreen -> onNavigateToSettingsScreen()
@@ -128,6 +159,11 @@ fun HabitListScreen(
                         duration = SnackbarDuration.Short
                     )
                 }
+
+                is HabitListViewEffect.AnnounceForAccessibility -> {
+                    accessibilityAnnouncement = viewEffect.message
+                    accessibilityAnnouncementId += 1
+                }
             }
         }
     }
@@ -135,11 +171,32 @@ fun HabitListScreen(
     val habits = viewModel.habitsPagingDataFlow.collectAsLazyPagingItems()
     val viewState by viewModel.viewState.collectAsState()
 
+    LaunchedEffect(
+        isViewEffectCollectorReady,
+        habits.loadState.refresh,
+        habits.loadState.prepend,
+        habits.loadState.append,
+        habits.itemCount
+    ) {
+        if (!isViewEffectCollectorReady) return@LaunchedEffect
+
+        viewModel.processIntent(
+            HabitListViewIntent.ReportPagingLoadStates(
+                isRefreshLoading = habits.loadState.refresh is LoadState.Loading,
+                isPrependLoading = habits.loadState.prepend is LoadState.Loading,
+                isAppendLoading = habits.loadState.append is LoadState.Loading,
+                itemCount = habits.itemCount
+            )
+        )
+    }
+
     HabitListContent(
         modifier = modifier,
         habits = habits,
         viewState = viewState,
         snackbarHostState = snackbarHostState,
+        accessibilityAnnouncement = accessibilityAnnouncement,
+        accessibilityAnnouncementId = accessibilityAnnouncementId,
         onClickAddHabit = { viewModel.processIntent(HabitListViewIntent.ClickAddHabitButton) },
         onDismissHabitEditorBottomSheet = {
             viewModel.processIntent(HabitListViewIntent.DismissHabitEditorBottomSheet)
@@ -153,18 +210,21 @@ fun HabitListScreen(
         },
         onHabitEditorSubmit = { viewModel.processIntent(HabitListViewIntent.SubmitHabitEditorChanges) },
         onClickSettings = { viewModel.processIntent(HabitListViewIntent.ClickSettingsButton) },
-        onHabitClick = { viewModel.processIntent(HabitListViewIntent.ClickHabit(it)) },
+        onHabitClick = { habitId, habitName ->
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(habitId, habitName))
+        },
         onHabitCheckInClick = {
             viewModel.processIntent(
                 HabitListViewIntent.ClickCheckInHabitButton(
-                    it
+                    it.first,
+                    it.second
                 )
             )
         },
         onHabitRenameClick = { id, currentName ->
             viewModel.processIntent(HabitListViewIntent.ClickEditHabitButton(id, currentName))
         },
-        onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it)) },
+        onHabitDeleteClick = { viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(it.first, it.second)) },
         onDismissDeleteHabitDialog = {
             viewModel.processIntent(HabitListViewIntent.DismissDeleteHabitDialog)
         },
@@ -176,6 +236,11 @@ fun HabitListScreen(
         onDismissLogoutDialog = { viewModel.processIntent(HabitListViewIntent.DismissLogoutDialog) },
         onConfirmLogout = { viewModel.processIntent(HabitListViewIntent.ConfirmLogout) }
     )
+
+    AccessibilityAnnouncementHost(
+        message = accessibilityAnnouncement,
+        announcementId = accessibilityAnnouncementId
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -185,15 +250,17 @@ fun HabitListContent(
     habits: LazyPagingItems<HabitViewState>,
     viewState: HabitListViewState = HabitListViewState(),
     snackbarHostState: SnackbarHostState,
+    accessibilityAnnouncement: String = "",
+    accessibilityAnnouncementId: Int = 0,
     onClickAddHabit: () -> Unit = {},
     onDismissHabitEditorBottomSheet: () -> Unit = {},
     onHabitEditorNameChange: (String) -> Unit = {},
     onHabitEditorSubmit: () -> Unit = {},
     onClickSettings: () -> Unit = {},
-    onHabitClick: (String) -> Unit = {},
-    onHabitCheckInClick: (String) -> Unit = {},
+    onHabitClick: (String, String) -> Unit = { _, _ -> },
+    onHabitCheckInClick: (Pair<String, String>) -> Unit = {},
     onHabitRenameClick: (String, String) -> Unit = { _, _ -> },
-    onHabitDeleteClick: (String) -> Unit = {},
+    onHabitDeleteClick: (Pair<String, String>) -> Unit = {},
     onDismissDeleteHabitDialog: () -> Unit = {},
     onConfirmDeleteHabit: () -> Unit = {},
     onRefresh: () -> Unit = {},
@@ -208,19 +275,26 @@ fun HabitListContent(
             onRefreshComplete()
         }
     }
+
     Scaffold(
         modifier = modifier,
         topBar = {
             HabitTrackerTopAppBar(
                 title = stringResource(R.string.habit_list_title),
                 actions = {
-                    IconButton(onClick = onClickAddHabit) {
+                    IconButton(
+                        modifier = Modifier.semantics { traversalIndex = 1f },
+                        onClick = onClickAddHabit
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Add,
                             contentDescription = stringResource(R.string.habit_list_add_habit)
                         )
                     }
-                    IconButton(onClick = onClickSettings) {
+                    IconButton(
+                        modifier = Modifier.semantics { traversalIndex = 2f },
+                        onClick = onClickSettings
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = stringResource(R.string.habit_list_open_settings)
@@ -229,7 +303,16 @@ fun HabitListContent(
                 }
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    actionColor = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
     ) { paddingValues ->
         val pullToRefreshState = rememberPullToRefreshState()
 
@@ -292,10 +375,15 @@ fun HabitListContent(
                                                 openSwipeHabitId = null
                                             }
                                         },
-                                        onClick = { onHabitClick(habit.id) },
-                                        onCheckInClick = { onHabitCheckInClick(habit.id) },
-                                        onRenameClick = { onHabitRenameClick(habit.id, habit.name) },
-                                        onDeleteClick = { onHabitDeleteClick(habit.id) }
+                                        onClick = { onHabitClick(habit.id, habit.name) },
+                                        onCheckInClick = { onHabitCheckInClick(habit.id to habit.name) },
+                                        onRenameClick = {
+                                            onHabitRenameClick(
+                                                habit.id,
+                                                habit.name
+                                            )
+                                        },
+                                        onDeleteClick = { onHabitDeleteClick(habit.id to habit.name) }
                                     )
                                     HorizontalDivider()
                                 }
@@ -320,6 +408,8 @@ fun HabitListContent(
     if (viewState.habitEditorBottomSheetViewState.showBottomSheet) {
         HabitEditorBottomSheet(
             viewState = viewState.habitEditorBottomSheetViewState,
+            accessibilityAnnouncement = accessibilityAnnouncement,
+            accessibilityAnnouncementId = accessibilityAnnouncementId,
             onNameChange = onHabitEditorNameChange,
             onDismiss = onDismissHabitEditorBottomSheet,
             onSubmit = onHabitEditorSubmit
@@ -361,9 +451,20 @@ fun HabitListItem(
     val density = LocalDensity.current
     var itemHeightPx by remember(viewState.id) { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
-    val actionButtonWidth = 60.dp
+    val baseActionButtonWidth = 60.dp
+    val actionButtonWidth = baseActionButtonWidth * density.fontScale
     val totalActionsWidth = actionButtonWidth * 3
     val totalActionsWidthPx = with(density) { totalActionsWidth.toPx() }
+    val isHabitClickable = !isCheckingIn && offsetX.value == 0f
+    val accessibilityReadout = stringResource(
+        R.string.habit_list_item_accessibility_readout,
+        viewState.name,
+        viewState.streak,
+        viewState.createdAt
+    )
+    val checkInActionLabel = stringResource(R.string.habit_list_check_in_action)
+    val renameActionLabel = stringResource(R.string.habit_list_rename_action)
+    val deleteActionLabel = stringResource(R.string.habit_list_delete_action)
 
     val closeSwipeAndRun: (() -> Unit) -> Unit = { action ->
         scope.launch {
@@ -452,8 +553,31 @@ fun HabitListItem(
                 }
                 .clickable(
                     onClick = onClick,
-                    enabled = !isCheckingIn && offsetX.value == 0f
+                    enabled = isHabitClickable
                 )
+                .clearAndSetSemantics {
+                    contentDescription = accessibilityReadout
+                    if (isHabitClickable) {
+                        onClick(action = {
+                            onClick()
+                            true
+                        })
+                    }
+                    customActions = listOf(
+                        CustomAccessibilityAction(label = checkInActionLabel) {
+                            onCheckInClick()
+                            true
+                        },
+                        CustomAccessibilityAction(label = renameActionLabel) {
+                            onRenameClick()
+                            true
+                        },
+                        CustomAccessibilityAction(label = deleteActionLabel) {
+                            onDeleteClick()
+                            true
+                        }
+                    )
+                }
                 .onSizeChanged { itemHeightPx = it.height }
                 .padding(16.dp),
             viewState = viewState,
@@ -487,22 +611,22 @@ private fun HabitListItemSwipeActions(
         SwipeActionButton(
             icon = Icons.Filled.Delete,
             label = stringResource(R.string.habit_list_delete_action),
-            containerColor = Color.SwipeDeleteContainer,
-            contentColor = Color.SwipeDeleteContent,
+            containerColor = HabitTrackerThemeExtras.colors.swipeDeleteContainer,
+            contentColor = HabitTrackerThemeExtras.colors.swipeDeleteContent,
             onClick = onDeleteClick
         )
         SwipeActionButton(
             icon = Icons.Filled.Edit,
             label = stringResource(R.string.habit_list_rename_action),
-            containerColor = Color.SwipeRenameContainer,
-            contentColor = Color.SwipeRenameContent,
+            containerColor = HabitTrackerThemeExtras.colors.swipeRenameContainer,
+            contentColor = HabitTrackerThemeExtras.colors.swipeRenameContent,
             onClick = onRenameClick
         )
         SwipeActionButton(
             icon = Icons.Filled.Whatshot,
             label = stringResource(R.string.habit_list_check_in_action),
-            containerColor = Color.SwipeCheckInContainer,
-            contentColor = Color.SwipeCheckInContent,
+            containerColor = HabitTrackerThemeExtras.colors.swipeCheckInContainer,
+            contentColor = HabitTrackerThemeExtras.colors.swipeCheckInContent,
             onClick = onCheckInClick
         )
     }
@@ -555,7 +679,7 @@ private fun HabitListItemMetaRow(
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp,
-                    color = Color.FireRed
+                    color = HabitTrackerThemeExtras.colors.streakAccent
                 )
             } else {
                 Icon(
@@ -567,7 +691,7 @@ private fun HabitListItemMetaRow(
                             scaleX = fireIconScale
                             scaleY = fireIconScale
                         },
-                    tint = Color.FireRed
+                    tint = HabitTrackerThemeExtras.colors.streakAccent
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -597,12 +721,24 @@ private fun SwipeActionButton(
     contentColor: ComposeColor,
     onClick: () -> Unit = {}
 ) {
+    val density = LocalDensity.current
+    val baseWidth = 60.dp
+    val scaledWidth = baseWidth * density.fontScale
+
     Box(
         modifier = Modifier
-            .width(60.dp)
+            .width(scaledWidth)
             .fillMaxHeight()
             .background(color = containerColor)
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = label
+                role = Role.Button
+                onClick {
+                    onClick()
+                    true
+                }
+            },
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -611,7 +747,7 @@ private fun SwipeActionButton(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = label,
+                contentDescription = null,
                 modifier = Modifier.size(22.dp),
                 tint = contentColor
             )
@@ -619,7 +755,8 @@ private fun SwipeActionButton(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = contentColor,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -627,6 +764,7 @@ private fun SwipeActionButton(
 
 @Composable
 fun LoadingListItem(modifier: Modifier = Modifier) {
+    val loadingContentDescription = stringResource(R.string.loading)
     val transition = rememberInfiniteTransition()
     val shimmerTranslate by transition.animateFloat(
         initialValue = -600f,
@@ -650,6 +788,9 @@ fun LoadingListItem(modifier: Modifier = Modifier) {
     )
     Column(
         modifier = modifier
+            .clearAndSetSemantics {
+                contentDescription = loadingContentDescription
+            }
             .padding(16.dp)
             .fillMaxWidth()
     ) {
@@ -703,7 +844,7 @@ fun ErrorListItem(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
             imageVector = Icons.Filled.ErrorOutline,
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = Color.RedError
+            tint = MaterialTheme.colorScheme.error
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
@@ -725,23 +866,30 @@ fun EndOfPaginationListItem(modifier: Modifier = Modifier) {
         Text(
             text = stringResource(R.string.habit_list_end_of_pagination_message),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outline
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
 
 @Composable
 fun HabitListEmptyStateItem(modifier: Modifier = Modifier) {
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(24.dp),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.undraw_empty_4zx0),
+            contentDescription = null,
+            modifier = Modifier.size(192.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.habit_list_empty_message),
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.outline,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center
         )
     }
@@ -751,6 +899,8 @@ fun HabitListEmptyStateItem(modifier: Modifier = Modifier) {
 @Composable
 private fun HabitEditorBottomSheet(
     viewState: HabitEditorBottomSheetViewState,
+    accessibilityAnnouncement: String = "",
+    accessibilityAnnouncementId: Int = 0,
     onNameChange: (String) -> Unit = {},
     onDismiss: () -> Unit = {},
     onSubmit: () -> Unit = {}
@@ -766,6 +916,25 @@ private fun HabitEditorBottomSheet(
         confirmValueChange = confirmValueChange
     )
     val focusRequester = remember { FocusRequester() }
+    var textFieldValue by remember(viewState.editorState) {
+        val initialText = viewState.textFieldViewState.value
+        mutableStateOf(
+            TextFieldValue(
+                text = initialText,
+                selection = TextRange(initialText.length)
+            )
+        )
+    }
+
+    LaunchedEffect(viewState.textFieldViewState.value) {
+        if (viewState.textFieldViewState.value != textFieldValue.text) {
+            val updatedText = viewState.textFieldViewState.value
+            textFieldValue = textFieldValue.copy(
+                text = updatedText,
+                selection = TextRange(updatedText.length)
+            )
+        }
+    }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -777,7 +946,8 @@ private fun HabitEditorBottomSheet(
                 onDismiss()
             }
         },
-        sheetState = sheetState
+        sheetState = sheetState,
+        tonalElevation = HabitTrackerElevation.raisedSurfaceTonal
     ) {
         Column(
             modifier = Modifier
@@ -791,15 +961,46 @@ private fun HabitEditorBottomSheet(
             )
             Spacer(modifier = Modifier.height(12.dp))
             HabitTrackerTextField(
-                value = viewState.textFieldViewState.value,
-                onValueChange = onNameChange,
+                value = textFieldValue,
+                onValueChange = {
+                    textFieldValue = it
+                    onNameChange(it.text)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 enabled = !viewState.isSubmitting,
                 isError = viewState.textFieldViewState.isError,
                 labelText = stringResource(R.string.habit_list_add_habit_name_label),
-                errorMessage = viewState.textFieldViewState.errorMessage
+                errorMessage = viewState.textFieldViewState.errorMessage,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done,
+                    capitalization = KeyboardCapitalization.Words
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (!viewState.isSubmitting) {
+                            onSubmit()
+                        }
+                    }
+                ),
+                trailingIcon = {
+                    if (textFieldValue.text.isNotBlank() && !viewState.isSubmitting) {
+                        IconButton(
+                            modifier = Modifier.testTag(CLEAR_HABIT_NAME_BUTTON_TEST_TAG),
+                            onClick = {
+                                textFieldValue = TextFieldValue("")
+                                onNameChange("")
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Clear,
+                                contentDescription = stringResource(R.string.clear_habit_name)
+                            )
+                        }
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -833,6 +1034,10 @@ private fun HabitEditorBottomSheet(
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
+        AccessibilityAnnouncementHost(
+            message = accessibilityAnnouncement,
+            announcementId = accessibilityAnnouncementId
+        )
     }
 }
 
@@ -854,7 +1059,12 @@ private fun DeleteHabitConfirmationDialog(
         dismissOnClickOutside = !viewState.isSubmitting,
         onDismissRequest = onDismiss,
         mode = if (viewState.isSubmitting) {
-            HabitTrackerAlertDialogMode.Loading
+            HabitTrackerAlertDialogMode.Loading(
+                accessibilityAnnouncementOnLoading = stringResource(
+                    R.string.habit_list_deleting_announcement,
+                    viewState.habitName
+                )
+            )
         } else {
             HabitTrackerAlertDialogMode.Default
         }
@@ -1097,8 +1307,8 @@ private fun HabitListContentPreview_EmptyList() {
         PagingData.from(
             emptyList<HabitViewState>(),
             sourceLoadStates = LoadStates(
-                refresh = LoadState.NotLoading(false),
-                prepend = LoadState.NotLoading(false),
+                refresh = LoadState.NotLoading(true),
+                prepend = LoadState.NotLoading(true),
                 append = LoadState.NotLoading(true)
             )
         )

@@ -40,7 +40,9 @@ class SignUpViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     emailTextFieldViewState = it.emailTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -50,7 +52,9 @@ class SignUpViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     passwordTextFieldViewState = it.passwordTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -60,9 +64,35 @@ class SignUpViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     confirmPasswordTextFieldViewState = it.confirmPasswordTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
+            }
+        }
+
+        is SignUpViewIntent.ClickClearEmailButton -> {
+            _viewState.update {
+                it.copy(
+                    emailTextFieldViewState = it.emailTextFieldViewState.copy(
+                        value = "",
+                        isError = false,
+                        errorMessage = ""
+                    )
+                )
+            }
+        }
+
+        is SignUpViewIntent.ClickTogglePasswordVisibilityButton -> {
+            _viewState.update {
+                it.copy(isPasswordVisible = !it.isPasswordVisible)
+            }
+        }
+
+        is SignUpViewIntent.ClickToggleConfirmPasswordVisibilityButton -> {
+            _viewState.update {
+                it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible)
             }
         }
 
@@ -78,8 +108,13 @@ class SignUpViewModel @Inject constructor(
     private fun handleClickSignUpButton() {
         viewModelScope.launch {
             _viewState.update {
-                it.copy(showLoadingDialog = true)
+                it.copy(showLoading = true)
             }
+            _viewEffect.emit(
+                SignUpViewEffect.AnnounceForAccessibility(
+                    application.getString(R.string.loading)
+                )
+            )
 
             val signUpFlowResult = signUpFlowUseCase(
                 _viewState.value.emailTextFieldViewState.value,
@@ -101,9 +136,13 @@ class SignUpViewModel @Inject constructor(
                         oldState = it.confirmPasswordTextFieldViewState,
                         errorMessage = application.getString(R.string.confirm_password_validation_error_message)
                     ),
-                    showLoadingDialog = false,
+                    showLoading = false,
                     alertDialogViewState = signUpFlowResult.toAlertDialogViewState()
                 )
+            }
+
+            signUpFlowResult.toAccessibilityAnnouncement()?.let { message ->
+                _viewEffect.emit(SignUpViewEffect.AnnounceForAccessibility(message))
             }
 
             if (signUpFlowResult is SignUpFlowResult.Success) {
@@ -138,5 +177,20 @@ class SignUpViewModel @Inject constructor(
             showDialog = true,
             message = application.getString(R.string.email_already_used_error_message)
         )
+    }
+
+    private fun SignUpFlowResult.toAccessibilityAnnouncement(): String? = when (this) {
+        is SignUpFlowResult.Success -> null
+        is SignUpFlowResult.ValidationError ->
+            application.getString(R.string.form_validation_error_announcement)
+
+        is SignUpFlowResult.EmailAlreadyUsedError ->
+            application.getString(R.string.email_already_used_error_message)
+
+        is SignUpFlowResult.GetTimezoneError,
+        is SignUpFlowResult.SignUpServiceGenericError,
+        is SignUpFlowResult.NullTokenError,
+        is SignUpFlowResult.SaveAuthenticationTokenError ->
+            application.getString(R.string.generic_error_message)
     }
 }

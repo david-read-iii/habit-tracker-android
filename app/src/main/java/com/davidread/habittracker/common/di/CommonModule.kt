@@ -1,7 +1,7 @@
 package com.davidread.habittracker.common.di
 
 import android.app.Application
-import com.davidread.habittracker.common.constant.BaseUrl
+import com.davidread.habittracker.common.config.BaseUrl
 import com.davidread.habittracker.common.network.AuthenticationInterceptor
 import com.davidread.habittracker.common.repository.AuthenticationTokenRepository
 import com.davidread.habittracker.common.repository.PREFS_NAME
@@ -32,7 +32,7 @@ class CommonModule {
     @Singleton
     fun providesRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BaseUrl.ANDROID_EMULATOR_DEBUG)
+            .baseUrl(BaseUrl.current())
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

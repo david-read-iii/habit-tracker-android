@@ -40,7 +40,9 @@ class LoginViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     emailTextFieldViewState = it.emailTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
             }
@@ -50,15 +52,41 @@ class LoginViewModel @Inject constructor(
             _viewState.update {
                 it.copy(
                     passwordTextFieldViewState = it.passwordTextFieldViewState.copy(
-                        value = intent.newValue
+                        value = intent.newValue,
+                        isError = false,
+                        errorMessage = ""
                     )
                 )
+            }
+        }
+
+        is LoginViewIntent.ClickClearEmailButton -> {
+            _viewState.update {
+                it.copy(
+                    emailTextFieldViewState = it.emailTextFieldViewState.copy(
+                        value = "",
+                        isError = false,
+                        errorMessage = ""
+                    )
+                )
+            }
+        }
+
+        is LoginViewIntent.ClickTogglePasswordVisibilityButton -> {
+            _viewState.update {
+                it.copy(isPasswordVisible = !it.isPasswordVisible)
             }
         }
 
         is LoginViewIntent.ClickLoginButton -> handleLoginButtonClick()
 
         is LoginViewIntent.ClickSignUpLink -> {
+            _viewState.update {
+                it.copy(
+                    emailTextFieldViewState = LoginTextFieldViewState(),
+                    passwordTextFieldViewState = LoginTextFieldViewState()
+                )
+            }
             viewModelScope.launch {
                 _viewEffect.emit(LoginViewEffect.NavigateToSignUpScreen)
             }
@@ -74,8 +102,13 @@ class LoginViewModel @Inject constructor(
     private fun handleLoginButtonClick() {
         viewModelScope.launch {
             _viewState.update {
-                it.copy(showLoadingDialog = true)
+                it.copy(showLoading = true)
             }
+            _viewEffect.emit(
+                LoginViewEffect.AnnounceForAccessibility(
+                    application.getString(R.string.loading)
+                )
+            )
 
             val loginFlowResult = loginFlowUseCase(
                 email = viewState.value.emailTextFieldViewState.value,
@@ -96,9 +129,17 @@ class LoginViewModel @Inject constructor(
                         oldState = it.passwordTextFieldViewState,
                         errorMessage = application.getString(R.string.password_validation_error_message)
                     ),
-                    showLoadingDialog = false,
+                    isPasswordVisible = when (loginFlowResult) {
+                        is LoginFlowResult.Success -> false
+                        else -> it.isPasswordVisible
+                    },
+                    showLoading = false,
                     alertDialogViewState = loginFlowResult.toAlertDialogViewState()
                 )
+            }
+
+            loginFlowResult.toAccessibilityAnnouncement()?.let { message ->
+                _viewEffect.emit(LoginViewEffect.AnnounceForAccessibility(message))
             }
 
             if (loginFlowResult is LoginFlowResult.Success) {
@@ -138,5 +179,19 @@ class LoginViewModel @Inject constructor(
             showDialog = true,
             message = application.getString(R.string.login_credentials_incorrect_error_message)
         )
+    }
+
+    private fun LoginFlowResult.toAccessibilityAnnouncement(): String? = when (this) {
+        is LoginFlowResult.Success -> null
+        is LoginFlowResult.ValidationError ->
+            application.getString(R.string.form_validation_error_announcement)
+
+        is LoginFlowResult.IncorrectLoginCredentialsError ->
+            application.getString(R.string.login_credentials_incorrect_error_message)
+
+        is LoginFlowResult.LoginServiceGenericError,
+        is LoginFlowResult.NullTokenError,
+        is LoginFlowResult.SaveAuthenticationTokenError ->
+            application.getString(R.string.generic_error_message)
     }
 }

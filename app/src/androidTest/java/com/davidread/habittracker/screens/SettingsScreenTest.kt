@@ -9,8 +9,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.lifecycle.Lifecycle
-import androidx.test.espresso.Espresso.pressBackUnconditionally
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.davidread.habittracker.common.ui.activity.MainActivity
 import com.davidread.habittracker.fakes.FakeSettingsRepositoryImpl
@@ -115,6 +113,18 @@ class SettingsScreenTest {
         waitUntilTextDoesNotExist("Log out?")
         assertTextDoesNotExist("Log out?")
         composeRule.onNodeWithText("Log out").assertIsDisplayed()
+    }
+
+    @Test
+    fun test_clickingYesOnLogoutDialog_navigatesToLoginScreen() {
+        composeRule.onNodeWithText("Log out").performClick()
+        composeRule.onNodeWithText("Yes").performClick()
+
+        waitUntilTextExists("Email")
+
+        composeRule.onNodeWithText("Email").assertIsDisplayed()
+        composeRule.onNodeWithText("Password").assertIsDisplayed()
+        composeRule.onNodeWithTag(LOGIN_BUTTON_TEST_TAG).assertIsDisplayed()
     }
 
     private fun loginAndNavigateToSettingsScreen() {

@@ -1,6 +1,7 @@
 package com.davidread.habittracker.list.database
 
 import android.content.Context
+import androidx.paging.PagingSource
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.davidread.habittracker.common.database.HabitTrackerDatabase
@@ -62,5 +63,47 @@ class HabitDaoTest {
         val result2 = dao.getHabitById("2")
         Assert.assertNull(result1)
         Assert.assertNull(result2)
+    }
+
+    @Test
+    fun test_pagingSourceReturnsHabitsOrderedByCreatedAt() = runTest {
+        val olderHabit = HabitEntity("1", "Exercise", 0, "2023-10-27T10:00:00Z")
+        val newerHabit = HabitEntity("2", "Drink Water", 5, "2023-10-27T11:00:00Z")
+        dao.insertAll(listOf(newerHabit, olderHabit))
+
+        val pagingSource = dao.pagingSource()
+        val loadResult = pagingSource.load(
+            PagingSource.LoadParams.Refresh(
+                key = null,
+                loadSize = 10,
+                placeholdersEnabled = false
+            )
+        )
+
+        Assert.assertTrue(loadResult is PagingSource.LoadResult.Page)
+        val page = loadResult as PagingSource.LoadResult.Page
+        Assert.assertEquals(listOf(olderHabit, newerHabit), page.data)
+    }
+
+    @Test
+    fun test_updateHabitName() = runTest {
+        val habit = HabitEntity("1", "Exercise", 0, "2023-10-27T10:00:00Z")
+        dao.insertAll(listOf(habit))
+
+        dao.updateHabitName(id = "1", name = "Morning Run")
+
+        val result = dao.getHabitById("1")
+        Assert.assertEquals("Morning Run", result?.name)
+    }
+
+    @Test
+    fun test_deleteHabit() = runTest {
+        val habit = HabitEntity("1", "Exercise", 0, "2023-10-27T10:00:00Z")
+        dao.insertAll(listOf(habit))
+
+        dao.deleteHabit("1")
+
+        val result = dao.getHabitById("1")
+        Assert.assertNull(result)
     }
 }

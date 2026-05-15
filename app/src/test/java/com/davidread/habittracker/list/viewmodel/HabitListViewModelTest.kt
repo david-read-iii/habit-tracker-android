@@ -59,6 +59,37 @@ class HabitListViewModelTest {
         coEvery { logoutUseCase() } returns Unit
         every { application.getString(R.string.check_in_already_checked_in) } returns ALREADY_CHECKED_IN_MESSAGE
         every { application.getString(R.string.check_in_generic_error) } returns GENERIC_ERROR_MESSAGE
+        every {
+            application.getString(R.string.habit_list_checking_in_announcement, HABIT_NAME)
+        } returns CHECKING_IN_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_check_in_success_announcement, HABIT_NAME)
+        } returns CHECK_IN_SUCCESS_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_delete_success_announcement, HABIT_NAME)
+        } returns DELETE_SUCCESS_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_adding_announcement, HABIT_NAME)
+        } returns ADDING_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_add_success_announcement, HABIT_NAME)
+        } returns ADD_SUCCESS_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_updating_announcement, UPDATED_HABIT_NAME)
+        } returns UPDATING_ANNOUNCEMENT
+        every {
+            application.getString(R.string.habit_list_update_success_announcement, UPDATED_HABIT_NAME)
+        } returns UPDATE_SUCCESS_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_initial_loading_announcement) } returns
+            INITIAL_LOADING_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_prepend_loading_announcement) } returns
+            PREPEND_LOADING_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_prepend_success_announcement) } returns
+            PREPEND_SUCCESS_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_append_loading_announcement) } returns
+            APPEND_LOADING_ANNOUNCEMENT
+        every { application.getString(R.string.habit_list_append_success_announcement) } returns
+            APPEND_SUCCESS_ANNOUNCEMENT
         every { application.getString(R.string.habit_list_add_habit_sheet_title) } returns
             ADD_HABIT_SHEET_TITLE
         every { application.getString(R.string.habit_list_edit_habit_sheet_title) } returns
@@ -67,6 +98,8 @@ class HabitListViewModelTest {
             ADD_HABIT_SUBMIT_TEXT
         every { application.getString(R.string.habit_list_edit_habit_submit) } returns
             EDIT_HABIT_SUBMIT_TEXT
+        every { application.getString(R.string.form_validation_error_announcement) } returns
+            FORM_VALIDATION_ERROR_ANNOUNCEMENT
         every { application.getString(R.string.habit_list_add_habit_name_error) } returns INVALID_HABIT_NAME_MESSAGE
         every { application.getString(R.string.create_habit_success) } returns CREATE_HABIT_SUCCESS_MESSAGE
         every { application.getString(R.string.create_habit_error) } returns CREATE_HABIT_ERROR_MESSAGE
@@ -122,6 +155,199 @@ class HabitListViewModelTest {
 
         Assert.assertFalse(actual.isRefreshing)
         Assert.assertTrue(actual.checkingInHabitIds.isEmpty())
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_initialLoadingWithNoItems_emitsAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 0
+                )
+            )
+            expectNoEvents()
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = true,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 0
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(INITIAL_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_refreshLoadingWithExistingItems_doesNotEmitAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = true,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 5
+                )
+            )
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_appendLoading_emitsAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            expectNoEvents()
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = true,
+                    itemCount = 10
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_appendLoadingThenNotLoadingWithMoreItems_emitsSuccessAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = true,
+                    itemCount = 10
+                )
+            )
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 15
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_SUCCESS_ANNOUNCEMENT),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_appendLoadingThenNotLoadingWithoutNewItems_doesNotEmitSuccessAnnouncement() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = true,
+                    itemCount = 10
+                )
+            )
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(APPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun test_processIntent_ReportPagingLoadStates_prependLoadingThenNotLoadingWithMoreItems_emitsLoadingAndSuccessAnnouncements() = runTest {
+        viewModel.viewEffect.test {
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = true,
+                    isAppendLoading = false,
+                    itemCount = 10
+                )
+            )
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(PREPEND_LOADING_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            viewModel.processIntent(
+                HabitListViewIntent.ReportPagingLoadStates(
+                    isRefreshLoading = false,
+                    isPrependLoading = false,
+                    isAppendLoading = false,
+                    itemCount = 15
+                )
+            )
+
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(PREPEND_SUCCESS_ANNOUNCEMENT),
+                awaitItem()
+            )
+
+            expectNoEvents()
+        }
     }
 
     @Test
@@ -211,6 +437,10 @@ class HabitListViewModelTest {
             Assert.assertTrue(creatingHabitState.showBottomSheet)
             Assert.assertEquals(HABIT_NAME, creatingHabitState.textFieldViewState.value)
             Assert.assertTrue(creatingHabitState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(ADDING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
 
             createHabitResultDeferred.complete(CreateHabitResult.Success)
             advanceUntilIdle()
@@ -222,6 +452,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
             Assert.assertFalse(completedState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(ADD_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { createHabitUseCase(HABIT_NAME) }
         }
     }
@@ -251,7 +485,10 @@ class HabitListViewModelTest {
                 habitEditorBottomSheetViewState.textFieldViewState.errorMessage
             )
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(FORM_VALIDATION_ERROR_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { createHabitUseCase(INVALID_HABIT_NAME) }
         }
     }
@@ -274,6 +511,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(habitEditorBottomSheetViewState.textFieldViewState.isError)
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(ADDING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(CREATE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -327,6 +568,10 @@ class HabitListViewModelTest {
             Assert.assertEquals(UPDATED_HABIT_NAME, editingState.textFieldViewState.value)
             Assert.assertTrue(editingState.isSubmitting)
             Assert.assertEquals(EditorState.Edit(HABIT_ID), editingState.editorState)
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(UPDATING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
 
             updateHabitResultDeferred.complete(UpdateHabitResult.Success)
             advanceUntilIdle()
@@ -337,7 +582,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.textFieldViewState.isError)
             Assert.assertEquals("", completedState.textFieldViewState.errorMessage)
             Assert.assertFalse(completedState.isSubmitting)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(UPDATE_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify {
                 updateHabitUseCase(
                     id = HABIT_ID,
@@ -374,7 +622,10 @@ class HabitListViewModelTest {
             )
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             Assert.assertEquals(EditorState.Edit(HABIT_ID), habitEditorBottomSheetViewState.editorState)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(FORM_VALIDATION_ERROR_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify {
                 updateHabitUseCase(
                     id = HABIT_ID,
@@ -408,6 +659,10 @@ class HabitListViewModelTest {
             Assert.assertEquals("", habitEditorBottomSheetViewState.textFieldViewState.errorMessage)
             Assert.assertFalse(habitEditorBottomSheetViewState.isSubmitting)
             Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(UPDATING_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
+            Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(UPDATE_HABIT_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
             )
@@ -422,18 +677,19 @@ class HabitListViewModelTest {
 
     @Test
     fun test_processIntent_ClickDeleteHabitButton_showsDeleteDialog() {
-        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
 
         val deleteDialogViewState = viewModel.viewState.value.deleteHabitDialogViewState
 
         Assert.assertTrue(deleteDialogViewState.showDialog)
         Assert.assertEquals(HABIT_ID, deleteDialogViewState.habitId)
+        Assert.assertEquals(HABIT_NAME, deleteDialogViewState.habitName)
         Assert.assertFalse(deleteDialogViewState.isSubmitting)
     }
 
     @Test
     fun test_processIntent_DismissDeleteHabitDialog() {
-        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
 
         viewModel.processIntent(HabitListViewIntent.DismissDeleteHabitDialog)
 
@@ -449,7 +705,7 @@ class HabitListViewModelTest {
         val deleteHabitResultDeferred = CompletableDeferred<DeleteHabitResult>()
         coEvery { deleteHabitUseCase(HABIT_ID) } coAnswers { deleteHabitResultDeferred.await() }
 
-        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+        viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
         viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
         advanceUntilIdle()
 
@@ -474,7 +730,7 @@ class HabitListViewModelTest {
             val deleteHabitResultDeferred = CompletableDeferred<DeleteHabitResult>()
             coEvery { deleteHabitUseCase(HABIT_ID) } coAnswers { deleteHabitResultDeferred.await() }
 
-            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
             viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
             advanceUntilIdle()
 
@@ -493,7 +749,10 @@ class HabitListViewModelTest {
             Assert.assertFalse(completedState.showDialog)
             Assert.assertEquals(null, completedState.habitId)
             Assert.assertFalse(completedState.isSubmitting)
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(DELETE_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
         }
     }
 
@@ -504,7 +763,7 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { deleteHabitUseCase(HABIT_ID) } returns DeleteHabitResult.Error
 
-            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickDeleteHabitButton(HABIT_ID, HABIT_NAME))
             viewModel.processIntent(HabitListViewIntent.ConfirmDeleteHabit)
 
             val deleteDialogViewState = viewStateTurbine.expectMostRecentItem().deleteHabitDialogViewState
@@ -574,8 +833,12 @@ class HabitListViewModelTest {
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
 
-            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID, HABIT_NAME))
 
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 setOf(HABIT_ID),
                 viewStateTurbine.expectMostRecentItem().checkingInHabitIds
@@ -584,7 +847,10 @@ class HabitListViewModelTest {
             checkInResultDeferred.complete(CheckInResult.Success)
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECK_IN_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { checkInUseCase(HABIT_ID) }
         }
     }
@@ -596,9 +862,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.AlreadyCheckedInError
 
-            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(ALREADY_CHECKED_IN_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -614,9 +884,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.GenericError
 
-            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickHabit(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(GENERIC_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -635,8 +909,12 @@ class HabitListViewModelTest {
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
 
-            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID, HABIT_NAME))
 
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 setOf(HABIT_ID),
                 viewStateTurbine.expectMostRecentItem().checkingInHabitIds
@@ -645,7 +923,10 @@ class HabitListViewModelTest {
             checkInResultDeferred.complete(CheckInResult.Success)
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
-            viewEffectTurbine.expectNoEvents()
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECK_IN_SUCCESS_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             coVerify { checkInUseCase(HABIT_ID) }
         }
     }
@@ -657,9 +938,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.AlreadyCheckedInError
 
-            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(ALREADY_CHECKED_IN_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -675,9 +960,13 @@ class HabitListViewModelTest {
             val viewEffectTurbine = viewModel.viewEffect.testIn(backgroundScope)
             coEvery { checkInUseCase(HABIT_ID) } returns CheckInResult.GenericError
 
-            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID))
+            viewModel.processIntent(HabitListViewIntent.ClickCheckInHabitButton(HABIT_ID, HABIT_NAME))
 
             Assert.assertTrue(viewStateTurbine.expectMostRecentItem().checkingInHabitIds.isEmpty())
+            Assert.assertEquals(
+                HabitListViewEffect.AnnounceForAccessibility(CHECKING_IN_ANNOUNCEMENT),
+                viewEffectTurbine.awaitItem()
+            )
             Assert.assertEquals(
                 HabitListViewEffect.ShowSnackbar(GENERIC_ERROR_MESSAGE),
                 viewEffectTurbine.awaitItem()
@@ -698,6 +987,19 @@ class HabitListViewModelTest {
         private const val ALREADY_CHECKED_IN_MESSAGE =
             "You've already checked in for this habit today."
         private const val GENERIC_ERROR_MESSAGE = "Unable to check in right now. Please try again."
+        private const val CHECKING_IN_ANNOUNCEMENT = "Read for 20 minutes. Checking in."
+        private const val CHECK_IN_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes checked in."
+        private const val DELETE_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes deleted."
+        private const val ADDING_ANNOUNCEMENT = "Adding Read for 20 minutes."
+        private const val ADD_SUCCESS_ANNOUNCEMENT = "Read for 20 minutes added."
+        private const val UPDATING_ANNOUNCEMENT = "Saving Read for 30 minutes."
+        private const val UPDATE_SUCCESS_ANNOUNCEMENT = "Read for 30 minutes updated."
+        private const val INITIAL_LOADING_ANNOUNCEMENT = "Loading habits."
+        private const val PREPEND_LOADING_ANNOUNCEMENT = "Loading earlier habits."
+        private const val PREPEND_SUCCESS_ANNOUNCEMENT = "Earlier habits loaded."
+        private const val APPEND_LOADING_ANNOUNCEMENT = "Loading more habits."
+        private const val APPEND_SUCCESS_ANNOUNCEMENT = "More habits loaded."
+        private const val FORM_VALIDATION_ERROR_ANNOUNCEMENT = "Please fix the errors in the form."
         private const val INVALID_HABIT_NAME_MESSAGE = "Please enter a habit name"
         private const val CREATE_HABIT_SUCCESS_MESSAGE = "Habit added successfully."
         private const val CREATE_HABIT_ERROR_MESSAGE = "Failed to add habit. Please try again."
