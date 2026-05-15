@@ -11,7 +11,7 @@ Compose, Material 3 design, and Hilt dependency injection for a clean, scalable 
 - 🔄 **Pull-to-Refresh** – Refresh habit list with Material 3 pull-to-refresh gesture
 - 📱 **Responsive Design** – Optimized for various screen sizes
 - 🌓 **Dark Mode Support** – Full dark mode with optimized contrast ratios
-- 🔐 **Secure Storage** – Encrypted local storage using Tink and Android Security Crypto
+- 🔐 **Secure Storage** – Encrypted local storage using Tink
 - 🎯 **Pagination** – Efficient list loading with Paging 3
 - ♿ **Accessibility** – Custom accessibility actions and semantic annotations
 
@@ -44,8 +44,8 @@ Compose, Material 3 design, and Hilt dependency injection for a clean, scalable 
 ### Minimum Requirements
 
 - **Minimum SDK:** 26 (Android 8.0)
-- **Target SDK:** 36
-- **Compile SDK:** 36
+- **Target SDK:** 37
+- **Compile SDK:** 37
 - **Java:** Version 17
 
 ## Project Structure
