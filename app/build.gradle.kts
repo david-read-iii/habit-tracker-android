@@ -1,0 +1,143 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.compose.compiler)
+}
+
+android {
+    namespace = "com.davidread.habittracker"
+    compileSdk = 37
+
+    defaultConfig {
+        applicationId = "com.davidread.habittracker"
+        minSdk = 26
+        targetSdk = 37
+        versionCode = 1
+        versionName = "1.0"
+        testInstrumentationRunner = "com.davidread.habittracker.HabitTrackerTestRunner"
+        manifestPlaceholders["CLEAR_TEXT_TRAFFIC"] = "false"
+    }
+
+    buildTypes {
+        create("localHostDebug") {
+            initWith(getByName("debug"))
+            matchingFallbacks += listOf("debug")
+            manifestPlaceholders["CLEAR_TEXT_TRAFFIC"] = "true"
+        }
+
+        create("mockInAppDebug") {
+            initWith(getByName("debug"))
+            matchingFallbacks += listOf("debug")
+        }
+
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+
+    testBuildType = "debug"
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE-notice.md"
+            )
+        }
+    }
+
+    sourceSets {
+        getByName("test") {
+            resources.srcDirs("src/test/resources")
+        }
+    }
+}
+
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+    arg("room.generateKotlin", "true")
+}
+
+dependencies {
+    implementation(platform(libs.compose.bom))
+    implementation(libs.google.material)
+    implementation(libs.material3)
+    implementation(libs.material.icons.extended)
+    implementation(libs.ui.tooling.preview)
+    implementation(libs.activity.compose)
+    implementation(libs.navigation.compose)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.tink.android)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    implementation(libs.room.paging)
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
+
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.room.compiler)
+
+    val debugLikeBuildTypes = listOf("debug", "localHostDebug", "mockInAppDebug")
+    val debugOnlyDeps = listOf(
+        libs.ui.tooling,
+        libs.leakcanary.android,
+        libs.compose.ui.test.manifest
+    )
+    debugLikeBuildTypes.forEach { buildType ->
+        debugOnlyDeps.forEach { dep ->
+            add("${buildType}Implementation", dep)
+        }
+    }
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+
+    androidTestImplementation(libs.compose.ui.test)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.runner)
+    androidTestImplementation(libs.hilt.android.testing)
+}
+
+afterEvaluate {
+    listOf("localHostDebug", "mockInAppDebug").forEach { buildType ->
+        val testTaskName = "test${buildType.replaceFirstChar { it.uppercase() }}UnitTest"
+        val debugTestTaskName = "testDebugUnitTest"
+
+        if (tasks.findByName(debugTestTaskName) != null && tasks.findByName(testTaskName) == null) {
+            tasks.register(testTaskName) {
+                dependsOn(debugTestTaskName)
+            }
+        }
+    }
+}
